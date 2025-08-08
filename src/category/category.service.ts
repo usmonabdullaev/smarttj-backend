@@ -48,13 +48,52 @@ export class CategoryService {
       where: {
         parentId: null,
       },
-      include: {
-        children: true,
+      orderBy: {
+        order: 'asc',
       },
     });
   }
 
-  async findOne(id: string) {
+  async getTree() {
+    const getCategoriesWithChildren = async (parentId: null | string) => {
+      const categories = await this.prisma.category.findMany({
+        where: { parentId },
+        orderBy: { order: 'asc' },
+        include: {
+          children: true,
+        },
+      });
+
+      for (const category of categories) {
+        category.children = await getCategoriesWithChildren(category.id);
+      }
+
+      return categories;
+    };
+
+    return await getCategoriesWithChildren(null);
+  }
+
+  async findOneWithChilds(id: string) {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+      include: {
+        children: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException();
+    }
+
+    return category;
+  }
+
+  async delete(id: string) {
     const category = await this.prisma.category.findUnique({
       where: { id },
     });
@@ -63,6 +102,8 @@ export class CategoryService {
       throw new NotFoundException();
     }
 
-    return category;
+    return await this.prisma.category.delete({
+      where: { id },
+    });
   }
 }
