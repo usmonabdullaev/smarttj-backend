@@ -23,6 +23,7 @@ model User {
   role     UserRole @default(USER)
   avatar   String?
   regionId String?
+  bonus    Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,12 +115,12 @@ model Address {
 }
 
 model Shop {
-  id        String @id @default(uuid(7))
-  name      String
-  address   String
-  phone     String
-  regionId  String
-  location  Json?        // можно хранить координаты: { lat, lng }
+  id       String @id @default(uuid(7))
+  name     String
+  address  String
+  phone    String
+  regionId String
+  location Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -131,8 +132,7 @@ model Shop {
 }
 
 model Product {
-  id          String @id     @default(uuid(7))
-  code        Int    @unique @default(autoincrement())
+  id          String @id @default(uuid(7))
   title       String
   description String
   warranty    Int?
@@ -160,10 +160,12 @@ model Product {
 }
 
 model ProductVariant {
-  id        String @id @default(uuid(7))
-  price     Decimal  @db.Decimal(10, 2)
-  discount  Decimal? @db.Decimal(10, 2)
-  productId String
+  id              String   @id @default(uuid(7))
+  price           Decimal  @db.Decimal(10, 2)
+  discount        Decimal? @db.Decimal(10, 2)
+  discountEndDate DateTime?
+  productId       String
+  code            Int @unique @db.Integer @default(autoincrement())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -175,14 +177,15 @@ model ProductVariant {
   priceHistory ProductPriceHistory[]
   attributes   ProductAttribute[]
 
+  @@index([code])
   @@index([productId])
 }
 
 model ProductPriceHistory {
-  id         String   @id @default(uuid(7))
-  productId  String
-  variantId  String? // если есть ProductVariant
-  price      Decimal @db.Decimal(10, 2)
+  id        String @id @default(uuid(7))
+  productId String
+  variantId String?
+  price     Decimal @db.Decimal(10, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -232,11 +235,12 @@ model Category {
 }
 
 model Brand {
-  id    String @id @default(uuid(7))
-  name  String
-  slug  String @unique
-  logo  String?
-  order Int @default(1)
+  id      String @id @default(uuid(7))
+  name    String
+  slug    String @unique
+  logo    String?
+  order   Int @default(1)
+  popular Boolean
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -255,6 +259,7 @@ model Model {
   image       String?
   brandId     String
   order       Int @default(1)
+  popular     Boolean
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -265,6 +270,7 @@ model Model {
   @@index([slug])
   @@index([brandId])
   @@unique([slug, brandId])
+  @@unique([name, brandId])
 }
 
 model Image {
@@ -307,7 +313,7 @@ model AttributeValue {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attribute         Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   productAttributes ProductAttribute[]
 
   @@unique([attributeId, value])
@@ -475,12 +481,12 @@ enum TransactionPaymentStatus {
 }
 
 model Transaction {
-  id           String @id @default(uuid(7))
-  userId       String
-  orderId      String  @unique // Один заказ — одна транзакция
-  amount       Decimal @db.Decimal(10, 2)
-  status       TransactionPaymentStatus
-  providerTxId String?    // ID от платёжного провайдера
+  id         String @id @default(uuid(7))
+  userId     String
+  orderId    String  @unique
+  amount     Decimal @db.Decimal(10, 2)
+  status     TransactionPaymentStatus
+  providerId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
