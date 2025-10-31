@@ -266,6 +266,7 @@ model Brand {
   name    String
   slug    String @unique
   logo    String?
+  logoId  String?
   order   Int @default(1)
   popular Boolean
 
