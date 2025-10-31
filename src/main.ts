@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -12,7 +13,7 @@ async function bootstrap() {
     .setDescription('The SmartTJ API documentation')
     .setVersion('1.0')
     .addTag('SmartTJ')
-    .addServer('http://localhost:3000/api', 'Локалный')
+    .addServer('http://localhost:3000/api', 'Local')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',
@@ -24,7 +25,7 @@ async function bootstrap() {
     .build();
 
   SwaggerModule.setup(
-    'api/docs',
+    'api',
     app,
     SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: true }),
   );

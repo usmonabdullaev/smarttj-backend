@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
+
 import { AppController } from './app.controller';
+
 import { AppService } from './app.service';
-import { ProductModule } from './product/product.module';
-import { CategoryModule } from './category/category.module';
-import { BrandsModule } from './brands/brands.module';
+
+import { AuthModule } from './modules/auth/auth.module';
+import { PrismaModule } from './database/prisma.module';
+import { BrandsModule } from './modules/brands/brands.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
-  imports: [ProductModule, CategoryModule, BrandsModule],
+  imports: [PrismaModule, BrandsModule, UsersModule, AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })
