@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -17,11 +16,12 @@ enum UserRole {
 model User {
   id       String @id @default(uuid(7))
   phone    String @unique
-  email    String @unique
-  password String?
+  email    String? @unique
+  password String
   name     String
   role     UserRole @default(USER)
   avatar   String?
+  avatarId String?
   regionId String?
   bonus    Int @default(0)
 
@@ -44,12 +44,12 @@ model Session {
   id           String @id @default(uuid(7))
   userId       String
   fingerprint  String
-  userAgent    String
+  userAgent    String?
   ip           String?
   expiresAt    DateTime
   isActive     Boolean @default(true)
   pushToken    String? @unique
-  lastActiveAt DateTime
+  lastActiveAt DateTime @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

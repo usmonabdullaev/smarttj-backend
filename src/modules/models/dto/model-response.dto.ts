@@ -13,13 +13,13 @@ export class ModelResponseDto {
   @ApiProperty({
     nullable: true,
     example:
-      'https://res.cloudinary.com/dqklcu4jy/image/upload/v1762587277/brand/mpmezwvtg0drxtllmm7a.png',
+      'https://res.cloudinary.com/dqklcu4jy/image/upload/v1762587277/model/mpmezwvtg0drxtllmm7a.png',
   })
   logo: string;
 
   @ApiProperty({
     nullable: true,
-    example: 'brand/mpmezwvtg0drxtllmm7a',
+    example: 'model/mpmezwvtg0drxtllmm7a',
   })
   logoId: string;
 

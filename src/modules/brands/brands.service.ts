@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
-import { PrismaService } from 'src/database/prisma.service';
+import { PrismaService } from 'src/database/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()

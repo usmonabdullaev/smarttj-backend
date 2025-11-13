@@ -28,10 +28,18 @@ export class BrandsController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: 'Создать новый бренд' })
-  @ApiResponse({ status: 201, type: BrandResponseDto })
-  @ApiResponse({ status: 400, type: ApiErrorDto })
-  @ApiResponse({ status: 409, type: ApiErrorDto })
+  @ApiOperation({ summary: 'Create brand' })
+  @ApiResponse({
+    status: 201,
+    type: BrandResponseDto,
+    description: 'Created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    type: ApiErrorDto,
+    description: 'Validation error',
+  })
+  @ApiResponse({ status: 409, type: ApiErrorDto, description: 'Conflict' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('logo'))
   async create(
@@ -52,26 +60,36 @@ export class BrandsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получит список' })
-  @ApiResponse({ status: 200, type: BrandResponseDto, isArray: true })
+  @ApiOperation({ summary: 'Get brands list' })
+  @ApiResponse({
+    status: 200,
+    type: BrandResponseDto,
+    isArray: true,
+    description: 'Success',
+  })
   async findAll() {
     return await this.brandsService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Получит информация о бренд' })
-  @ApiResponse({ status: 200, type: BrandResponseDto })
-  @ApiResponse({ status: 404, type: ApiErrorDto })
+  @ApiOperation({ summary: 'Get brand' })
+  @ApiResponse({ status: 200, type: BrandResponseDto, description: 'Success' })
+  @ApiResponse({ status: 404, type: ApiErrorDto, description: 'Not found' })
   async findOne(@Param('id') id: string) {
     return await this.brandsService.findOne(id);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Обновить бренд' })
+  @ApiOperation({ summary: 'Update brand' })
   @ApiConsumes('multipart/form-data')
-  @ApiResponse({ status: 200, type: BrandResponseDto })
-  @ApiResponse({ status: 400, type: ApiErrorDto })
-  @ApiResponse({ status: 404, type: ApiErrorDto })
+  @ApiResponse({ status: 200, type: BrandResponseDto, description: 'Updated' })
+  @ApiResponse({
+    status: 400,
+    type: ApiErrorDto,
+    description: 'Validation error',
+  })
+  @ApiResponse({ status: 404, type: ApiErrorDto, description: 'Not found' })
+  @ApiResponse({ status: 409, type: ApiErrorDto, description: 'Conflict' })
   @UseInterceptors(FileInterceptor('logo'))
   async update(
     @Param('id') id: string,
@@ -93,9 +111,9 @@ export class BrandsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Удалить бренд' })
-  @ApiResponse({ status: 200, type: BrandResponseDto })
-  @ApiResponse({ status: 404, type: ApiErrorDto })
+  @ApiOperation({ summary: 'Delete brand' })
+  @ApiResponse({ status: 200, type: BrandResponseDto, description: 'Deleted' })
+  @ApiResponse({ status: 404, type: ApiErrorDto, description: 'Not found' })
   async remove(@Param('id') id: string) {
     return await this.brandsService.remove(id);
   }

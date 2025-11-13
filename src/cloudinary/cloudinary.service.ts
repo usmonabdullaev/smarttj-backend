@@ -14,12 +14,20 @@ export class CloudinaryService {
     folder: string,
   ): Promise<UploadApiResponse> {
     if (!file) {
-      throw new BadRequestException('Файл не найден');
+      throw new BadRequestException({
+        message: 'File not found',
+        code: 'FILE_NOT_FOUND',
+        error: null,
+      });
     }
 
     const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new BadRequestException('Недопустимый тип файла');
+      throw new BadRequestException({
+        message: 'Incorrect file type',
+        code: 'INCORRECT_FILE_TYPE',
+        error: file.mimetype,
+      });
     }
 
     return new Promise((resolve, reject) => {
@@ -44,7 +52,11 @@ export class CloudinaryService {
 
       return result;
     } catch {
-      throw new BadRequestException('Ошибка при удалении файла');
+      throw new BadRequestException({
+        message: 'Error while deleting',
+        code: 'DELETE_ERROR',
+        error: publicId,
+      });
     }
   }
 }

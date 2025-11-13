@@ -1,26 +1,86 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
+
+import { LoginAuthDto } from './dto/login-auth.dto';
+import { PrismaService } from 'src/database/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+  constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async login(dto: LoginAuthDto, ip: string, userAgent?: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: dto.login }, { phone: dto.login }],
+      },
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    if (!user) {
+      throw new UnauthorizedException({
+        message: 'User not found',
+        code: 'USER_NOT_FOUND',
+        error: { login: dto.login, password: dto.password },
+      });
+    }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    const isValid = await bcrypt.compare(dto.password, user.password);
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    if (!isValid) {
+      throw new UnauthorizedException({
+        message: 'User not found',
+        code: 'USER_NOT_FOUND',
+        error: { login: dto.login, password: dto.password },
+      });
+    }
+
+    const existedSession = await this.prisma.session.findFirst({
+      where: {
+        userId: user.id,
+        fingerprint: dto.fingerprint,
+      },
+    });
+
+    let sessionId: string;
+
+    // 4️⃣ Если сессия существует → обновляем lastActiveAt
+    if (existedSession) {
+      await this.prisma.session.update({
+        where: { id: existedSession.id },
+        data: {
+          lastActiveAt: new Date(),
+        },
+      });
+
+      sessionId = existedSession.id;
+    } else {
+      const newSession = await this.prisma.session.create({
+        data: {
+          userId: user.id,
+          fingerprint: dto.fingerprint,
+          userAgent,
+          ip,
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 дней
+        },
+      });
+
+      sessionId = newSession.id;
+    }
+
+    const token = jwt.sign(
+      { id: user.id, sessionId },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: '30d',
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+
+    return {
+      token,
+      user: userWithoutPassword,
+    };
   }
 }
