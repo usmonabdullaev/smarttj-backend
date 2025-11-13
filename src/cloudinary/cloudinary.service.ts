@@ -42,7 +42,6 @@ export class CloudinaryService {
     try {
       const result = await cloudinary.uploader.destroy(publicId);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return result;
     } catch {
       throw new BadRequestException('Ошибка при удалении файла');

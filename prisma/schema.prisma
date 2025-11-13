@@ -282,9 +282,10 @@ model Brand {
 model Model {
   id          String @id @default(uuid(7))
   name        String
-  slug        String
+  slug        String @unique
   description String?
   image       String?
+  imageId     String?
   brandId     String
   order       Int @default(1)
   popular     Boolean
@@ -297,7 +298,6 @@ model Model {
 
   @@index([slug])
   @@index([brandId])
-  @@unique([slug, brandId])
   @@unique([name, brandId])
 }
 

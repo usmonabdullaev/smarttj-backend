@@ -10,6 +10,7 @@ import { PrismaModule } from './database/prisma.module';
 import { BrandsModule } from './modules/brands/brands.module';
 import { UsersModule } from './modules/users/users.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ModelsModule } from './modules/models/models.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     BrandsModule,
     UsersModule,
     AuthModule,
+    ModelsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,6 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateBrandDto {
   @ApiProperty({
@@ -8,6 +15,7 @@ export class CreateBrandDto {
     description: 'Название бренда',
   })
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @ApiProperty({
@@ -15,6 +23,7 @@ export class CreateBrandDto {
     description: 'Уникальный slug бренда (используется в URL)',
   })
   @IsString()
+  @IsNotEmpty()
   slug: string;
 
   @ApiPropertyOptional({
@@ -32,6 +41,7 @@ export class CreateBrandDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(1)
   order?: number;
 
   @ApiProperty({

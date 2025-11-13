@@ -9,7 +9,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('bing')
-  getHello(): string {
-    return this.appService.getHello();
+  bing(): string {
+    return this.appService.bong();
   }
 }

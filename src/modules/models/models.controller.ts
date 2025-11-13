@@ -11,41 +11,41 @@ import {
 } from '@nestjs/common';
 import { ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Express } from 'express';
-
-import { BrandsService } from './brands.service';
-import { CreateBrandDto } from './dto/create-brand.dto';
-import { UpdateBrandDto } from './dto/update-brand.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { BrandResponseDto } from './dto/brand-response.dto';
+
+import { ModelsService } from './models.service';
+import { CreateModelDto } from './dto/create-model.dto';
+import { UpdateModelDto } from './dto/update-model.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { ModelResponseDto } from './dto/model-response.dto';
 import { ApiErrorDto } from 'src/common/dto/api-error.dto';
 
-@Controller('brands')
-export class BrandsController {
+@Controller('models')
+export class ModelsController {
   constructor(
-    private readonly brandsService: BrandsService,
+    private readonly brandsService: ModelsService,
     private readonly cloudinary: CloudinaryService,
   ) {}
 
   @Post()
-  @ApiOperation({ summary: 'Создать новый бренд' })
-  @ApiResponse({ status: 201, type: BrandResponseDto })
+  @ApiOperation({ summary: 'Создать новый модел' })
+  @ApiResponse({ status: 201, type: ModelResponseDto })
   @ApiResponse({ status: 400, type: ApiErrorDto })
   @ApiResponse({ status: 409, type: ApiErrorDto })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('logo'))
+  @UseInterceptors(FileInterceptor('image'))
   async create(
-    @Body() createBrandDto: CreateBrandDto,
-    @UploadedFile() logo: Express.Multer.File,
+    @Body() createBrandDto: CreateModelDto,
+    @UploadedFile() image: Express.Multer.File,
   ) {
-    const upload = logo
-      ? await this.cloudinary.uploadFile(logo, 'brand')
+    const upload = image
+      ? await this.cloudinary.uploadFile(image, 'model')
       : null;
 
     return await this.brandsService.create(
       {
         ...createBrandDto,
-        logo: upload?.secure_url,
+        image: upload?.secure_url,
       },
       upload?.public_id,
     );
@@ -53,48 +53,48 @@ export class BrandsController {
 
   @Get()
   @ApiOperation({ summary: 'Получит список' })
-  @ApiResponse({ status: 200, type: BrandResponseDto, isArray: true })
+  @ApiResponse({ status: 200, type: ModelResponseDto, isArray: true })
   async findAll() {
     return await this.brandsService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Получит информация о бренд' })
-  @ApiResponse({ status: 200, type: BrandResponseDto })
+  @ApiOperation({ summary: 'Получит информация о моделе' })
+  @ApiResponse({ status: 200, type: ModelResponseDto })
   @ApiResponse({ status: 404, type: ApiErrorDto })
   async findOne(@Param('id') id: string) {
     return await this.brandsService.findOne(id);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Обновить бренд' })
+  @ApiOperation({ summary: 'Обновить модел' })
   @ApiConsumes('multipart/form-data')
-  @ApiResponse({ status: 200, type: BrandResponseDto })
+  @ApiResponse({ status: 200, type: ModelResponseDto })
   @ApiResponse({ status: 400, type: ApiErrorDto })
   @ApiResponse({ status: 404, type: ApiErrorDto })
-  @UseInterceptors(FileInterceptor('logo'))
+  @UseInterceptors(FileInterceptor('image'))
   async update(
     @Param('id') id: string,
-    @Body() updateBrandDto: UpdateBrandDto,
-    @UploadedFile() logo: Express.Multer.File,
+    @Body() updateBrandDto: UpdateModelDto,
+    @UploadedFile() image: Express.Multer.File,
   ) {
-    const upload = logo
-      ? await this.cloudinary.uploadFile(logo, 'brand')
+    const upload = image
+      ? await this.cloudinary.uploadFile(image, 'model')
       : null;
 
     return this.brandsService.update(
       id,
       {
         ...updateBrandDto,
-        logo: upload?.secure_url,
+        image: upload?.secure_url,
       },
       upload?.public_id,
     );
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Удалить бренд' })
-  @ApiResponse({ status: 200, type: BrandResponseDto })
+  @ApiOperation({ summary: 'Удалить модел' })
+  @ApiResponse({ status: 200, type: ModelResponseDto })
   @ApiResponse({ status: 404, type: ApiErrorDto })
   async remove(@Param('id') id: string) {
     return await this.brandsService.remove(id);
