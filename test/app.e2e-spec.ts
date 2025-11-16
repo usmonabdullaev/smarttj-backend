@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { App } from 'supertest/types';
+import * as request from 'supertest';
+
 import { AppModule } from './../src/app.module';
 
 describe('AppController (e2e)', () => {
@@ -16,10 +17,10 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/api/bing (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/api/bing')
       .expect(200)
-      .expect('Hello World!');
+      .expect('Bong');
   });
 });

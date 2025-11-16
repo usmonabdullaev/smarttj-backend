@@ -75,9 +75,7 @@ model Employee {
   position       String
   salary         Int
   passportNumber String
-  passportIssued String
-  passportDate   DateTime
-  hireDate       DateTime
+  hireDate       DateTime @default(now())
   status         EmployeeStatus
 
   createdAt DateTime @default(now())

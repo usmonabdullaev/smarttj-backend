@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginResponseDto {
-  @ApiProperty()
+  @ApiProperty({
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ey...8VRx4vI4E',
+  })
   token: string;
 
   @ApiProperty({

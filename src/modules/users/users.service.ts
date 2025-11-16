@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+
 import { PrismaService } from 'src/database/prisma/prisma.service';
 
 @Injectable()
@@ -16,7 +17,10 @@ export class UsersService {
       });
     }
 
-    return user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+
+    return userWithoutPassword;
   }
 
   async logout() {}

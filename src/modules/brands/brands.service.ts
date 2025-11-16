@@ -3,10 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { PrismaService } from 'src/database/prisma/prisma.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
-import { PrismaService } from 'src/database/prisma/prisma.service';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class BrandsService {

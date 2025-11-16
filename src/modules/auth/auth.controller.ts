@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Ip, Headers } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiOperation } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
@@ -10,6 +10,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @ApiOperation({ summary: 'Login' })
   @ApiResponse({ status: 200, type: LoginResponseDto })
   async login(
     @Body() loginAuthDto: LoginAuthDto,

@@ -1,4 +1,12 @@
 import {
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
+import {
   Controller,
   Get,
   Post,
@@ -8,17 +16,18 @@ import {
   UploadedFile,
   UseInterceptors,
   Put,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Express } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
 
-import { ModelsService } from './models.service';
-import { CreateModelDto } from './dto/create-model.dto';
-import { UpdateModelDto } from './dto/update-model.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { ModelResponseDto } from './dto/model-response.dto';
-import { ApiErrorDto } from 'src/common/dto/api-error.dto';
+import { CreateModelDto } from './dto/create-model.dto';
+import { UpdateModelDto } from './dto/update-model.dto';
+import { ModelsService } from './models.service';
+import { UserRole } from '@prisma/client';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 @Controller('models')
 export class ModelsController {
@@ -28,10 +37,11 @@ export class ModelsController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: 'Создать новый модел' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create model' })
   @ApiResponse({ status: 201, type: ModelResponseDto })
-  @ApiResponse({ status: 400, type: ApiErrorDto })
-  @ApiResponse({ status: 409, type: ApiErrorDto })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('image'))
   async create(
@@ -52,26 +62,26 @@ export class ModelsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получит список' })
+  @ApiOperation({ summary: 'Get list' })
   @ApiResponse({ status: 200, type: ModelResponseDto, isArray: true })
   async findAll() {
     return await this.brandsService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Получит информация о моделе' })
+  @ApiOperation({ summary: 'Get model' })
   @ApiResponse({ status: 200, type: ModelResponseDto })
-  @ApiResponse({ status: 404, type: ApiErrorDto })
   async findOne(@Param('id') id: string) {
     return await this.brandsService.findOne(id);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Обновить модел' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update model' })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 200, type: ModelResponseDto })
-  @ApiResponse({ status: 400, type: ApiErrorDto })
-  @ApiResponse({ status: 404, type: ApiErrorDto })
   @UseInterceptors(FileInterceptor('image'))
   async update(
     @Param('id') id: string,
@@ -93,9 +103,11 @@ export class ModelsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Удалить модел' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete model' })
   @ApiResponse({ status: 200, type: ModelResponseDto })
-  @ApiResponse({ status: 404, type: ApiErrorDto })
   async remove(@Param('id') id: string) {
     return await this.brandsService.remove(id);
   }

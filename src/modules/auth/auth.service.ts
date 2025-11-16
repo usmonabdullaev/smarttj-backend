@@ -43,7 +43,6 @@ export class AuthService {
 
     let sessionId: string;
 
-    // 4️⃣ Если сессия существует → обновляем lastActiveAt
     if (existedSession) {
       await this.prisma.session.update({
         where: { id: existedSession.id },
@@ -68,7 +67,7 @@ export class AuthService {
     }
 
     const token = jwt.sign(
-      { id: user.id, sessionId },
+      { userId: user.id, sessionId, role: user.role },
       process.env.JWT_SECRET as string,
       {
         expiresIn: '30d',

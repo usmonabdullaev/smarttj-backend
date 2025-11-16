@@ -1,3 +1,6 @@
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UserRole } from '@prisma/client';
+import { Express } from 'express';
 import {
   Controller,
   Get,
@@ -8,17 +11,23 @@ import {
   UploadedFile,
   UseInterceptors,
   Put,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Express } from 'express';
+import {
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
-import { BrandsService } from './brands.service';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { BrandResponseDto } from './dto/brand-response.dto';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { BrandResponseDto } from './dto/brand-response.dto';
-import { ApiErrorDto } from 'src/common/dto/api-error.dto';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { BrandsService } from './brands.service';
 
 @Controller('brands')
 export class BrandsController {
@@ -28,18 +37,14 @@ export class BrandsController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create brand' })
   @ApiResponse({
     status: 201,
     type: BrandResponseDto,
-    description: 'Created successfully',
   })
-  @ApiResponse({
-    status: 400,
-    type: ApiErrorDto,
-    description: 'Validation error',
-  })
-  @ApiResponse({ status: 409, type: ApiErrorDto, description: 'Conflict' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('logo'))
   async create(
@@ -73,23 +78,18 @@ export class BrandsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get brand' })
-  @ApiResponse({ status: 200, type: BrandResponseDto, description: 'Success' })
-  @ApiResponse({ status: 404, type: ApiErrorDto, description: 'Not found' })
+  @ApiResponse({ status: 200, type: BrandResponseDto })
   async findOne(@Param('id') id: string) {
     return await this.brandsService.findOne(id);
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update brand' })
   @ApiConsumes('multipart/form-data')
-  @ApiResponse({ status: 200, type: BrandResponseDto, description: 'Updated' })
-  @ApiResponse({
-    status: 400,
-    type: ApiErrorDto,
-    description: 'Validation error',
-  })
-  @ApiResponse({ status: 404, type: ApiErrorDto, description: 'Not found' })
-  @ApiResponse({ status: 409, type: ApiErrorDto, description: 'Conflict' })
+  @ApiResponse({ status: 200, type: BrandResponseDto })
   @UseInterceptors(FileInterceptor('logo'))
   async update(
     @Param('id') id: string,
@@ -111,9 +111,11 @@ export class BrandsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete brand' })
-  @ApiResponse({ status: 200, type: BrandResponseDto, description: 'Deleted' })
-  @ApiResponse({ status: 404, type: ApiErrorDto, description: 'Not found' })
+  @ApiResponse({ status: 200, type: BrandResponseDto })
   async remove(@Param('id') id: string) {
     return await this.brandsService.remove(id);
   }
