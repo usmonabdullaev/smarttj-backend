@@ -15,7 +15,7 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get me (current user)' })
   @ApiOkResponse({ type: UserResponseDto })
-  async getMe(@GetUser('userId') userId: string) {
-    return await this.usersService.getMe(userId);
+  async getMe(@GetUser('sessionId') sessionId: string) {
+    return await this.usersService.getMe(sessionId);
   }
 }
