@@ -2,7 +2,13 @@
 CREATE TYPE "UserRole" AS ENUM ('USER', 'ADMIN', 'MODERATOR');
 
 -- CreateEnum
+CREATE TYPE "EmployeeStatus" AS ENUM ('ACTIVE', 'ON_VACATION');
+
+-- CreateEnum
 CREATE TYPE "VerificationStatus" AS ENUM ('ACTIVE', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "PaymentMethodType" AS ENUM ('CASH', 'CARD');
 
 -- CreateEnum
 CREATE TYPE "OrderPaymentStatus" AS ENUM ('UNPAID', 'PAID', 'FAILED', 'REFUNDED');
@@ -29,12 +35,14 @@ CREATE TYPE "CouponType" AS ENUM ('AMOUNT', 'PERCENT');
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT,
+    "email" TEXT,
+    "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "role" "UserRole" NOT NULL DEFAULT 'USER',
     "avatar" TEXT,
+    "avatarId" TEXT,
     "regionId" TEXT,
+    "bonus" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -46,16 +54,35 @@ CREATE TABLE "Session" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "fingerprint" TEXT NOT NULL,
-    "userAgent" TEXT NOT NULL,
+    "userAgent" TEXT,
     "ip" TEXT,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "pushToken" TEXT,
-    "lastActiveAt" TIMESTAMP(3) NOT NULL,
+    "lastActiveAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Employee" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "middleName" TEXT,
+    "birthDate" TIMESTAMP(3) NOT NULL,
+    "position" TEXT NOT NULL,
+    "salary" INTEGER NOT NULL,
+    "passportNumber" TEXT NOT NULL,
+    "hireDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" "EmployeeStatus" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Employee_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -115,11 +142,8 @@ CREATE TABLE "Shop" (
 -- CreateTable
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
-    "code" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "price" DECIMAL(10,2) NOT NULL,
-    "discount" DECIMAL(10,2),
     "warranty" INTEGER,
     "categoryId" TEXT NOT NULL,
     "brandId" TEXT NOT NULL,
@@ -136,7 +160,9 @@ CREATE TABLE "ProductVariant" (
     "id" TEXT NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
     "discount" DECIMAL(10,2),
+    "discountEndDate" TIMESTAMP(3),
     "productId" TEXT NOT NULL,
+    "code" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -148,7 +174,7 @@ CREATE TABLE "ProductPriceHistory" (
     "id" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "variantId" TEXT,
-    "price" DECIMAL(65,30) NOT NULL,
+    "price" DECIMAL(10,2) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -175,6 +201,7 @@ CREATE TABLE "Category" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 1,
     "icon" TEXT,
     "parentId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -189,7 +216,9 @@ CREATE TABLE "Brand" (
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "logo" TEXT,
+    "logoId" TEXT,
     "order" INTEGER NOT NULL DEFAULT 1,
+    "popular" BOOLEAN NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -203,8 +232,10 @@ CREATE TABLE "Model" (
     "slug" TEXT NOT NULL,
     "description" TEXT,
     "image" TEXT,
+    "imageId" TEXT,
     "brandId" TEXT NOT NULL,
     "order" INTEGER NOT NULL DEFAULT 1,
+    "popular" BOOLEAN NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -290,7 +321,8 @@ CREATE TABLE "Cart" (
 CREATE TABLE "PaymentMethod" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
+    "type" "PaymentMethodType" NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -350,9 +382,9 @@ CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
-    "amount" DECIMAL(65,30) NOT NULL,
+    "amount" DECIMAL(10,2) NOT NULL,
     "status" "TransactionPaymentStatus" NOT NULL,
-    "providerTxId" TEXT,
+    "providerId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -364,7 +396,7 @@ CREATE TABLE "Coupon" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
     "type" "CouponType" NOT NULL,
-    "discountAmount" DECIMAL(65,30),
+    "discountAmount" DECIMAL(10,2),
     "discountPercent" INTEGER,
     "startDate" TIMESTAMP(3),
     "endDate" TIMESTAMP(3),
@@ -404,9 +436,6 @@ CREATE INDEX "Address_userId_idx" ON "Address"("userId");
 CREATE INDEX "Shop_regionId_idx" ON "Shop"("regionId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Product_code_key" ON "Product"("code");
-
--- CreateIndex
 CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
 
 -- CreateIndex
@@ -417,6 +446,12 @@ CREATE INDEX "Product_modelId_idx" ON "Product"("modelId");
 
 -- CreateIndex
 CREATE INDEX "Product_regionId_idx" ON "Product"("regionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductVariant_code_key" ON "ProductVariant"("code");
+
+-- CreateIndex
+CREATE INDEX "ProductVariant_code_idx" ON "ProductVariant"("code");
 
 -- CreateIndex
 CREATE INDEX "ProductVariant_productId_idx" ON "ProductVariant"("productId");
@@ -446,13 +481,16 @@ CREATE UNIQUE INDEX "Brand_slug_key" ON "Brand"("slug");
 CREATE INDEX "Brand_slug_idx" ON "Brand"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Model_slug_key" ON "Model"("slug");
+
+-- CreateIndex
 CREATE INDEX "Model_slug_idx" ON "Model"("slug");
 
 -- CreateIndex
 CREATE INDEX "Model_brandId_idx" ON "Model"("brandId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Model_slug_brandId_key" ON "Model"("slug", "brandId");
+CREATE UNIQUE INDEX "Model_name_brandId_key" ON "Model"("name", "brandId");
 
 -- CreateIndex
 CREATE INDEX "Image_productVariantId_idx" ON "Image"("productVariantId");
@@ -503,6 +541,9 @@ ALTER TABLE "User" ADD CONSTRAINT "User_regionId_fkey" FOREIGN KEY ("regionId") 
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Employee" ADD CONSTRAINT "Employee_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Verification" ADD CONSTRAINT "Verification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -545,7 +586,7 @@ ALTER TABLE "Review" ADD CONSTRAINT "Review_userId_fkey" FOREIGN KEY ("userId") 
 ALTER TABLE "Review" ADD CONSTRAINT "Review_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Model" ADD CONSTRAINT "Model_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,9 +1,9 @@
 import { Controller, Post, Body, Ip, Headers } from '@nestjs/common';
-import { ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
-import { AuthService } from './auth.service';
-import { LoginAuthDto } from './dto/login-auth.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -11,7 +11,7 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Login' })
-  @ApiResponse({ status: 200, type: LoginResponseDto })
+  @ApiOkResponse({ type: LoginResponseDto })
   async login(
     @Body() loginAuthDto: LoginAuthDto,
     @Ip() ip: string,

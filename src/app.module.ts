@@ -1,6 +1,7 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 
+import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.module';
 import { StatisticsModule } from './modules/statistics/statistics.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { PrismaModule } from './database/prisma/prisma.module';
@@ -21,6 +22,7 @@ import { AppService } from './app.service';
     AuthModule,
     ModelsModule,
     StatisticsModule,
+    PaymentMethodsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

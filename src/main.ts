@@ -30,7 +30,6 @@ async function bootstrap() {
       in: 'header',
     })
     .addTag('Auth', 'Authorization')
-    .addTag('Users')
     .build();
 
   SwaggerModule.setup(

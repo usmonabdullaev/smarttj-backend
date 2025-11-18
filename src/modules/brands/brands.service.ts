@@ -92,7 +92,6 @@ export class BrandsService {
       }
     }
 
-    // 2️⃣ Удаляем старое изображение, если пришёл новый логотип
     if (logoId && brand.logoId && brand.logoId !== logoId) {
       try {
         await this.cloudinary.deleteFile(brand.logoId);
@@ -146,7 +145,6 @@ export class BrandsService {
       try {
         await this.cloudinary.deleteFile(brand.logoId);
       } catch (error) {
-        // ⚠️ Ошибка удаления в Cloudinary не должна мешать удалению из БД
         console.warn(
           `Ошибка при удалении изображения Cloudinary: ${error.message}`,
         );

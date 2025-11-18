@@ -391,10 +391,16 @@ model Cart {
   @@unique([userId, productVariantId])
 }
 
+enum PaymentMethodType {
+  CASH
+  CARD
+}
+
 model PaymentMethod {
-  id   String @id @default(uuid(7))
-  name String @unique
-  type String
+  id       String @id @default(uuid(7))
+  name     String @unique
+  type     PaymentMethodType
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

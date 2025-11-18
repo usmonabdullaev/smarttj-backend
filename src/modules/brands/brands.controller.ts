@@ -2,6 +2,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@prisma/client';
 import { Express } from 'express';
 import {
+  ApiConsumes,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
+import {
   Controller,
   Get,
   Post,
@@ -13,12 +20,6 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiConsumes,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
 
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -41,10 +42,7 @@ export class BrandsController {
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create brand' })
-  @ApiResponse({
-    status: 201,
-    type: BrandResponseDto,
-  })
+  @ApiCreatedResponse({ type: BrandResponseDto })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('logo'))
   async create(
@@ -66,19 +64,14 @@ export class BrandsController {
 
   @Get()
   @ApiOperation({ summary: 'Get brands list' })
-  @ApiResponse({
-    status: 200,
-    type: BrandResponseDto,
-    isArray: true,
-    description: 'Success',
-  })
+  @ApiOkResponse({ type: BrandResponseDto, isArray: true })
   async findAll() {
     return await this.brandsService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get brand' })
-  @ApiResponse({ status: 200, type: BrandResponseDto })
+  @ApiOkResponse({ type: BrandResponseDto })
   async findOne(@Param('id') id: string) {
     return await this.brandsService.findOne(id);
   }
@@ -89,7 +82,7 @@ export class BrandsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update brand' })
   @ApiConsumes('multipart/form-data')
-  @ApiResponse({ status: 200, type: BrandResponseDto })
+  @ApiOkResponse({ type: BrandResponseDto })
   @UseInterceptors(FileInterceptor('logo'))
   async update(
     @Param('id') id: string,
@@ -115,7 +108,7 @@ export class BrandsController {
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete brand' })
-  @ApiResponse({ status: 200, type: BrandResponseDto })
+  @ApiOkResponse({ type: BrandResponseDto })
   async remove(@Param('id') id: string) {
     return await this.brandsService.remove(id);
   }

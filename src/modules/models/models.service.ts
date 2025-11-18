@@ -38,10 +38,10 @@ export class ModelsService {
         slug: createModelDto.slug,
         description: createModelDto.description,
         image: createModelDto.image,
-        imageId,
         brandId: createModelDto.brandId,
         order: createModelDto.order,
         popular: createModelDto.popular,
+        imageId,
       },
     });
   }
@@ -94,7 +94,6 @@ export class ModelsService {
       }
     }
 
-    // 2️⃣ Удаляем старое изображение, если пришёл новый логотип
     if (imageId && model.imageId && model.imageId !== imageId) {
       try {
         await this.cloudinary.deleteFile(model.imageId);
@@ -140,7 +139,6 @@ export class ModelsService {
       try {
         await this.cloudinary.deleteFile(model.imageId);
       } catch (error) {
-        // ⚠️ Ошибка удаления в Cloudinary не должна мешать удалению из БД
         console.warn(
           `Ошибка при удалении изображения Cloudinary: ${error.message}`,
         );
