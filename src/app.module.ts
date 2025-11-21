@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 
 import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.module';
 import { StatisticsModule } from './modules/statistics/statistics.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { PrismaModule } from './database/prisma/prisma.module';
 import { BrandsModule } from './modules/brands/brands.module';
@@ -23,6 +24,7 @@ import { AppService } from './app.service';
     ModelsModule,
     StatisticsModule,
     PaymentMethodsModule,
+    SessionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
