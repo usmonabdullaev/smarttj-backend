@@ -10,7 +10,7 @@ export class LoginResponseDto {
     example: {
       id: '019a6263-6f97-7230-8449-e979b855ada1',
       phone: '900000000',
-      email: 'mail@mail.com',
+      email: 'example@mail.com',
       name: 'John',
       role: 'USER',
       avatar:

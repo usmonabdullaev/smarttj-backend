@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { AppModule } from './app.module';
+import { Request, Response } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,12 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  const server = app.getHttpAdapter().getInstance();
+
+  server.get('/', (_: Request, res: Response) => {
+    return res.redirect(301, '/api');
+  });
 
   const config = new DocumentBuilder()
     .setTitle('SmartTJ API')
