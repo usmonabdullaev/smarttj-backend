@@ -514,9 +514,9 @@ enum TransactionPaymentStatus {
 model Transaction {
   id         String @id @default(uuid(7))
   userId     String
-  orderId    String  @unique
-  amount     Decimal @db.Decimal(10, 2)
-  status     TransactionPaymentStatus
+  orderId    String                   @unique
+  amount     Decimal                  @db.Decimal(10, 2)
+  status     TransactionPaymentStatus @default(PENDING)
   providerId String?
 
   createdAt DateTime @default(now())

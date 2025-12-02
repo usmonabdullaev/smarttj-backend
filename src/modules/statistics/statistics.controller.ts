@@ -14,7 +14,7 @@ export class StatisticsController {
   @Get()
   @ApiOperation({ summary: 'Get statistics' })
   @ApiOkResponse({ type: StatisticsResponseDto })
-  async findAll() {
-    return await this.statisticsService.findAll();
+  async cards() {
+    return await this.statisticsService.cards();
   }
 }
