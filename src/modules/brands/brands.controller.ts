@@ -46,7 +46,7 @@ export class BrandsController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('logo'))
   async create(
-    @Body() createBrandDto: CreateBrandDto,
+    @Body() dto: CreateBrandDto,
     @UploadedFile() logo: Express.Multer.File,
   ) {
     const upload = logo
@@ -55,7 +55,7 @@ export class BrandsController {
 
     return await this.brandsService.create(
       {
-        ...createBrandDto,
+        ...dto,
         logo: upload?.secure_url,
       },
       upload?.public_id,
@@ -86,7 +86,7 @@ export class BrandsController {
   @UseInterceptors(FileInterceptor('logo'))
   async update(
     @Param('id') id: string,
-    @Body() updateBrandDto: UpdateBrandDto,
+    @Body() dto: UpdateBrandDto,
     @UploadedFile() logo: Express.Multer.File,
   ) {
     const upload = logo
@@ -96,7 +96,7 @@ export class BrandsController {
     return this.brandsService.update(
       id,
       {
-        ...updateBrandDto,
+        ...dto,
         logo: upload?.secure_url,
       },
       upload?.public_id,

@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 
@@ -81,5 +85,23 @@ export class AuthService {
       token,
       user: userWithoutPassword,
     };
+  }
+
+  async logout(sessionId: string) {
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) {
+      throw new NotFoundException({
+        message: 'Session not found',
+        code: 'SESSION_NOT_FOUND',
+        error: sessionId,
+      });
+    }
+
+    return await this.prisma.session.delete({
+      where: { id: sessionId },
+    });
   }
 }

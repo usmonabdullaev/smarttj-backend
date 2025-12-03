@@ -7,6 +7,6 @@ export class ApiErrorDto {
   @ApiProperty()
   message: string;
 
-  @ApiProperty({ example: null, nullable: true })
+  @ApiProperty({ example: null, nullable: true, description: 'Error details' })
   error?: any;
 }
