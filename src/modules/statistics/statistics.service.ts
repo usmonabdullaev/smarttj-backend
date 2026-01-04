@@ -1,4 +1,4 @@
-import { OrderUIStatus, TransactionPaymentStatus } from '@prisma/client';
+import { TransactionPaymentStatus, UserRole } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from 'src/database/prisma/prisma.service';
@@ -73,31 +73,16 @@ export class StatisticsService {
       this.prisma.order.count({
         where: {
           createdAt: { gte: startCurrent, lt: now },
-          uiStatus: {
-            in: [OrderUIStatus.SHOW, OrderUIStatus.ARCHIVED],
-          },
         },
       }),
       this.prisma.order.count({
         where: {
           createdAt: { gte: startPrev, lt: endPrev },
-          uiStatus: {
-            in: [OrderUIStatus.SHOW, OrderUIStatus.ARCHIVED],
-          },
         },
       }),
+      this.prisma.order.count(),
       this.prisma.order.count({
         where: {
-          uiStatus: {
-            in: [OrderUIStatus.SHOW, OrderUIStatus.ARCHIVED],
-          },
-        },
-      }),
-      this.prisma.order.count({
-        where: {
-          uiStatus: {
-            in: [OrderUIStatus.SHOW, OrderUIStatus.ARCHIVED],
-          },
           createdAt: {
             gte: startOfToday,
             lte: endOfToday,
@@ -117,6 +102,53 @@ export class StatisticsService {
     }
     // /Orders
 
+    // Users
+    const [
+      currentUsersCount,
+      previousUsersCount,
+      totalUsersCount,
+      [activeUsersCount],
+    ] = await Promise.all([
+      this.prisma.user.count({
+        where: {
+          createdAt: { gte: startCurrent, lt: now },
+          role: UserRole.USER,
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          createdAt: { gte: startPrev, lt: endPrev },
+          role: UserRole.USER,
+        },
+      }),
+      this.prisma.user.count({ where: { role: UserRole.USER } }),
+      this.prisma.$queryRaw<
+        {
+          count: bigint;
+        }[]
+      >`SELECT COUNT(DISTINCT s."userId") AS count
+         FROM "Session" s
+         JOIN "User" u ON u.id = s."userId"
+         WHERE 
+           s."isActive" = true
+           AND s."expiresAt" > NOW()
+           AND "lastActiveAt" >= NOW() - INTERVAL '7 days'
+           AND u."role" = 'USER'`,
+    ]);
+
+    let usersGrowth = 0;
+
+    if (previousUsersCount === 0) {
+      usersGrowth = currentUsersCount > 0 ? 100 : 0;
+    } else {
+      usersGrowth =
+        ((currentUsersCount - previousUsersCount) / previousUsersCount) * 100;
+    }
+    // /Users
+
+    // Top Product
+    // /Top Product
+
     return {
       income: {
         growth: Number(incomeGrowth.toFixed(2)),
@@ -130,6 +162,12 @@ export class StatisticsService {
         total: totalOrdersCount,
         lastMonth: currentOrdersCount,
         today: todayOrdersCount,
+      },
+      user: {
+        growth: Number(usersGrowth.toFixed(2)),
+        difference: currentUsersCount - previousUsersCount,
+        total: totalUsersCount,
+        active: Number(activeUsersCount.count),
       },
     };
   }
