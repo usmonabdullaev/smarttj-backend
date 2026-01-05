@@ -10,6 +10,7 @@ import { BrandsModule } from './modules/brands/brands.module';
 import { ModelsModule } from './modules/models/models.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ProductsModule } from './modules/products/products.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -25,6 +26,7 @@ import { AppService } from './app.service';
     StatisticsModule,
     PaymentMethodsModule,
     SessionsModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

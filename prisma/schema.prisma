@@ -158,6 +158,7 @@ model Shop {
 model Product {
   id          String @id @default(uuid(7))
   title       String
+  price       Decimal? @db.Decimal(10, 2)
   description String
   warranty    Int?
   categoryId  String
@@ -184,10 +185,8 @@ model Product {
 }
 
 model ProductVariant {
-  id              String   @id @default(uuid(7))
-  price           Decimal  @db.Decimal(10, 2)
-  discount        Decimal? @db.Decimal(10, 2)
-  discountEndDate DateTime?
+  id              String  @id @default(uuid(7))
+  price           Decimal @db.Decimal(10, 2)
   productId       String
   code            Int @unique @db.Integer @default(autoincrement())
 
@@ -245,6 +244,7 @@ model Category {
   slug     String @unique
   order    Int    @default(1)
   icon     String?
+  iconId   String?
   parentId String?
 
   createdAt DateTime @default(now())
@@ -302,6 +302,7 @@ model Image {
   id               String @id @default(uuid(7))
   productVariantId String
   url              String
+  urlId            String
   alt              String?
   order            Int @default(1)
 
@@ -542,7 +543,8 @@ model Coupon {
   usageLimit      Int?
   timesUsed       Int     @default(0)
   isActive        Boolean @default(true)
-  minOrderAmount  Float?
+  minOrderAmount  Decimal? @db.Decimal(10, 2)
+  maxOrderAmount  Decimal? @db.Decimal(10, 2)
   description     String?
 
   createdAt DateTime @default(now())
