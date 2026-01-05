@@ -23,7 +23,7 @@ import { ${className}Controller } from './${moduleName}.controller';
   providers: [${className}Service],
 })
 export class ${className}Module {}
-`
+`,
   },
   {
     path: `${basePath}/${moduleName}.controller.ts`,
@@ -35,7 +35,7 @@ import { ${className}Service } from './${moduleName}.service';
 export class ${className}Controller {
     constructor(private readonly ${moduleName}Service: ${className}Service) {}
 }
-`
+`,
   },
   {
     path: `${basePath}/${moduleName}.service.ts`,
@@ -50,9 +50,9 @@ constructor(
   ) {}
 
 }
-`
-  }
-]
+`,
+  },
+];
 
 fs.mkdirSync(basePath, { recursive: true });
 
