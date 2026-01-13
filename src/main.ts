@@ -13,12 +13,12 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-
-  const server = app.getHttpAdapter().getInstance();
-
-  server.get('/', (_: Request, res: Response) => {
-    return res.redirect(301, '/api');
-  });
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .get('/', (_: Request, res: Response) => {
+      return res.redirect(301, '/api');
+    });
 
   const config = new DocumentBuilder()
     .setTitle('SmartTJ API')
