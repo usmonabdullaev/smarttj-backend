@@ -20,4 +20,9 @@ export class CategoriesController {
   async tree() {
     return await this.categoriesService.tree();
   }
+
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    return await this.categoriesService.getById(id);
+  }
 }
