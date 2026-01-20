@@ -13,7 +13,7 @@ const ADMIN = {
   role: UserRole.ADMIN,
 };
 
-export default async function seedUsers(prisma: PrismaClient) {
+export const seedUsers = async (prisma: PrismaClient) => {
   console.log(' → Seeding users...');
 
   const password = await bcrypt.hash(ADMIN_PASSWORD, 10);
@@ -23,4 +23,4 @@ export default async function seedUsers(prisma: PrismaClient) {
     update: { ...ADMIN, password },
     create: { ...ADMIN, password },
   });
-}
+};

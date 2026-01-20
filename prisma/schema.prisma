@@ -239,13 +239,15 @@ model Review {
 }
 
 model Category {
-  id       String @id @default(uuid(7))
-  name     String
-  slug     String @unique
-  order    Int    @default(1)
-  icon     String?
-  iconId   String?
-  parentId String?
+  id         String @id @default(uuid(7))
+  name       String
+  short_name String
+  slug       String
+  order      Int @default(1)
+  icon       String?
+  iconId     String?
+  parentId   String?
+  parentKey  String @default("ROOT")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -254,7 +256,7 @@ model Category {
   children Category[] @relation("CategoryToSub")
   products Product[]
 
-  @@index([slug])
+  @@unique([parentKey, slug])
   @@index([parentId])
 }
 

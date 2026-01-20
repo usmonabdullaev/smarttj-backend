@@ -14,9 +14,13 @@ import { ProductsModule } from './modules/products/products.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { LoggerModule } from './logger/logger.module';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 @Module({
   imports: [
+    LoggerModule,
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     CloudinaryModule,
@@ -31,6 +35,9 @@ import { AppService } from './app.service';
     CategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+  ],
 })
 export class AppModule {}

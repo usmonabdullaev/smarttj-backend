@@ -7,14 +7,14 @@ const PAYMENT_METHODS: CreatePaymentMethodDto[] = [
   { name: 'Картой', type: 'CARD', isActive: true },
 ];
 
-export default async function seedPaymentMethods(prisma: PrismaClient) {
+export const seedPaymentMethods = async (prisma: PrismaClient) => {
   console.log(' → Seeding payment methods...');
 
-  const paymentMethods = await prisma.paymentMethod.findMany();
+  const paymentMethodsCount = await prisma.paymentMethod.count();
 
-  if (paymentMethods.length === 0) {
+  if (paymentMethodsCount === 0) {
     await prisma.paymentMethod.createMany({
       data: PAYMENT_METHODS,
     });
   }
-}
+};

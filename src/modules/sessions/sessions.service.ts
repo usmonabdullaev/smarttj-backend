@@ -9,7 +9,11 @@ export class SessionsService {
   async findAll(userId: string, sessionId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { sessions: true },
+      include: {
+        sessions: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (!user) {

@@ -36,7 +36,7 @@ export class CreateModelDto {
   @ApiPropertyOptional({
     type: 'string',
     format: 'binary',
-    description: 'Каринка моделя (файл изображения)',
+    description: 'Картинка моделя (файл изображения)',
   })
   @IsOptional()
   image?: string; // тип `any`, чтобы Swagger правильно отобразил input type="file"

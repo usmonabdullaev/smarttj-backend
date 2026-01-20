@@ -19,7 +19,7 @@ export class PaymentMethodsService {
 
     if (paymentMethod) {
       throw new ConflictException({
-        message: `Payment method with name '${dto.name}' already exists`,
+        message: 'Name conflict',
         code: 'CONFLICT',
         error: {
           name: dto.name,
@@ -76,7 +76,7 @@ export class PaymentMethodsService {
 
       if (existing) {
         throw new ConflictException({
-          message: `Payment method with name '${dto.name}' already exists`,
+          message: 'Name conflict',
           code: 'CONFLICT',
           error: {
             name: dto.name,

@@ -3,12 +3,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
+    private readonly logger: LoggerService,
   ) {}
 
   async getMe(sessionId: string) {
@@ -53,9 +55,9 @@ export class UsersService {
       try {
         await this.cloudinary.deleteFile(user.avatarId);
       } catch (error) {
-        console.warn(
-          `Ошибка при удалении старого изображения: ${error.message}`,
-        );
+        this.logger.error('Ошибка при удалении изображения [update/avatar]', {
+          error,
+        });
       }
     }
 

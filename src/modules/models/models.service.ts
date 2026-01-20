@@ -8,12 +8,14 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { CreateModelDto } from './dto/create-model.dto';
 import { UpdateModelDto } from './dto/update-model.dto';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class ModelsService {
   constructor(
     private prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
+    private readonly logger: LoggerService,
   ) {}
 
   async create(createModelDto: CreateModelDto, imageId?: string) {
@@ -23,7 +25,7 @@ export class ModelsService {
 
     if (model) {
       throw new ConflictException({
-        message: `Model with slug '${createModelDto.slug}' already exists`,
+        message: 'Slug conflict',
         code: 'CONFLICT',
         error: {
           slug: createModelDto.slug,
@@ -84,7 +86,7 @@ export class ModelsService {
 
       if (existing) {
         throw new ConflictException({
-          message: `Model with slug '${updateModelDto.slug}' already exists`,
+          message: 'Slug conflict',
           code: 'CONFLICT',
           error: {
             slug: updateModelDto.slug,
@@ -98,9 +100,9 @@ export class ModelsService {
       try {
         await this.cloudinary.deleteFile(model.imageId);
       } catch (error) {
-        console.warn(
-          `Ошибка при удалении старого изображения: ${error.message}`,
-        );
+        this.logger.error('Ошибка при удалении изображения [update/models]', {
+          error,
+        });
       }
     }
 
@@ -139,9 +141,9 @@ export class ModelsService {
       try {
         await this.cloudinary.deleteFile(model.imageId);
       } catch (error) {
-        console.warn(
-          `Ошибка при удалении изображения Cloudinary: ${error.message}`,
-        );
+        this.logger.error('Ошибка при удалении изображения [delete/models]', {
+          error,
+        });
       }
     }
 

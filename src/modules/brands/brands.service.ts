@@ -8,12 +8,14 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class BrandsService {
   constructor(
     private prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
+    private readonly logger: LoggerService,
   ) {}
 
   async create(createBrandDto: CreateBrandDto, logoId?: string) {
@@ -23,7 +25,7 @@ export class BrandsService {
 
     if (brand) {
       throw new ConflictException({
-        message: `Brand with slug '${createBrandDto.slug}' already exists`,
+        message: 'Slug conflict',
         code: 'CONFLICT',
         error: {
           slug: createBrandDto.slug,
@@ -82,7 +84,7 @@ export class BrandsService {
 
       if (existing) {
         throw new ConflictException({
-          message: `Brand with slug '${updateBrandDto.slug}' already exists`,
+          message: `Slug conflict`,
           code: 'CONFLICT',
           error: {
             slug: updateBrandDto.slug,
@@ -96,9 +98,9 @@ export class BrandsService {
       try {
         await this.cloudinary.deleteFile(brand.logoId);
       } catch (error) {
-        console.warn(
-          `Ошибка при удалении старого изображения: ${error.message}`,
-        );
+        this.logger.error('Ошибка при удалении изображения [update/brands]', {
+          error,
+        });
       }
     }
 
@@ -145,9 +147,9 @@ export class BrandsService {
       try {
         await this.cloudinary.deleteFile(brand.logoId);
       } catch (error) {
-        console.warn(
-          `Ошибка при удалении изображения Cloudinary: ${error.message}`,
-        );
+        this.logger.error('Ошибка при удалении изображения [delete/brands]', {
+          error,
+        });
       }
     }
 
