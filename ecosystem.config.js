@@ -2,11 +2,13 @@ module.exports = {
   apps: [
     {
       name: 'smarttj-backend',
-      script: 'npm',
-      args: 'run start:prod',
-      interpreter: 'none',
+      script: 'dist/main.js',
+      cwd: __dirname,
 
-      env_production: {
+      exec_mode: 'fork',
+      instances: 1,
+
+      env: {
         NODE_ENV: 'production',
       },
 
