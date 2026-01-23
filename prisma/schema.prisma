@@ -37,6 +37,8 @@ model User {
   addresses     Address[]
   region        Region? @relation(fields: [regionId], references: [id], onDelete: SetNull)
   employee      Employee[]
+  supportChats  SupportChat[]
+  operatorChats SupportChat[] @relation("AssignedOperator")
 }
 
 model Session {
@@ -551,4 +553,95 @@ model Coupon {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum SupportChatStatus {
+  AI
+  HUMAN
+  CLOSED
+}
+
+enum SupportChatPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+model SupportChat {
+  id           String @id @default(uuid(7))
+  userId       String?
+  status       SupportChatStatus   @default(AI)
+  priority     SupportChatPriority @default(NORMAL)
+  assignedToId String?
+  closedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages   SupportMessage[]
+  user       User? @relation(fields: [userId], references: [id])
+  assignedTo User? @relation("AssignedOperator", fields: [assignedToId], references: [id])
+  AIContext  SupportAIContext?
+
+  @@index([userId])
+  @@index([status])
+  @@index([assignedToId])
+}
+
+enum SupportMessageRole {
+  USER
+  AI
+  OPERATOR
+  SYSTEM
+}
+
+model SupportMessage {
+  id      String @id @default(uuid(7))
+  chatId  String
+  role    SupportMessageRole
+  content String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chat        SupportChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  attachments SupportAttachment[]
+
+  @@index([chatId])
+  @@index([role])
+}
+
+model SupportAIContext {
+  id         String @id @default(uuid(7))
+  chatId     String @unique
+  lastPrompt String?
+  confidence Float?
+  model      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chat SupportChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}
+
+enum SupportAttachmentType {
+  IMAGE
+  FILE
+}
+
+model SupportAttachment {
+  id        String @id @default(uuid(7))
+  messageId String
+  url       String
+  urlId     String
+  type      SupportAttachmentType
+  name      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  message SupportMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
 }

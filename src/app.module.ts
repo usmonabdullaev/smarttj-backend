@@ -17,6 +17,7 @@ import { AppService } from './app.service';
 import { LoggerModule } from './logger/logger.module';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { SupportModule } from './modules/support/support.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     SessionsModule,
     ProductsModule,
     CategoriesModule,
+    SupportModule,
   ],
   controllers: [AppController],
   providers: [

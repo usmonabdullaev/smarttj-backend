@@ -1,0 +1,117 @@
+import { Injectable } from '@nestjs/common';
+import {
+  SupportChatStatus,
+  SupportMessage,
+  SupportMessageRole,
+} from '@prisma/client';
+
+import { AIService } from 'src/ai/ai.service';
+import { AIPurpose } from 'src/ai/dto/ai-request.dto';
+import { SUPPORT_PROMPT } from 'src/ai/prompts/support.prompt';
+import { PrismaService } from 'src/database/prisma/prisma.service';
+import { CreateSupportDto } from './dto/create-support.dto';
+
+@Injectable()
+export class SupportService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ai: AIService,
+  ) {}
+
+  async handleUserMessage(dto: CreateSupportDto, userId: string) {
+    const chat = await this.getOrCreateActiveChat(userId);
+
+    await this.prisma.supportMessage.create({
+      data: {
+        chatId: chat.id,
+        role: SupportMessageRole.USER,
+        content: dto.message,
+      },
+    });
+
+    if (chat.status !== SupportChatStatus.AI) {
+      return;
+    }
+
+    const history = await this.prisma.supportMessage.findMany({
+      where: { chatId: chat.id },
+      orderBy: { createdAt: 'asc' },
+      take: 10,
+    });
+
+    const prompt = this.buildPrompt(history);
+
+    const aiResponse = await this.ai.ask({
+      purpose: AIPurpose.SUPPORT,
+      prompt,
+      context: SUPPORT_PROMPT,
+      temperature: 0.25,
+    });
+
+    await this.prisma.supportMessage.create({
+      data: {
+        chatId: chat.id,
+        role: SupportMessageRole.AI,
+        content: aiResponse.text,
+      },
+    });
+
+    if (aiResponse.confidense !== undefined && aiResponse.confidense < 0.6) {
+      await this.transferToHuman(chat.id);
+    }
+
+    return { text: aiResponse.text };
+  }
+
+  private async getOrCreateActiveChat(userId: string) {
+    const chat = await this.prisma.supportChat.findFirst({
+      where: {
+        userId,
+        status: {
+          in: [SupportChatStatus.AI, SupportChatStatus.HUMAN],
+        },
+      },
+    });
+
+    if (chat) return chat;
+
+    return await this.prisma.supportChat.create({
+      data: { userId, status: SupportChatStatus.AI },
+    });
+  }
+
+  private buildPrompt(messages: SupportMessage[]) {
+    return messages
+      .map((m) => {
+        if (m.role === SupportMessageRole.USER) return `User: ${m.content}`;
+        if (m.role === SupportMessageRole.AI) return `Assistant: ${m.content}`;
+      })
+      .join('\n');
+  }
+
+  private async transferToHuman(chatId: string) {
+    await this.prisma.supportChat.update({
+      where: { id: chatId },
+      data: { status: SupportChatStatus.HUMAN },
+    });
+
+    await this.prisma.supportMessage.create({
+      data: {
+        chatId,
+        role: SupportMessageRole.SYSTEM,
+        content: 'Чат передан оператору',
+      },
+    });
+  }
+
+  async getChats(userId: string) {
+    return await this.prisma.supportChat.findMany({
+      where: { userId },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+  }
+}
