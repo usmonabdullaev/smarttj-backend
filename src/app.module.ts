@@ -1,5 +1,7 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.module';
 import { StatisticsModule } from './modules/statistics/statistics.module';
@@ -15,14 +17,16 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerModule } from './logger/logger.module';
-import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { SupportModule } from './modules/support/support.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
     LoggerModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     CloudinaryModule,
     BrandsModule,
@@ -35,6 +39,8 @@ import { SupportModule } from './modules/support/support.module';
     ProductsModule,
     CategoriesModule,
     SupportModule,
+    AdminModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

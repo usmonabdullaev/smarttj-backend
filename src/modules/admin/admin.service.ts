@@ -1,0 +1,80 @@
+import { Injectable } from '@nestjs/common';
+
+import { AnalyzeRequestDto } from './dto/analyze-request.dto';
+import { PrismaService } from 'src/database/prisma/prisma.service';
+import { AIService } from 'src/ai/ai.service';
+import { TransactionPaymentStatus } from '@prisma/client';
+import { AIPurpose } from 'src/ai/dto/ai-request.dto';
+
+@Injectable()
+export class AdminService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ai: AIService,
+  ) {}
+
+  async analyze(dto: AnalyzeRequestDto) {
+    const days = dto.periodDays ?? 30;
+
+    const now = new Date();
+    const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const prevFrom = new Date(now.getTime() - days * 2 * 24 * 60 * 60 * 1000);
+
+    const [current, previous] = await Promise.all([
+      this.getStats(from, now),
+      this.getStats(prevFrom, from),
+    ]);
+
+    const prompt = `Данные интернет-магазина:
+
+Текущий период (${days} дней):
+- Доход: ${current.revenue}
+- Заказы: ${current.orders}
+- Средний чек: ${current.avgOrder}
+
+Предыдущий период:
+- Доход: ${previous.revenue}
+- Заказы: ${previous.orders}
+- Средний чек: ${previous.avgOrder}
+
+Сделай краткий бизнес-анализ.
+Формат ответа:
+answer: <текст>
+confidence: <число от 0 до 1>`;
+
+    const aiResult = await this.ai.ask({
+      purpose: AIPurpose.ANALYTICS,
+      prompt,
+      temperature: 0.1,
+    });
+
+    return aiResult;
+  }
+
+  private async getStats(from: Date, to: Date) {
+    const orders = await this.prisma.order.count({
+      where: {
+        createdAt: { gte: from, lt: to },
+      },
+    });
+
+    const revenue = await this.prisma.transaction.aggregate({
+      where: {
+        createdAt: { gte: from, lt: to },
+        status: TransactionPaymentStatus.SUCCESS,
+      },
+      _sum: { amount: true },
+    });
+
+    const avgOrder =
+      orders > 0
+        ? (revenue._sum.amount ? +revenue._sum.amount : 0) / orders
+        : 0;
+
+    return {
+      orders,
+      revenue: revenue._sum.amount ? +revenue._sum.amount : 0,
+      avgOrder: Math.round(avgOrder),
+    };
+  }
+}

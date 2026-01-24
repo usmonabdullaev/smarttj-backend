@@ -645,3 +645,20 @@ model SupportAttachment {
 
   @@index([messageId])
 }
+
+model Report {
+  id String @id @default(uuid(7))
+  year Int
+  month Int
+  ordersCount Int
+  revenue Decimal @db.Decimal(14, 2)
+  avgOrderValue Decimal @db.Decimal(14, 2)
+  paidOrdersCount Int
+  refundedAmount Decimal @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([year, month])
+  @@index([year])
+}

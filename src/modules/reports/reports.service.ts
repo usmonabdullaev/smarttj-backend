@@ -1,0 +1,58 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+
+import { PrismaService } from 'src/database/prisma/prisma.service';
+import { GetReportsDto } from './dto/get-reports.dto';
+import { PdfService } from 'src/pdf/pdf.service';
+import { ReportTemplate } from 'src/pdf/templates/report.template';
+
+@Injectable()
+export class ReportsService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pdfService: PdfService,
+  ) {}
+
+  async getList(dto: GetReportsDto) {
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 12;
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.report.findMany({
+        skip,
+        take: limit,
+        orderBy: [{ year: 'desc' }, { month: 'desc' }],
+      }),
+      this.prisma.report.count(),
+    ]);
+
+    return {
+      items,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getById(id: string) {
+    const report = await this.prisma.report.findUnique({ where: { id } });
+
+    if (!report) {
+      throw new NotFoundException();
+    }
+
+    return report;
+  }
+
+  async exportPdf(id: string) {
+    const report = await this.getById(id);
+
+    return {
+      report,
+      buffer: await this.pdfService.generate(new ReportTemplate(), report),
+    };
+  }
+}
