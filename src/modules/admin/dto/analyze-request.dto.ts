@@ -3,7 +3,7 @@ import { IsNumber } from 'class-validator';
 
 export class AnalyzeRequestDto {
   @ApiProperty({
-    example: 20,
+    example: 30,
   })
   @IsNumber()
   periodDays: number;

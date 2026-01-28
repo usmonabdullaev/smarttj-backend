@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @ApiProperty({
@@ -25,4 +31,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   regionId?: string;
+}
+
+export class SetPasswordDto {
+  @IsString()
+  @MinLength(6)
+  password: string;
+
+  @IsOptional()
+  @IsBoolean()
+  terminateOtherSessions?: boolean;
 }

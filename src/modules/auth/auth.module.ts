@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { SmsModule } from 'src/sms/sms.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { JwtStrategy } from './jwt.strategy';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '30d' },
     }),
+    SmsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

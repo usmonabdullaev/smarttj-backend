@@ -21,6 +21,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { SupportModule } from './modules/support/support.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { RegionsModule } from './modules/regions/regions.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     SupportModule,
     AdminModule,
     ReportsModule,
+    RegionsModule,
   ],
   controllers: [AppController],
   providers: [

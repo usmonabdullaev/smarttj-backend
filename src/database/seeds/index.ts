@@ -5,6 +5,8 @@ import 'dotenv/config';
 import { seedPaymentMethods } from './payment-methods.seed';
 import { seedUsers } from './users.seed';
 import { seedCategories } from './categories.seed';
+import { seedBrands } from './brands.seed';
+import { seedRegions } from './regions.seed';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
@@ -18,6 +20,8 @@ async function main() {
   await seedUsers(prisma);
   await seedPaymentMethods(prisma);
   await seedCategories(prisma);
+  await seedBrands(prisma);
+  await seedRegions(prisma);
 
   console.log('🌱 Seeding completed.');
 }

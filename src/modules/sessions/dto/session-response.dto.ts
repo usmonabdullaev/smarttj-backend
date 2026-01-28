@@ -41,7 +41,10 @@ export class SessionResponseDto {
   updatedAt: string;
 }
 
-export class SessionsResponseDto extends SessionResponseDto {
-  @ApiProperty({ example: true })
-  current: boolean;
+export class SessionsResponseDto {
+  @ApiProperty({ type: SessionResponseDto })
+  current: any;
+
+  @ApiProperty({ type: SessionResponseDto, isArray: true })
+  list: any;
 }

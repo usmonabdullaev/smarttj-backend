@@ -1,7 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from 'src/database/prisma/prisma.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { SetPasswordDto, UpdateUserDto } from './dto/update-user.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { LoggerService } from 'src/logger/logger.service';
 
@@ -14,7 +20,7 @@ export class UsersService {
   ) {}
 
   async getMe(sessionId: string) {
-    const session = await this.prisma.session.findUnique({
+    const session = await this.prisma.session.findFirst({
       where: { id: sessionId, isActive: true },
       include: { user: true },
     });
@@ -73,5 +79,42 @@ export class UsersService {
     const { password, ...userWithoutPassword } = updatedUser;
 
     return userWithoutPassword;
+  }
+
+  async setPassword(dto: SetPasswordDto, userId: string, sessionId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException({ message: 'User not found' });
+    }
+
+    if (user.password) {
+      const same = await bcrypt.compare(dto.password, user.password);
+      if (same) {
+        throw new BadRequestException({
+          message: 'New password must be different',
+        });
+      }
+    }
+
+    const hashed = await bcrypt.hash(dto.password, 10);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashed },
+    });
+
+    if (dto.terminateOtherSessions) {
+      await this.prisma.session.updateMany({
+        where: {
+          userId,
+          id: { not: sessionId },
+          isActive: true,
+        },
+        data: { isActive: false },
+      });
+    }
+
+    return { success: true, message: 'Password changed' };
   }
 }

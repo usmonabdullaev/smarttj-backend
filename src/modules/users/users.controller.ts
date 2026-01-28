@@ -8,6 +8,7 @@ import {
   Body,
   Controller,
   Get,
+  Post,
   Put,
   UploadedFile,
   UseGuards,
@@ -20,7 +21,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { SetPasswordDto, UpdateUserDto } from './dto/update-user.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -60,5 +61,14 @@ export class UsersController {
       },
       upload?.public_id,
     );
+  }
+
+  @Post('set-password')
+  async setPassword(
+    @Body() dto: SetPasswordDto,
+    @GetUser('userId') userId: string,
+    @GetUser('sessionId') sessionId: string,
+  ) {
+    return await this.usersService.setPassword(dto, userId, sessionId);
   }
 }

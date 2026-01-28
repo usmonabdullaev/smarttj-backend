@@ -1,4 +1,9 @@
-import { ApiOperation, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiOkResponse,
+  ApiBearerAuth,
+  ApiNotFoundResponse,
+} from '@nestjs/swagger';
 import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 
 import { GetUser } from 'src/common/decorators/get-user.decorator';
@@ -8,6 +13,7 @@ import {
   SessionsResponseDto,
   SessionResponseDto,
 } from './dto/session-response.dto';
+import { ApiErrorDto } from 'src/common/dto/api-error.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -28,6 +34,7 @@ export class SessionsController {
   @Delete(':id')
   @ApiOperation({ summary: 'Remove session' })
   @ApiOkResponse({ type: SessionResponseDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
   async remove(
     @Param('id') id: string,
     @GetUser('sessionId') sessionId: string,

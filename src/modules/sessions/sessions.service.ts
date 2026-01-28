@@ -7,35 +7,28 @@ export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(userId: string, sessionId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        sessions: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
+    const session = await this.prisma.session.findFirst({
+      where: { id: sessionId, isActive: true },
     });
 
-    if (!user) {
+    if (!session) {
       throw new NotFoundException({
-        message: 'User not found',
-        code: 'USER_NOT_FOUND',
-        error: userId,
+        message: 'Session not found',
+        code: 'SESSION_NOT_FOUND',
+        error: sessionId,
       });
     }
 
-    const sessions = user.sessions
-      .map((session) => ({
-        ...session,
-        current: session.id === sessionId,
-      }))
-      .sort((a, b) => +b.current - +a.current);
+    const sessions = await this.prisma.session.findMany({
+      where: { userId, NOT: { id: sessionId } },
+      orderBy: { createdAt: 'desc' },
+    });
 
-    return sessions;
+    return { current: session, list: sessions };
   }
 
   async remove(id: string, sessionId: string) {
-    const session = await this.prisma.session.findUnique({
+    const session = await this.prisma.session.findFirst({
       where: { id, NOT: { id: sessionId } },
     });
 

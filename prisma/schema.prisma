@@ -16,7 +16,7 @@ model User {
   id       String @id @default(uuid(7))
   phone    String @unique
   email    String? @unique
-  password String
+  password String?
   name     String
   role     UserRole @default(USER)
   avatar   String?
@@ -57,8 +57,42 @@ model Session {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([fingerprint])
+  @@unique([userId, fingerprint])
+}
+
+model AuthOtp {
+  id        String @id @default(uuid(7))
+  phone     String
+  code      String
+  expiresAt DateTime
+  attempts  Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SmsLogPurpose {
+  REGISTER
+  LOGIN
+  RESET_PASSWORD
+}
+
+enum SmsLogStatus {
+  SENT
+  FAILED
+}
+
+model SmsLog {
+  id       String @id @default(uuid(7))
+  phone    String
+  message  String
+  purpose  SmsLogPurpose
+  provider String?
+  status   SmsLogStatus
+  error    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum EmployeeStatus {

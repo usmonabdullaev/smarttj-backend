@@ -7,6 +7,10 @@ import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiCreatedResponse,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+  ApiConflictResponse,
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import {
   Controller,
@@ -29,6 +33,7 @@ import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { BrandsService } from './brands.service';
+import { ApiErrorDto } from 'src/common/dto/api-error.dto';
 
 @Controller('brands')
 export class BrandsController {
@@ -39,10 +44,13 @@ export class BrandsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create brand' })
   @ApiCreatedResponse({ type: BrandResponseDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorDto })
+  @ApiForbiddenResponse({ type: ApiErrorDto })
+  @ApiConflictResponse({ type: ApiErrorDto })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('logo'))
   async create(
@@ -72,17 +80,22 @@ export class BrandsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get brand' })
   @ApiOkResponse({ type: BrandResponseDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
   async findOne(@Param('id') id: string) {
     return await this.brandsService.findOne(id);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update brand' })
   @ApiConsumes('multipart/form-data')
   @ApiOkResponse({ type: BrandResponseDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorDto })
+  @ApiForbiddenResponse({ type: ApiErrorDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  @ApiConflictResponse({ type: ApiErrorDto })
   @UseInterceptors(FileInterceptor('logo'))
   async update(
     @Param('id') id: string,
@@ -105,10 +118,14 @@ export class BrandsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete brand' })
   @ApiOkResponse({ type: BrandResponseDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorDto })
+  @ApiForbiddenResponse({ type: ApiErrorDto })
+  @ApiConflictResponse({ type: ApiErrorDto })
   async remove(@Param('id') id: string) {
     return await this.brandsService.remove(id);
   }
