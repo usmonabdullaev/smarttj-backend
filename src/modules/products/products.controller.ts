@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -9,10 +17,17 @@ import { ProductsService } from './products.service';
 import { ApiErrorDto } from 'src/common/dto/api-error.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { CreateProductDto } from './dto/create-product.dto';
+import { GetProductsQueryDto } from './dto/get-products.dto';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+  @Get('main/:id')
+  @ApiOperation({ summary: 'Product main API' })
+  async getList(@Param('id') id: string, @Query() query: GetProductsQueryDto) {
+    return await this.productsService.getList(id, query);
+  }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get product' })
@@ -26,5 +41,12 @@ export class ProductsController {
   @ApiOperation({ summary: 'Create product' })
   async create(@Body() dto: CreateProductDto) {
     return await this.productsService.create(dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete product' })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async deleteProduct(@Param('id') id: string) {
+    return await this.productsService.deleteProduct(id);
   }
 }

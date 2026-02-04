@@ -1,7 +1,5 @@
-import dotenv from 'dotenv';
 import type { PrismaConfig } from 'prisma';
-
-dotenv.config();
+import 'dotenv/config';
 
 export default {
   datasource: {

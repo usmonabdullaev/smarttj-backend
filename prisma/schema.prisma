@@ -7,14 +7,15 @@ datasource db {
 }
 
 enum UserRole {
+  SYSADMIN
   USER
   ADMIN
   MODERATOR
 }
 
 model User {
-  id       String @id @default(uuid(7))
-  phone    String @unique
+  id       String  @id @default(uuid(7))
+  phone    String  @unique
   email    String? @unique
   password String?
   name     String
@@ -35,10 +36,10 @@ model User {
   verifications Verification[]
   reviews       Review[]
   addresses     Address[]
-  region        Region? @relation(fields: [regionId], references: [id], onDelete: SetNull)
   employee      Employee[]
   supportChats  SupportChat[]
   operatorChats SupportChat[] @relation("AssignedOperator")
+  region        Region?       @relation(fields: [regionId], references: [id], onDelete: SetNull)
 }
 
 model Session {
@@ -195,12 +196,14 @@ model Product {
   id          String @id @default(uuid(7))
   title       String
   price       Decimal? @db.Decimal(10, 2)
+  slug        String   @unique
   description String
   warranty    Int?
   categoryId  String
   brandId     String
   modelId     String
   regionId    String
+  isActive    Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -210,9 +213,7 @@ model Product {
   model        Model    @relation(fields: [modelId], references: [id])
   region       Region   @relation(fields: [regionId], references: [id])
   variants     ProductVariant[]
-  attributes   ProductAttribute[]
   reviews      Review[]
-  priceHistory ProductPriceHistory[]
 
   @@index([categoryId])
   @@index([brandId])
@@ -221,10 +222,11 @@ model Product {
 }
 
 model ProductVariant {
-  id              String  @id @default(uuid(7))
-  price           Decimal @db.Decimal(10, 2)
-  productId       String
-  code            Int @unique @db.Integer @default(autoincrement())
+  id        String   @id @default(uuid(7))
+  price     Decimal  @db.Decimal(10, 2)
+  discount  Decimal? @db.Decimal(10, 2)
+  productId String
+  code      Int @unique @db.Integer @default(autoincrement())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -242,17 +244,14 @@ model ProductVariant {
 
 model ProductPriceHistory {
   id        String @id @default(uuid(7))
-  productId String
-  variantId String?
+  variantId String
   price     Decimal @db.Decimal(10, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  product Product         @relation(fields: [productId], references: [id])
-  variant ProductVariant? @relation(fields: [variantId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
 
-  @@index([productId])
   @@index([variantId])
 }
 
@@ -352,12 +351,18 @@ model Image {
   @@index([productVariantId])
 }
 
+enum AttributeType {
+  STRING
+  NUMBER
+  BOOLEAN
+}
+
 model Attribute {
   id         String @id @default(uuid(7))
   name       String
   slug       String @unique
-  type       String
-  groupId    String
+  type       AttributeType
+  groupId    String?
   filterable Boolean @default(false)
   order      Int     @default(1)
 
@@ -366,13 +371,15 @@ model Attribute {
 
   ptoductAttributes ProductAttribute[]
   values            AttributeValue[]
-  group             AttributeGroup @relation(fields: [groupId], references: [id])
+  group             AttributeGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
 }
 
 model AttributeValue {
-  id          String @id @default(uuid(7))
-  attributeId String
-  value       String
+  id           String @id @default(uuid(7))
+  attributeId  String
+  valueString  String?
+  valueNumber  Float?
+  valueBoolean Boolean?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -380,7 +387,6 @@ model AttributeValue {
   attribute         Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   productAttributes ProductAttribute[]
 
-  @@unique([attributeId, value])
   @@index([attributeId])
 }
 
@@ -398,19 +404,15 @@ model AttributeGroup {
 model ProductAttribute {
   id               String @id @default(uuid())
   attributeId      String
-  productId        String
   attributeValueId String
-  productVariantId String?
+  productVariantId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   attribute      Attribute       @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   attributeValue AttributeValue  @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
-  productVariant ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
-
-  @@index([productId])
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
 }
 
 model Cart {
@@ -436,7 +438,7 @@ enum PaymentMethodType {
 
 model PaymentMethod {
   id       String @id @default(uuid(7))
-  name     String @unique
+  name     String
   type     PaymentMethodType
   isActive Boolean @default(true)
 
@@ -478,8 +480,9 @@ model Order {
   paymentStatus   OrderPaymentStatus  @default(UNPAID)
   deliveryStatus  OrderDeliveryStatus @default(NEW)
   uiStatus        OrderUIStatus       @default(SHOW)
-  type            OrderType           @default(PICKUP)
-  paymentMethodId String?
+  type            OrderType
+  paymentMethodId String
+  comment         String?
   shopId          String?
   addressId       String?
 
@@ -487,7 +490,7 @@ model Order {
   updatedAt DateTime @updatedAt
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
   shop          Shop?          @relation(fields: [shopId], references: [id], onDelete: SetNull)
   address       Address?       @relation(fields: [addressId], references: [id], onDelete: SetNull)
   items         OrderItem[]
@@ -514,7 +517,6 @@ model OrderItem {
   price            Decimal @db.Decimal(10, 2)
   deliveryStatus   OrderItemDeliveryStatus @default(NEW)
   warranty         Int?
-  warrantyEndsAt   DateTime?
   receivedAt       DateTime?
 
   createdAt DateTime @default(now())

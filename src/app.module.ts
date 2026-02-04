@@ -22,6 +22,9 @@ import { SupportModule } from './modules/support/support.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { RegionsModule } from './modules/regions/regions.module';
+import { AttributesModule } from './modules/attributes/attributes.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { CartsModule } from './modules/carts/carts.module';
 
 @Module({
   imports: [
@@ -43,6 +46,9 @@ import { RegionsModule } from './modules/regions/regions.module';
     AdminModule,
     ReportsModule,
     RegionsModule,
+    AttributesModule,
+    OrdersModule,
+    CartsModule,
   ],
   controllers: [AppController],
   providers: [

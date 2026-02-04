@@ -34,6 +34,11 @@ export class CreateProductDto {
   @IsString()
   slug: string;
 
+  @ApiProperty({ example: 12 })
+  @IsOptional()
+  @IsNumber()
+  warranty?: number;
+
   @ApiProperty({ example: '019bdffb-8ca1-7065-9b3f-0fcdd97376bf' })
   @IsUUID()
   categoryId: string;

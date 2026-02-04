@@ -1,11 +1,20 @@
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('USER', 'ADMIN', 'MODERATOR');
+CREATE TYPE "UserRole" AS ENUM ('SYSADMIN', 'USER', 'ADMIN', 'MODERATOR');
+
+-- CreateEnum
+CREATE TYPE "SmsLogPurpose" AS ENUM ('REGISTER', 'LOGIN', 'RESET_PASSWORD');
+
+-- CreateEnum
+CREATE TYPE "SmsLogStatus" AS ENUM ('SENT', 'FAILED');
 
 -- CreateEnum
 CREATE TYPE "EmployeeStatus" AS ENUM ('ACTIVE', 'ON_VACATION');
 
 -- CreateEnum
 CREATE TYPE "VerificationStatus" AS ENUM ('ACTIVE', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "AttributeType" AS ENUM ('STRING', 'NUMBER', 'BOOLEAN');
 
 -- CreateEnum
 CREATE TYPE "PaymentMethodType" AS ENUM ('CASH', 'CARD');
@@ -31,12 +40,24 @@ CREATE TYPE "TransactionPaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED', 
 -- CreateEnum
 CREATE TYPE "CouponType" AS ENUM ('AMOUNT', 'PERCENT');
 
+-- CreateEnum
+CREATE TYPE "SupportChatStatus" AS ENUM ('AI', 'HUMAN', 'CLOSED');
+
+-- CreateEnum
+CREATE TYPE "SupportChatPriority" AS ENUM ('LOW', 'NORMAL', 'HIGH', 'CRITICAL');
+
+-- CreateEnum
+CREATE TYPE "SupportMessageRole" AS ENUM ('USER', 'AI', 'OPERATOR', 'SYSTEM');
+
+-- CreateEnum
+CREATE TYPE "SupportAttachmentType" AS ENUM ('IMAGE', 'FILE');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "email" TEXT,
-    "password" TEXT NOT NULL,
+    "password" TEXT,
     "name" TEXT NOT NULL,
     "role" "UserRole" NOT NULL DEFAULT 'USER',
     "avatar" TEXT,
@@ -64,6 +85,34 @@ CREATE TABLE "Session" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AuthOtp" (
+    "id" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "AuthOtp_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SmsLog" (
+    "id" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "purpose" "SmsLogPurpose" NOT NULL,
+    "provider" TEXT,
+    "status" "SmsLogStatus" NOT NULL,
+    "error" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SmsLog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -143,6 +192,8 @@ CREATE TABLE "Shop" (
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
+    "price" DECIMAL(10,2),
+    "slug" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "warranty" INTEGER,
     "categoryId" TEXT NOT NULL,
@@ -160,7 +211,6 @@ CREATE TABLE "ProductVariant" (
     "id" TEXT NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
     "discount" DECIMAL(10,2),
-    "discountEndDate" TIMESTAMP(3),
     "productId" TEXT NOT NULL,
     "code" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -172,8 +222,7 @@ CREATE TABLE "ProductVariant" (
 -- CreateTable
 CREATE TABLE "ProductPriceHistory" (
     "id" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
-    "variantId" TEXT,
+    "variantId" TEXT NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -200,10 +249,13 @@ CREATE TABLE "Review" (
 CREATE TABLE "Category" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "short_name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "order" INTEGER NOT NULL DEFAULT 1,
     "icon" TEXT,
+    "iconId" TEXT,
     "parentId" TEXT,
+    "parentKey" TEXT NOT NULL DEFAULT 'ROOT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -247,6 +299,7 @@ CREATE TABLE "Image" (
     "id" TEXT NOT NULL,
     "productVariantId" TEXT NOT NULL,
     "url" TEXT NOT NULL,
+    "urlId" TEXT NOT NULL,
     "alt" TEXT,
     "order" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -260,8 +313,8 @@ CREATE TABLE "Attribute" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
-    "groupId" TEXT NOT NULL,
+    "type" "AttributeType" NOT NULL,
+    "groupId" TEXT,
     "filterable" BOOLEAN NOT NULL DEFAULT false,
     "order" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -274,7 +327,9 @@ CREATE TABLE "Attribute" (
 CREATE TABLE "AttributeValue" (
     "id" TEXT NOT NULL,
     "attributeId" TEXT NOT NULL,
-    "value" TEXT NOT NULL,
+    "valueString" TEXT,
+    "valueNumber" DOUBLE PRECISION,
+    "valueBoolean" BOOLEAN,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -296,9 +351,8 @@ CREATE TABLE "AttributeGroup" (
 CREATE TABLE "ProductAttribute" (
     "id" TEXT NOT NULL,
     "attributeId" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
     "attributeValueId" TEXT NOT NULL,
-    "productVariantId" TEXT,
+    "productVariantId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -383,7 +437,7 @@ CREATE TABLE "Transaction" (
     "userId" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
     "amount" DECIMAL(10,2) NOT NULL,
-    "status" "TransactionPaymentStatus" NOT NULL,
+    "status" "TransactionPaymentStatus" NOT NULL DEFAULT 'PENDING',
     "providerId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -403,12 +457,82 @@ CREATE TABLE "Coupon" (
     "usageLimit" INTEGER,
     "timesUsed" INTEGER NOT NULL DEFAULT 0,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "minOrderAmount" DOUBLE PRECISION,
+    "minOrderAmount" DECIMAL(10,2),
+    "maxOrderAmount" DECIMAL(10,2),
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Coupon_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SupportChat" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT,
+    "status" "SupportChatStatus" NOT NULL DEFAULT 'AI',
+    "priority" "SupportChatPriority" NOT NULL DEFAULT 'NORMAL',
+    "assignedToId" TEXT,
+    "closedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SupportChat_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SupportMessage" (
+    "id" TEXT NOT NULL,
+    "chatId" TEXT NOT NULL,
+    "role" "SupportMessageRole" NOT NULL,
+    "content" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SupportMessage_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SupportAIContext" (
+    "id" TEXT NOT NULL,
+    "chatId" TEXT NOT NULL,
+    "lastPrompt" TEXT,
+    "confidence" DOUBLE PRECISION,
+    "model" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SupportAIContext_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SupportAttachment" (
+    "id" TEXT NOT NULL,
+    "messageId" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "urlId" TEXT NOT NULL,
+    "type" "SupportAttachmentType" NOT NULL,
+    "name" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SupportAttachment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Report" (
+    "id" TEXT NOT NULL,
+    "year" INTEGER NOT NULL,
+    "month" INTEGER NOT NULL,
+    "ordersCount" INTEGER NOT NULL,
+    "revenue" DECIMAL(14,2) NOT NULL,
+    "avgOrderValue" DECIMAL(14,2) NOT NULL,
+    "paidOrdersCount" INTEGER NOT NULL,
+    "refundedAmount" DECIMAL(14,2) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Report_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -421,10 +545,7 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Session_pushToken_key" ON "Session"("pushToken");
 
 -- CreateIndex
-CREATE INDEX "Session_userId_idx" ON "Session"("userId");
-
--- CreateIndex
-CREATE INDEX "Session_fingerprint_idx" ON "Session"("fingerprint");
+CREATE UNIQUE INDEX "Session_userId_fingerprint_key" ON "Session"("userId", "fingerprint");
 
 -- CreateIndex
 CREATE INDEX "Verification_phone_idx" ON "Verification"("phone");
@@ -434,6 +555,9 @@ CREATE INDEX "Address_userId_idx" ON "Address"("userId");
 
 -- CreateIndex
 CREATE INDEX "Shop_regionId_idx" ON "Shop"("regionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");
 
 -- CreateIndex
 CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
@@ -457,22 +581,16 @@ CREATE INDEX "ProductVariant_code_idx" ON "ProductVariant"("code");
 CREATE INDEX "ProductVariant_productId_idx" ON "ProductVariant"("productId");
 
 -- CreateIndex
-CREATE INDEX "ProductPriceHistory_productId_idx" ON "ProductPriceHistory"("productId");
-
--- CreateIndex
 CREATE INDEX "ProductPriceHistory_variantId_idx" ON "ProductPriceHistory"("variantId");
 
 -- CreateIndex
 CREATE INDEX "Review_productId_idx" ON "Review"("productId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");
-
--- CreateIndex
-CREATE INDEX "Category_slug_idx" ON "Category"("slug");
-
--- CreateIndex
 CREATE INDEX "Category_parentId_idx" ON "Category"("parentId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Category_parentKey_slug_key" ON "Category"("parentKey", "slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Brand_slug_key" ON "Brand"("slug");
@@ -502,13 +620,7 @@ CREATE UNIQUE INDEX "Attribute_slug_key" ON "Attribute"("slug");
 CREATE INDEX "AttributeValue_attributeId_idx" ON "AttributeValue"("attributeId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AttributeValue_attributeId_value_key" ON "AttributeValue"("attributeId", "value");
-
--- CreateIndex
 CREATE UNIQUE INDEX "AttributeGroup_name_key" ON "AttributeGroup"("name");
-
--- CreateIndex
-CREATE INDEX "ProductAttribute_productId_idx" ON "ProductAttribute"("productId");
 
 -- CreateIndex
 CREATE INDEX "Cart_userId_idx" ON "Cart"("userId");
@@ -533,6 +645,33 @@ CREATE UNIQUE INDEX "Transaction_orderId_key" ON "Transaction"("orderId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Coupon_code_key" ON "Coupon"("code");
+
+-- CreateIndex
+CREATE INDEX "SupportChat_userId_idx" ON "SupportChat"("userId");
+
+-- CreateIndex
+CREATE INDEX "SupportChat_status_idx" ON "SupportChat"("status");
+
+-- CreateIndex
+CREATE INDEX "SupportChat_assignedToId_idx" ON "SupportChat"("assignedToId");
+
+-- CreateIndex
+CREATE INDEX "SupportMessage_chatId_idx" ON "SupportMessage"("chatId");
+
+-- CreateIndex
+CREATE INDEX "SupportMessage_role_idx" ON "SupportMessage"("role");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SupportAIContext_chatId_key" ON "SupportAIContext"("chatId");
+
+-- CreateIndex
+CREATE INDEX "SupportAttachment_messageId_idx" ON "SupportAttachment"("messageId");
+
+-- CreateIndex
+CREATE INDEX "Report_year_idx" ON "Report"("year");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Report_year_month_key" ON "Report"("year", "month");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -574,10 +713,7 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_regionId_fkey" FOREIGN KEY ("regio
 ALTER TABLE "ProductVariant" ADD CONSTRAINT "ProductVariant_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProductPriceHistory" ADD CONSTRAINT "ProductPriceHistory_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ProductPriceHistory" ADD CONSTRAINT "ProductPriceHistory_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "ProductVariant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ProductPriceHistory" ADD CONSTRAINT "ProductPriceHistory_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "ProductVariant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -595,16 +731,13 @@ ALTER TABLE "Model" ADD CONSTRAINT "Model_brandId_fkey" FOREIGN KEY ("brandId") 
 ALTER TABLE "Image" ADD CONSTRAINT "Image_productVariantId_fkey" FOREIGN KEY ("productVariantId") REFERENCES "ProductVariant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Attribute" ADD CONSTRAINT "Attribute_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "AttributeGroup"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Attribute" ADD CONSTRAINT "Attribute_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "AttributeGroup"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AttributeValue" ADD CONSTRAINT "AttributeValue_attributeId_fkey" FOREIGN KEY ("attributeId") REFERENCES "Attribute"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProductAttribute" ADD CONSTRAINT "ProductAttribute_attributeId_fkey" FOREIGN KEY ("attributeId") REFERENCES "Attribute"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ProductAttribute" ADD CONSTRAINT "ProductAttribute_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProductAttribute" ADD CONSTRAINT "ProductAttribute_attributeValueId_fkey" FOREIGN KEY ("attributeValueId") REFERENCES "AttributeValue"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -644,3 +777,18 @@ ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_orderId_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SupportChat" ADD CONSTRAINT "SupportChat_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SupportChat" ADD CONSTRAINT "SupportChat_assignedToId_fkey" FOREIGN KEY ("assignedToId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SupportMessage" ADD CONSTRAINT "SupportMessage_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "SupportChat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SupportAIContext" ADD CONSTRAINT "SupportAIContext_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "SupportChat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SupportAttachment" ADD CONSTRAINT "SupportAttachment_messageId_fkey" FOREIGN KEY ("messageId") REFERENCES "SupportMessage"("id") ON DELETE CASCADE ON UPDATE CASCADE;

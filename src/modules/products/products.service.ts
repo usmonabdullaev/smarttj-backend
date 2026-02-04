@@ -2,10 +2,82 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
+import { GetProductsQueryDto } from './dto/get-products.dto';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
+
+  async getList(categoryId: string, query: GetProductsQueryDto) {
+    const category = await this.prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      throw new NotFoundException();
+    }
+
+    const page = query.page || 1;
+    const limit = query.limit || 18;
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await this.prisma.$transaction([
+      this.prisma.productVariant.findMany({
+        where: {
+          product: {
+            categoryId,
+          },
+        },
+        take: limit,
+        skip,
+        include: {
+          product: {
+            include: {
+              category: true,
+              brand: true,
+              model: true,
+              region: true,
+              reviews: {
+                take: 10,
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      phone: true,
+                      email: true,
+                      name: true,
+                      role: true,
+                      avatar: true,
+                      createdAt: true,
+                      updatedAt: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          images: true,
+          attributes: {
+            include: {
+              attribute: true,
+              attributeValue: true,
+            },
+          },
+        },
+      }),
+      this.prisma.productVariant.count({ where: { product: { categoryId } } }),
+    ]);
+
+    return {
+      data: products,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
   async getById(id: string) {
     const product = await this.prisma.product.findUnique({
@@ -24,12 +96,6 @@ export class ProductsService {
                 attributeValue: true,
               },
             },
-          },
-        },
-        attributes: {
-          include: {
-            attribute: true,
-            attributeValue: true,
           },
         },
         reviews: {
@@ -93,12 +159,14 @@ export class ProductsService {
         throw new NotFoundException({ message: 'Region not found' });
       }
 
+      const title = dto.name || `${brand.name} ${model.name}`;
+
       const product = await tx.product.create({
         data: {
-          title: dto.name, // TODO: name or generate title
-          price: dto.variant.price,
-          description: dto.description || '', // TODO: FIX
-          warranty: 12, // TODO: FIX
+          title,
+          description: dto.description || title,
+          slug: dto.slug,
+          warranty: dto.warranty,
           categoryId: dto.categoryId,
           brandId: dto.brandId,
           modelId: dto.modelId,
@@ -108,14 +176,14 @@ export class ProductsService {
 
       const variant = await tx.productVariant.create({
         data: {
-          price: dto.variant.price, // TODO: Add discount
+          price: dto.variant.price,
+          discount: dto.variant.discount,
           productId: product.id,
         },
       });
 
       await tx.productPriceHistory.create({
         data: {
-          productId: product.id,
           variantId: variant.id,
           price: dto.variant.price,
         },
@@ -135,5 +203,25 @@ export class ProductsService {
 
       return { product, variant };
     });
+  }
+
+  async deleteProduct(id: string) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+
+    if (!product) {
+      throw new NotFoundException({ message: 'Product not fount' });
+    }
+
+    await this.prisma.productPriceHistory.deleteMany({
+      where: {
+        variant: {
+          product: {
+            id,
+          },
+        },
+      },
+    });
+
+    return await this.prisma.product.delete({ where: { id } });
   }
 }
