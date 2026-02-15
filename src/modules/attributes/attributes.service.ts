@@ -18,7 +18,7 @@ export class AttributesService {
     });
 
     if (exists) {
-      throw new ConflictException({ message: '' });
+      throw new ConflictException();
     }
 
     if (dto.groupId) {
@@ -36,7 +36,9 @@ export class AttributesService {
         name: dto.name,
         slug: dto.slug,
         type: dto.type,
+        unit: dto.unit,
         groupId: dto.groupId,
+        required: dto.required,
         filterable: dto.filterable,
         order: dto.order,
 

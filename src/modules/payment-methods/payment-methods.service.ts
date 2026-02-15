@@ -13,25 +13,11 @@ export class PaymentMethodsService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreatePaymentMethodDto) {
-    const paymentMethod = await this.prisma.paymentMethod.findUnique({
-      where: { name: dto.name },
-    });
-
-    if (paymentMethod) {
-      throw new ConflictException({
-        message: 'Name conflict',
-        code: 'CONFLICT',
-        error: {
-          name: dto.name,
-          existingId: paymentMethod.id,
-        },
-      });
-    }
-
     return await this.prisma.paymentMethod.create({
       data: {
         name: dto.name,
         type: dto.type,
+        isActive: dto.isActive,
       },
     });
   }
@@ -69,26 +55,13 @@ export class PaymentMethodsService {
       });
     }
 
-    if (dto.name && paymentMethod.name !== dto.name) {
-      const existing = await this.prisma.paymentMethod.findUnique({
-        where: { name: dto.name },
-      });
-
-      if (existing) {
-        throw new ConflictException({
-          message: 'Name conflict',
-          code: 'CONFLICT',
-          error: {
-            name: dto.name,
-            existingId: existing.id,
-          },
-        });
-      }
-    }
-
     return await this.prisma.paymentMethod.update({
       where: { id },
-      data: dto,
+      data: {
+        name: dto.name,
+        type: dto.type,
+        isActive: dto.isActive,
+      },
     });
   }
 

@@ -362,7 +362,9 @@ model Attribute {
   name       String
   slug       String @unique
   type       AttributeType
+  unit       String?
   groupId    String?
+  required   Boolean @default(false)
   filterable Boolean @default(false)
   order      Int     @default(1)
 
@@ -380,6 +382,7 @@ model AttributeValue {
   valueString  String?
   valueNumber  Float?
   valueBoolean Boolean?
+  label        String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -406,6 +409,10 @@ model ProductAttribute {
   attributeId      String
   attributeValueId String
   productVariantId String
+  valueString      String?
+  valueNumber      Float?
+  valueBoolean     Boolean?
+  label            String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
