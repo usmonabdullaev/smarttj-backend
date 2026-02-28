@@ -20,15 +20,14 @@ RUN apt-get update -qq && \
 
 # Install node modules
 COPY package*.json ./
-RUN npm ci
+
+RUN npm ci --include=dev
+RUN npx --yes nest build
 
 # Generate Prisma Client
 COPY . .
 
-RUN npx nest build
-
 RUN npx prisma generate
-RUN npm run build
 
 
 # Final stage for app image
