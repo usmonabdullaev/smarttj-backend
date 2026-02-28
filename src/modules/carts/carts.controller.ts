@@ -12,7 +12,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { CartsService } from './carts.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { EditCartDto } from './dto/edit-cart.dto';
 

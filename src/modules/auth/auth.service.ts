@@ -11,7 +11,7 @@ import { SmsLogPurpose } from '@prisma/client';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 
-import { PrismaService } from 'src/database/prisma/prisma.service';
+import { PrismaService } from '../../database/prisma/prisma.service';
 import {
   ConfirmLoginOtpDto,
   LoginMetaDto,
@@ -23,7 +23,7 @@ import {
   RequestRegisterOtpDto,
 } from './dto/register-auth.dto';
 import { generateOtp } from './utils/generate-otp';
-import { SmsService } from 'src/sms/sms.service';
+import { SmsService } from '../../sms/sms.service';
 
 @Injectable()
 export class AuthService {

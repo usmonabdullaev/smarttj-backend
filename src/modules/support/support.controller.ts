@@ -3,7 +3,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { SupportService } from './support.service';
 import { CreateSupportDto } from './dto/create-support.dto';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)

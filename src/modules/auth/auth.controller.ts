@@ -24,8 +24,8 @@ import {
 } from './dto/login-auth.dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { ApiErrorDto } from 'src/common/dto/api-error.dto';
+import { GetUser } from '../../common/decorators/get-user.decorator';
+import { ApiErrorDto } from '../../common/dto/api-error.dto';
 import {
   ConfirmRegisterDto,
   RequestRegisterOtpDto,

@@ -10,7 +10,7 @@ import {
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { OrdersService } from './orders.service';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
 

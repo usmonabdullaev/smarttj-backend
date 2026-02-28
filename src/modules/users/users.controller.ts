@@ -15,13 +15,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Express } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UsersService } from './users.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
 import { SetPasswordDto, UpdateUserDto } from './dto/update-user.dto';
 
 @UseGuards(JwtAuthGuard)

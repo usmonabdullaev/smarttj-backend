@@ -14,7 +14,7 @@ import {
 } from '@nestjs/swagger';
 
 import { ProductsService } from './products.service';
-import { ApiErrorDto } from 'src/common/dto/api-error.dto';
+import { ApiErrorDto } from '../../common/dto/api-error.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { GetProductsQueryDto } from './dto/get-products.dto';

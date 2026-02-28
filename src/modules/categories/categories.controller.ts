@@ -12,7 +12,7 @@ import {
   CategoryItemsResponseDto,
   CategoryResponseDto,
 } from './dto/category-response.dto';
-import { ApiErrorDto } from 'src/common/dto/api-error.dto';
+import { ApiErrorDto } from '../../common/dto/api-error.dto';
 
 @Controller('categories')
 export class CategoriesController {

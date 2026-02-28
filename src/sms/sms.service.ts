@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SmsLogStatus } from '@prisma/client';
 
 import { MockSmsProvider } from './providers/mock.provider';
-import { PrismaService } from 'src/database/prisma/prisma.service';
+import { PrismaService } from '../database/prisma/prisma.service';
 import { SendSmsOptions } from './types';
 
 @Injectable()

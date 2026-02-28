@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { TransactionPaymentStatus } from '@prisma/client';
 
 import { AnalyzeRequestDto } from './dto/analyze-request.dto';
-import { PrismaService } from 'src/database/prisma/prisma.service';
-import { AIService } from 'src/ai/ai.service';
-import { TransactionPaymentStatus } from '@prisma/client';
-import { AIPurpose } from 'src/ai/dto/ai-request.dto';
+import { PrismaService } from '../../database/prisma/prisma.service';
+import { AIService } from '../../ai/ai.service';
+import { AIPurpose } from '../../ai/dto/ai-request.dto';
 
 @Injectable()
 export class AdminService {

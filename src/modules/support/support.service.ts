@@ -5,10 +5,10 @@ import {
   SupportMessageRole,
 } from '@prisma/client';
 
-import { AIService } from 'src/ai/ai.service';
-import { AIPurpose } from 'src/ai/dto/ai-request.dto';
-import { SUPPORT_PROMPT } from 'src/ai/prompts/support.prompt';
-import { PrismaService } from 'src/database/prisma/prisma.service';
+import { AIService } from '../../ai/ai.service';
+import { AIPurpose } from '../../ai/dto/ai-request.dto';
+import { SUPPORT_PROMPT } from '../../ai/prompts/support.prompt';
+import { PrismaService } from '../../database/prisma/prisma.service';
 import { CreateSupportDto } from './dto/create-support.dto';
 
 @Injectable()

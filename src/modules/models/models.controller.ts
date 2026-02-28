@@ -21,7 +21,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ModelResponseDto } from './dto/model-response.dto';

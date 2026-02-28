@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { Category } from '@prisma/client';
 
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { PrismaService } from 'src/database/prisma/prisma.service';
-import { LoggerService } from 'src/logger/logger.service';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { PrismaService } from '../../database/prisma/prisma.service';
+import { LoggerService } from '../../logger/logger.service';
 
 type CategoryTreeDto = {
   children: CategoryTreeDto[];

@@ -25,15 +25,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BrandResponseDto } from './dto/brand-response.dto';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { BrandsService } from './brands.service';
-import { ApiErrorDto } from 'src/common/dto/api-error.dto';
+import { ApiErrorDto } from '../../common/dto/api-error.dto';
 
 @Controller('brands')
 export class BrandsController {

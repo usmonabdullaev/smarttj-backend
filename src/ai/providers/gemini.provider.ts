@@ -3,8 +3,8 @@ import { GoogleGenAI } from '@google/genai';
 import 'dotenv/config';
 
 import { AIRequestDto } from '../dto/ai-request.dto';
-import { LoggerService } from 'src/logger/logger.service';
 import { parseAIResponse } from '../utils/parse-ai-response';
+import { LoggerService } from '../../logger/logger.service';
 
 @Injectable()
 export class GeminiProvider {

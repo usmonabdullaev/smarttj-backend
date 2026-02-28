@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { ROLES_KEY } from 'src/common/decorators/roles.decorator';
+import { ROLES_KEY } from '../../../common/decorators/roles.decorator';
 import { JwtPayload } from '../jwt.strategy';
 
 @Injectable()

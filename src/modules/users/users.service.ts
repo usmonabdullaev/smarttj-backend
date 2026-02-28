@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
-import { PrismaService } from 'src/database/prisma/prisma.service';
+import { PrismaService } from '../../database/prisma/prisma.service';
 import { SetPasswordDto, UpdateUserDto } from './dto/update-user.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { LoggerService } from 'src/logger/logger.service';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { LoggerService } from '../../logger/logger.service';
 
 @Injectable()
 export class UsersService {

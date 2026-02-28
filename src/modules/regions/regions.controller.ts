@@ -1,4 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
+
 import { RegionsService } from './regions.service';
 
 @Controller('regions')

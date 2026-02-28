@@ -51,7 +51,6 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "streamifier": "^0.1.1",
-    "tsconfig-paths": "^4.2.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
@@ -84,6 +83,7 @@
     "ts-jest": "^29.4.6",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.53.1"
   },
