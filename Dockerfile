@@ -1,48 +1,57 @@
 # syntax = docker/dockerfile:1
 
-# Adjust NODE_VERSION as desired
+# -------------------------
+# Base image
+# -------------------------
 ARG NODE_VERSION=22.21.1
 FROM node:${NODE_VERSION}-slim AS base
 
-# NestJS/Prisma app lives here
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Set production environment
-ENV NODE_ENV="production"
-
-
-# Throw-away build stage to reduce size of final image
+# -------------------------
+# Build stage
+# -------------------------
 FROM base AS build
 
-# Install packages needed to build node modules
+# Устанавливаем зависимости для сборки
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp openssl pkg-config python-is-python3
+    apt-get install --no-install-recommends -y \
+    build-essential node-gyp openssl pkg-config python-is-python3
 
-# Install node modules
+# Копируем package.json и package-lock.json
 COPY package*.json ./
 
-RUN npm ci --include=dev
-RUN npx --yes nest build
+# Устанавливаем все зависимости (dev + prod)
+RUN npm ci
 
-# Generate Prisma Client
+# Копируем весь проект
 COPY . .
 
+# Генерируем Prisma Client
 RUN npx prisma generate
 
+# Компилируем NestJS через TypeScript
+RUN npx tsc -p tsconfig.build.json
 
-# Final stage for app image
+# -------------------------
+# Production stage
+# -------------------------
 FROM base
 
-# Install packages needed for deployment
+# Устанавливаем минимально нужные пакеты
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y openssl && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy built application
+# Копируем полностью билд из build stage
 COPY --from=build /app /app
 
+# Убираем dev зависимости
 RUN npm prune --omit=dev
 
-# Start the server by default, this can be overwritten at runtime
+# Указываем порт, который слушает Fly
 EXPOSE 8080
-CMD [ "node", "dist/main.js" ]
+
+# Стартуем приложение напрямую через Node (не через npm)
+CMD ["node", "dist/main.js"]
