@@ -24,6 +24,9 @@ RUN npm ci
 
 # Generate Prisma Client
 COPY . .
+
+RUN npx nest build
+
 RUN npx prisma generate
 RUN npm run build
 
