@@ -32,10 +32,10 @@ async function bootstrap() {
     .setTitle('SmartTJ API')
     .setDescription('The SmartTJ API documentation')
     .setVersion('1.0')
-    .addServer('http://localhost:3001/api', 'Local (HTTP)')
-    .addServer('https://localhost:3001/api', 'Local (HTTPS)')
-    .addServer('http://10.201.14.142:3001/api', 'IP (HTTP)')
-    .addServer('https://10.201.14.142:3001/api', 'IP (HTTPS)')
+    .addServer('http://localhost:8080/api', 'Local (HTTP)')
+    .addServer('https://localhost:8080/api', 'Local (HTTPS)')
+    .addServer('http://10.201.14.142:8080/api', 'IP (HTTP)')
+    .addServer('https://10.201.14.142:8080/api', 'IP (HTTPS)')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',
@@ -53,6 +53,6 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: true }),
   );
 
-  await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
+  await app.listen(process.env.PORT ?? 8080, '0.0.0.0');
 }
 void bootstrap();
