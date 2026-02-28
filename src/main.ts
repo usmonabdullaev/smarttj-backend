@@ -32,6 +32,7 @@ async function bootstrap() {
     .setTitle('SmartTJ API')
     .setDescription('The SmartTJ API documentation')
     .setVersion('1.0')
+    .addServer('https://smarttj-backend.fly.dev/api', 'Fly.io Server (HTTPS)')
     .addServer('http://localhost:8080/api', 'Local (HTTP)')
     .addServer('https://localhost:8080/api', 'Local (HTTPS)')
     .addServer('http://10.201.14.142:8080/api', 'IP (HTTP)')
