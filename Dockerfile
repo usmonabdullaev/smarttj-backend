@@ -4,8 +4,6 @@
 ARG NODE_VERSION=22.21.1
 FROM node:${NODE_VERSION}-slim AS base
 
-LABEL fly_launch_runtime="NestJS/Prisma"
-
 # NestJS/Prisma app lives here
 WORKDIR /app
 
@@ -21,17 +19,12 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential node-gyp openssl pkg-config python-is-python3
 
 # Install node modules
-COPY package-lock.json package.json ./
-RUN npm ci --include=dev
+COPY package*.json ./
+RUN npm ci
 
 # Generate Prisma Client
-COPY prisma .
-RUN npx prisma generate
-
-# Copy application code
 COPY . .
-
-# Build application
+RUN npx prisma generate
 RUN npm run build
 
 
@@ -41,11 +34,13 @@ FROM base
 # Install packages needed for deployment
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y openssl && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+    rm -rf /var/lib/apt/lists/*
 
 # Copy built application
 COPY --from=build /app /app
 
+RUN npm prune --omit=dev
+
 # Start the server by default, this can be overwritten at runtime
-EXPOSE 3000
-CMD [ "npm", "run", "start:prod" ]
+EXPOSE 8080
+CMD [ "node", "dist/main.js" ]
