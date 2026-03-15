@@ -5,10 +5,14 @@ import { Request, Response } from 'express';
 
 import { AppModule } from './app.module';
 
+const PORT = process.env.PORT || 3001;
+const HOST = '0.0.0.0';
+const PREFIX = 'api';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix(PREFIX);
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -25,18 +29,21 @@ async function bootstrap() {
     .getHttpAdapter()
     .getInstance()
     .get('/', (_: Request, res: Response) => {
-      return res.redirect(301, '/api');
+      return res.redirect(301, `/${PREFIX}`);
     });
 
+  const serverUrl = `http://localhost:${PORT}/${PREFIX}`;
+
   const config = new DocumentBuilder()
-    .setTitle('SmartTJ API')
+    .setTitle('Smart Shop API')
+    .setContact(
+      'Abdulloev Usmon',
+      'https://abdulloev-usmon.vercel.app',
+      'abdullaevusmon2006@gmail.com',
+    )
     .setDescription('The SmartTJ API documentation')
     .setVersion('1.0')
-    .addServer('https://smarttj-backend.fly.dev/api', 'Fly.io Server (HTTPS)')
-    .addServer('http://localhost:8080/api', 'Local (HTTP)')
-    .addServer('https://localhost:8080/api', 'Local (HTTPS)')
-    .addServer('http://10.201.14.142:8080/api', 'IP (HTTP)')
-    .addServer('https://10.201.14.142:8080/api', 'IP (HTTPS)')
+    .addServer(serverUrl, 'Localhost')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',
@@ -49,11 +56,11 @@ async function bootstrap() {
     .build();
 
   SwaggerModule.setup(
-    'api',
+    PREFIX,
     app,
     SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: true }),
   );
 
-  await app.listen(process.env.PORT ?? 8080, '0.0.0.0');
+  await app.listen(PORT, HOST);
 }
 void bootstrap();

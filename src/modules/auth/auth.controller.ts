@@ -41,7 +41,7 @@ export class AuthController {
     return await this.authService.requestRegisterOtp(dto);
   }
 
-  @Post('register/confirm')
+  @Post('register/confirm-otp')
   @ApiOperation({ summary: 'Confirm register' })
   @ApiOkResponse({ type: LoginResponseDto })
   async confirmRegisterOtp(

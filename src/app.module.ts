@@ -25,6 +25,7 @@ import { RegionsModule } from './modules/regions/regions.module';
 import { AttributesModule } from './modules/attributes/attributes.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { CartsModule } from './modules/carts/carts.module';
+import { ServerModule } from './modules/server/server.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { CartsModule } from './modules/carts/carts.module';
     AttributesModule,
     OrdersModule,
     CartsModule,
+    ServerModule,
   ],
   controllers: [AppController],
   providers: [

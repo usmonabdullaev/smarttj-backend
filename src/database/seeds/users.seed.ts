@@ -10,7 +10,7 @@ const ADMIN = {
   name: ADMIN_NAME,
   email: ADMIN_EMAIL,
   phone: ADMIN_PHONE,
-  role: UserRole.ADMIN,
+  role: UserRole.SYSADMIN,
 };
 
 export const seedUsers = async (prisma: PrismaClient) => {
