@@ -9,7 +9,7 @@ export class CreatePaymentMethodDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'CASH',
@@ -18,8 +18,8 @@ export class CreatePaymentMethodDto {
   })
   @IsString()
   @IsEnum(PaymentMethodType)
-  type: PaymentMethodType;
+  type!: PaymentMethodType;
 
   @IsBoolean()
-  isActive: boolean;
+  isActive!: boolean;
 }

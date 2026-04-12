@@ -1,19 +1,19 @@
+import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 import {
   ApiOperation,
   ApiOkResponse,
   ApiBearerAuth,
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
-import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiErrorDto } from '../../common/dto/api-error.dto';
 import { SessionsService } from './sessions.service';
 import {
   SessionsResponseDto,
   SessionResponseDto,
 } from './dto/session-response.dto';
-import { ApiErrorDto } from '../../common/dto/api-error.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

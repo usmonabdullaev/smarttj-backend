@@ -8,7 +8,7 @@ export class CreateCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'Смартфоны',
@@ -16,7 +16,7 @@ export class CreateCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  short_name: string;
+  short_name!: string;
 
   @ApiProperty({
     example: 'smartfoni',
@@ -24,7 +24,7 @@ export class CreateCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  slug: string;
+  slug!: string;
 
   @ApiPropertyOptional({
     example: 1,

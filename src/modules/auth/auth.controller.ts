@@ -17,19 +17,19 @@ import {
 } from '@nestjs/swagger';
 
 import { LoginResponseDto, LogoutResponseDto } from './dto/auth-response.dto';
+import { GetUser } from '../../common/decorators/get-user.decorator';
+import { ApiErrorDto } from '../../common/dto/api-error.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthService } from './auth.service';
+import {
+  ConfirmRegisterDto,
+  RequestRegisterOtpDto,
+} from './dto/register-auth.dto';
 import {
   ConfirmLoginOtpDto,
   LoginWithPasswordDto,
   RequestLoginOtpDto,
 } from './dto/login-auth.dto';
-import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { ApiErrorDto } from '../../common/dto/api-error.dto';
-import {
-  ConfirmRegisterDto,
-  RequestRegisterOtpDto,
-} from './dto/register-auth.dto';
 
 @Controller('auth')
 export class AuthController {

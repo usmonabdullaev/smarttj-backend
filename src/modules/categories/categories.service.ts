@@ -1,9 +1,9 @@
+import { Category } from '@prisma/client';
 import {
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Category } from '@prisma/client';
 
 import { CloudinaryService } from '../../cloudinary/cloudinary.service';
 import { PrismaService } from '../../database/prisma/prisma.service';

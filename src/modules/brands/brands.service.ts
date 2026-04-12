@@ -6,9 +6,9 @@ import {
 
 import { CloudinaryService } from '../../cloudinary/cloudinary.service';
 import { PrismaService } from '../../database/prisma/prisma.service';
+import { LoggerService } from '../../logger/logger.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
-import { LoggerService } from '../../logger/logger.service';
 
 @Injectable()
 export class BrandsService {

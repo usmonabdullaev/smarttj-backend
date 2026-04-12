@@ -1,3 +1,3 @@
 export class EditCartDto {
-  quantity: 'increment' | 'decrement';
+  quantity!: 'increment' | 'decrement';
 }

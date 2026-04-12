@@ -4,8 +4,8 @@ export enum AIPurpose {
 }
 
 export class AIRequestDto {
-  purpose: AIPurpose;
-  prompt: string;
+  purpose!: AIPurpose;
+  prompt!: string;
   context?: string;
   model?: string;
   temperature?: number;

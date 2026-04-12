@@ -2,9 +2,9 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 
-import { ServerService } from './server.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ServerService } from './server.service';
 
 @Controller('server')
 export class ServerController {

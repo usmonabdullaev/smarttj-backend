@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma/prisma.service';
+import { ReportTemplate } from '../../pdf/templates/report.template';
 import { GetReportsDto } from './dto/get-reports.dto';
 import { PdfService } from '../../pdf/pdf.service';
-import { ReportTemplate } from '../../pdf/templates/report.template';
 
 @Injectable()
 export class ReportsService {

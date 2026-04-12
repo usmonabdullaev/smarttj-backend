@@ -16,7 +16,7 @@ export class CreateModelDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'samsung',
@@ -24,7 +24,7 @@ export class CreateModelDto {
   })
   @IsString()
   @IsNotEmpty()
-  slug: string;
+  slug!: string;
 
   @ApiPropertyOptional({
     example: 'Samsung',
@@ -47,7 +47,7 @@ export class CreateModelDto {
   })
   @IsString()
   @IsNotEmpty()
-  brandId: string;
+  brandId!: string;
 
   @ApiPropertyOptional({
     example: 1,
@@ -65,5 +65,5 @@ export class CreateModelDto {
   })
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
-  popular: boolean;
+  popular!: boolean;
 }

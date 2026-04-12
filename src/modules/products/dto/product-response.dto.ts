@@ -2,22 +2,22 @@ import { ApiProperty } from '@nestjs/swagger';
 
 class ProductVariantDto {
   @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
-  id: string;
+  id!: string;
 
   @ApiProperty({ example: 10000 })
-  price: number;
+  price!: number;
 
   @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
-  productId: string;
+  productId!: string;
 
   @ApiProperty({ example: 1, description: 'Код товара' })
-  code: number;
+  code!: number;
 
   @ApiProperty({ example: '2025-11-08T07:34:35.160Z' })
-  createdAt: string;
+  createdAt!: string;
 
   @ApiProperty({ example: '2025-11-08T07:34:35.160Z' })
-  updatedAt: string;
+  updatedAt!: string;
 
   @ApiProperty({
     example: [
@@ -71,42 +71,42 @@ class ProductVariantDto {
 
 export class ProductResponseDto {
   @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
-  id: string;
+  id!: string;
 
   @ApiProperty({ example: 'Samsung' })
-  title: string;
+  title!: string;
 
   @ApiProperty({ example: 10000, nullable: true })
-  price: number;
+  price!: number;
 
   @ApiProperty({
     example: 'Product description',
   })
-  description: string;
+  description!: string;
 
   @ApiProperty({
     nullable: true,
     example: 12,
   })
-  warranty: number;
+  warranty!: number;
 
   @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
-  categoryId: string;
+  categoryId!: string;
 
   @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
-  brandId: string;
+  brandId!: string;
 
   @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
-  modelId: string;
+  modelId!: string;
 
   @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
-  regionId: string;
+  regionId!: string;
 
   @ApiProperty({ example: '2025-11-08T07:34:35.160Z' })
-  createdAt: string;
+  createdAt!: string;
 
   @ApiProperty({ example: '2025-11-08T07:34:35.160Z' })
-  updatedAt: string;
+  updatedAt!: string;
 
   @ApiProperty({
     example: {

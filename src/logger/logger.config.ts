@@ -1,9 +1,10 @@
+import DailyRotateFile from 'winston-daily-rotate-file';
 import * as winston from 'winston';
-import * as fs from 'fs';
 import * as path from 'path';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
+import * as fs from 'fs';
 
 const logDir = path.join(process.cwd(), 'logs');
+
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { SmsLogStatus } from '@prisma/client';
 
-import { MockSmsProvider } from './providers/mock.provider';
 import { PrismaService } from '../database/prisma/prisma.service';
+import { MockSmsProvider } from './providers/mock.provider';
 import { SendSmsOptions } from './types';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class SmsService {
       });
 
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       await this.prisma.smsLog.create({
         data: {
           phone,

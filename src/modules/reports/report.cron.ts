@@ -1,6 +1,6 @@
+import { TransactionPaymentStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { TransactionPaymentStatus } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma/prisma.service';
 
@@ -13,10 +13,9 @@ export class ReportCron {
     const now = new Date();
 
     let year = now.getUTCFullYear();
-    let month = now.getUTCMonth(); // Previous month
+    let month = now.getUTCMonth();
 
     if (month === 0) {
-      // январь -> декабрь прошлого года
       month = 12;
       year -= 1;
     }

@@ -8,13 +8,13 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-import { AdminService } from './admin.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { AnalyzeRequestDto } from './dto/analyze-request.dto';
 import { AnalyzeResponseDto } from './dto/analyze-response.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AnalyzeRequestDto } from './dto/analyze-request.dto';
 import { ApiErrorDto } from '../../common/dto/api-error.dto';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { AdminService } from './admin.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)

@@ -5,15 +5,15 @@ export class AnalyzeResponseDto {
   @ApiProperty({
     example: 'AI response',
   })
-  text: string;
+  text!: string;
 
   @ApiProperty({
     example: 0.8,
   })
-  confidense: number;
+  confidense!: number;
 
   @ApiProperty({
     type: GenerateContentResponse,
   })
-  raw: GenerateContentResponse;
+  raw!: GenerateContentResponse;
 }

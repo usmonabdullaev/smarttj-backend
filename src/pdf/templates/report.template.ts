@@ -4,7 +4,9 @@ import * as path from 'path';
 import { PdfTemplate } from '../types/pdf-template.interface';
 
 export class ReportTemplate implements PdfTemplate<any> {
-  render(doc: typeof PDFDocument, report: any) {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  render(doc: typeof PDFDocument.default, report: any) {
     doc.font(path.join(process.cwd(), 'fonts/Roboto-Regular.ttf'));
 
     doc

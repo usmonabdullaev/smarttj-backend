@@ -1,10 +1,10 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsPhoneNumber,
   IsString,
   MinLength,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginWithPasswordDto {
   @ApiProperty({
@@ -13,7 +13,7 @@ export class LoginWithPasswordDto {
   })
   @IsString()
   @IsNotEmpty()
-  login: string; // email или phone
+  login!: string;
 
   @ApiProperty({
     example: 'admin123',
@@ -21,7 +21,7 @@ export class LoginWithPasswordDto {
   })
   @IsString()
   @IsNotEmpty()
-  password: string;
+  password!: string;
 
   @ApiProperty({
     example: 'fp_293hf293f23f23',
@@ -29,7 +29,7 @@ export class LoginWithPasswordDto {
   })
   @IsString()
   @IsNotEmpty()
-  fingerprint: string;
+  fingerprint!: string;
 }
 
 export class RequestLoginOtpDto {
@@ -37,7 +37,7 @@ export class RequestLoginOtpDto {
     example: '999999999',
   })
   @IsPhoneNumber('TJ')
-  phone: string;
+  phone!: string;
 }
 
 export class ConfirmLoginOtpDto {
@@ -45,25 +45,25 @@ export class ConfirmLoginOtpDto {
     example: '999999999',
   })
   @IsPhoneNumber('TJ')
-  phone: string;
+  phone!: string;
 
   @ApiProperty({
     example: '123456',
   })
   @IsString()
   @MinLength(6)
-  code: string;
+  code!: string;
 
   @ApiProperty({
     example: 'fp_293hf293f23f23',
   })
   @IsString()
   @IsNotEmpty()
-  fingerprint: string;
+  fingerprint!: string;
 }
 
 export class LoginMetaDto {
-  fingerprint: string;
+  fingerprint!: string;
   userAgent?: string;
   ip?: string;
 }

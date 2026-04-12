@@ -12,7 +12,9 @@ export const seedCategories = async (prisma: PrismaClient) => {
       categories: CreateCategoriesDto[],
       parent?: Category,
     ) => {
-      for (const category of categories) {
+      for (let index = 0; index < categories.length; index++) {
+        const category = categories[index];
+
         const created = await prisma.category.create({
           data: {
             name: category.name,

@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 
-import { ReportsService } from './reports.service';
 import { GetReportsDto } from './dto/get-reports.dto';
+import { ReportsService } from './reports.service';
 
 @Controller('reports')
 export class ReportsController {

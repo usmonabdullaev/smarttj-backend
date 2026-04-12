@@ -1,4 +1,9 @@
 import {
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+} from '@nestjs/swagger';
+import {
   Body,
   Controller,
   Delete,
@@ -7,17 +12,12 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import {
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-} from '@nestjs/swagger';
 
-import { ProductsService } from './products.service';
-import { ApiErrorDto } from '../../common/dto/api-error.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
-import { CreateProductDto } from './dto/create-product.dto';
+import { ApiErrorDto } from '../../common/dto/api-error.dto';
 import { GetProductsQueryDto } from './dto/get-products.dto';
+import { CreateProductDto } from './dto/create-product.dto';
+import { ProductsService } from './products.service';
 
 @Controller('products')
 export class ProductsController {

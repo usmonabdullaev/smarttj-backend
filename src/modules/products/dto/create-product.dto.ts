@@ -13,7 +13,7 @@ import {
 export class CreateProductVariantDto {
   @ApiProperty({ example: 10000 })
   @IsNumber()
-  price: number;
+  price!: number;
 
   @ApiProperty({ example: 9500 })
   @IsOptional()
@@ -28,11 +28,11 @@ export class CreateProductVariantDto {
 export class CreateProductDto {
   @ApiProperty({ example: 'Samsung A56 8/256 GB' })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'samsung-a56-8-256-gb-black-2025' })
   @IsString()
-  slug: string;
+  slug!: string;
 
   @ApiProperty({ example: 12 })
   @IsOptional()
@@ -41,19 +41,19 @@ export class CreateProductDto {
 
   @ApiProperty({ example: '019bdffb-8ca1-7065-9b3f-0fcdd97376bf' })
   @IsUUID()
-  categoryId: string;
+  categoryId!: string;
 
   @ApiProperty({ example: '019c02af-ac6a-7066-9a0e-5cd332e41a9f' })
   @IsUUID()
-  brandId: string;
+  brandId!: string;
 
   @ApiProperty({ example: '019c02af-ac6f-74ab-9108-7e4f5f473b58' })
   @IsUUID()
-  modelId: string;
+  modelId!: string;
 
   @ApiProperty({ example: '019c02d4-cfd3-76b2-8330-1574b0e4b0f2' })
   @IsUUID()
-  regionId: string;
+  regionId!: string;
 
   @ApiProperty({
     example:
@@ -65,10 +65,10 @@ export class CreateProductDto {
 
   @ApiProperty({ example: true })
   @IsBoolean()
-  isActive: boolean;
+  isActive!: boolean;
 
   @ApiProperty({ type: CreateProductVariantDto })
   @ValidateNested()
   @Type(() => CreateProductVariantDto)
-  variant: CreateProductVariantDto;
+  variant!: CreateProductVariantDto;
 }

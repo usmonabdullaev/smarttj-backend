@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
-import { SupportService } from './support.service';
 import { SupportController } from './support.controller';
+import { SupportService } from './support.service';
 import { AIModule } from '../../ai/ai.module';
 
 @Module({

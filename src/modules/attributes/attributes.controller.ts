@@ -1,3 +1,4 @@
+import { UserRole } from '@prisma/client';
 import {
   Controller,
   Get,
@@ -8,14 +9,13 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
 
-import { AttributesService } from './attributes.service';
 import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AttributesService } from './attributes.service';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('attributes')
 export class AttributesController {

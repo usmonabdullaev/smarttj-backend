@@ -11,7 +11,7 @@ export class RequestRegisterOtpDto {
     example: '999999999',
   })
   @IsPhoneNumber('TJ')
-  phone: string;
+  phone!: string;
 }
 
 export class ConfirmRegisterDto {
@@ -20,25 +20,25 @@ export class ConfirmRegisterDto {
   })
   @IsString()
   @MinLength(2)
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: '999999999',
   })
   @IsPhoneNumber('TJ')
-  phone: string;
+  phone!: string;
 
   @ApiProperty({
     example: '123456',
   })
   @IsString()
   @MinLength(6)
-  code: string;
+  code!: string;
 
   @ApiProperty({
     example: 'fp_293hf293f23f23',
   })
   @IsString()
   @IsNotEmpty()
-  fingerprint: string;
+  fingerprint!: string;
 }

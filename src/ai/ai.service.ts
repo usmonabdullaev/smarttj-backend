@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { AIRequestDto } from './dto/ai-request.dto';
 import { GeminiProvider } from './providers/gemini.provider';
+import { AIRequestDto } from './dto/ai-request.dto';
 
 @Injectable()
 export class AIService {

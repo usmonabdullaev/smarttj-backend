@@ -4,7 +4,7 @@ export class LoginResponseDto {
   @ApiProperty({
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ey...8VRx4vI4E',
   })
-  token: string;
+  token!: string;
 
   @ApiProperty({
     example: {
@@ -29,55 +29,55 @@ export class LogoutResponseDto {
   @ApiProperty({
     example: '019a6263-6f97-7230-8449-e979b855ada1',
   })
-  id: string;
+  id!: string;
 
   @ApiProperty({
     example: '019a6263-6f97-7230-8449-e979b855ada1',
   })
-  userId: string;
+  userId!: string;
 
   @ApiProperty({
     example: 'fp_293hf293f23f23',
   })
-  fingerprint: string;
+  fingerprint!: string;
 
   @ApiProperty({
     example: 'Chrome',
   })
-  userAgent: string | null;
+  userAgent!: string | null;
 
   @ApiProperty({
     example: '142.54.46.279:3000',
   })
-  ip: string | null;
+  ip!: string | null;
 
   @ApiProperty({
     example: '2025-11-08T07:34:35.160Z',
   })
-  expiresAt: string;
+  expiresAt!: string;
 
   @ApiProperty({
     example: true,
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   @ApiProperty({
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ey...8VRx4vI4E',
   })
-  pushToken: string | null;
+  pushToken!: string | null;
 
   @ApiProperty({
     example: '2025-11-08T07:34:35.160Z',
   })
-  lastActiveAt: string;
+  lastActiveAt!: string;
 
   @ApiProperty({
     example: '2025-11-08T07:34:35.160Z',
   })
-  createdAt: string;
+  createdAt!: string;
 
   @ApiProperty({
     example: '2025-11-08T07:34:35.160Z',
   })
-  updatedAt: string;
+  updatedAt!: string;
 }

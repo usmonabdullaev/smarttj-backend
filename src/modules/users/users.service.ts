@@ -1,14 +1,14 @@
+import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { SetPasswordDto, UpdateUserDto } from './dto/update-user.dto';
 import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { SetPasswordDto, UpdateUserDto } from './dto/update-user.dto';
+import { PrismaService } from '../../database/prisma/prisma.service';
 import { LoggerService } from '../../logger/logger.service';
 
 @Injectable()

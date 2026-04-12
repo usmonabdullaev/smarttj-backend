@@ -1,3 +1,6 @@
+import { SmsLogPurpose } from '@prisma/client';
+import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
   ConflictException,
@@ -7,23 +10,20 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { SmsLogPurpose } from '@prisma/client';
-import * as jwt from 'jsonwebtoken';
-import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../../database/prisma/prisma.service';
+import { generateOtp } from './utils/generate-otp';
+import { SmsService } from '../../sms/sms.service';
+import {
+  ConfirmRegisterDto,
+  RequestRegisterOtpDto,
+} from './dto/register-auth.dto';
 import {
   ConfirmLoginOtpDto,
   LoginMetaDto,
   LoginWithPasswordDto,
   RequestLoginOtpDto,
 } from './dto/login-auth.dto';
-import {
-  ConfirmRegisterDto,
-  RequestRegisterOtpDto,
-} from './dto/register-auth.dto';
-import { generateOtp } from './utils/generate-otp';
-import { SmsService } from '../../sms/sms.service';
 
 @Injectable()
 export class AuthService {

@@ -6,5 +6,5 @@ export class AnalyzeRequestDto {
     example: 30,
   })
   @IsNumber()
-  periodDays: number;
+  periodDays!: number;
 }

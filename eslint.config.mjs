@@ -1,10 +1,11 @@
 // @ts-check
-import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
+import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
+import eslint from '@eslint/js';
+import globals from 'globals';
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: ['eslint.config.mjs', 'ecosystem.config.js'],
   },
@@ -34,6 +35,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/only-throw-error': 'off',
     },
   },
 );

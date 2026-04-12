@@ -16,7 +16,7 @@ export class CreateBrandDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'samsung',
@@ -24,7 +24,7 @@ export class CreateBrandDto {
   })
   @IsString()
   @IsNotEmpty()
-  slug: string;
+  slug!: string;
 
   @ApiPropertyOptional({
     type: 'string',
@@ -50,5 +50,5 @@ export class CreateBrandDto {
   })
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
-  popular: boolean;
+  popular!: boolean;
 }

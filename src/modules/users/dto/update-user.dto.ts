@@ -14,7 +14,7 @@ export class UpdateUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({
     type: 'string',
@@ -36,7 +36,7 @@ export class UpdateUserDto {
 export class SetPasswordDto {
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @IsOptional()
   @IsBoolean()
