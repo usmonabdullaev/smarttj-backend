@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-import { JwtPayload } from '../../modules/auth/jwt.strategy';
+import { JwtPayload } from '../../modules/auth/strategies/jwt.strategy';
 
 export type GetUserDataType = 'userId' | 'sessionId' | 'role';
 

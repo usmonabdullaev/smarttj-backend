@@ -14,16 +14,17 @@ enum UserRole {
 }
 
 model User {
-  id       String  @id @default(uuid(7))
-  phone    String  @unique
-  email    String? @unique
+  id       String   @id @default(uuid(7))
+  phone    String   @unique
+  email    String?  @unique
   password String?
   name     String
   role     UserRole @default(USER)
   avatar   String?
   avatarId String?
   regionId String?
-  bonus    Int @default(0)
+  bonus    Int      @default(0)
+  googleId String?  @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -38,19 +39,19 @@ model User {
   addresses     Address[]
   employee      Employee[]
   supportChats  SupportChat[]
-  operatorChats SupportChat[] @relation("AssignedOperator")
-  region        Region?       @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  operatorChats SupportChat[]  @relation("AssignedOperator")
+  region        Region?        @relation(fields: [regionId], references: [id], onDelete: SetNull)
 }
 
 model Session {
-  id           String @id @default(uuid(7))
+  id           String   @id @default(uuid(7))
   userId       String
   fingerprint  String
   userAgent    String?
   ip           String?
   expiresAt    DateTime
-  isActive     Boolean @default(true)
-  pushToken    String? @unique
+  isActive     Boolean  @default(true)
+  pushToken    String?  @unique
   lastActiveAt DateTime @default(now())
 
   createdAt DateTime @default(now())
@@ -62,11 +63,11 @@ model Session {
 }
 
 model AuthOtp {
-  id        String @id @default(uuid(7))
+  id        String   @id @default(uuid(7))
   phone     String
   code      String
   expiresAt DateTime
-  attempts  Int @default(0)
+  attempts  Int      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -84,7 +85,7 @@ enum SmsLogStatus {
 }
 
 model SmsLog {
-  id       String @id @default(uuid(7))
+  id       String        @id @default(uuid(7))
   phone    String
   message  String
   purpose  SmsLogPurpose
@@ -102,7 +103,7 @@ enum EmployeeStatus {
 }
 
 model Employee {
-  id             String @id @default(uuid(7))
+  id             String         @id @default(uuid(7))
   userId         String
   firstName      String
   lastName       String
@@ -111,7 +112,7 @@ model Employee {
   position       String
   salary         Int
   passportNumber String
-  hireDate       DateTime @default(now())
+  hireDate       DateTime       @default(now())
   status         EmployeeStatus
 
   createdAt DateTime @default(now())
@@ -126,7 +127,7 @@ enum VerificationStatus {
 }
 
 model Verification {
-  id        String @id @default(uuid())
+  id        String             @id @default(uuid())
   phone     String
   code      String
   expiresAt DateTime
@@ -142,9 +143,9 @@ model Verification {
 }
 
 model Region {
-  id       String @id @default(uuid(7))
+  id       String  @id @default(uuid(7))
   title    String
-  order    Int @default(1)
+  order    Int     @default(1)
   slug     String
   parentId String?
   default  Boolean @default(false)
@@ -152,8 +153,8 @@ model Region {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  parent   Region?  @relation("RegionToSub", fields: [parentId], references: [id], onDelete: Cascade)
-  children Region[] @relation("RegionToSub")
+  parent   Region?   @relation("RegionToSub", fields: [parentId], references: [id], onDelete: Cascade)
+  children Region[]  @relation("RegionToSub")
   users    User[]
   products Product[]
   shops    Shop[]
@@ -161,15 +162,15 @@ model Region {
 }
 
 model Address {
-  id        String @id @default(uuid(7))
+  id        String   @id @default(uuid(7))
   userId    String
   label     String?
   full      String
   regionId  String
   createdAt DateTime @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  region Region @relation(fields: [regionId], references: [id])
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  region Region  @relation(fields: [regionId], references: [id])
   orders Order[]
 
   @@index([userId])
@@ -186,14 +187,14 @@ model Shop {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  region Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  region Region  @relation(fields: [regionId], references: [id], onDelete: Cascade)
   orders Order[]
-  
+
   @@index([regionId])
 }
 
 model Product {
-  id          String @id @default(uuid(7))
+  id          String   @id @default(uuid(7))
   title       String
   price       Decimal? @db.Decimal(10, 2)
   slug        String   @unique
@@ -203,17 +204,17 @@ model Product {
   brandId     String
   modelId     String
   regionId    String
-  isActive    Boolean @default(true)
+  isActive    Boolean  @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category     Category @relation(fields: [categoryId], references: [id])
-  brand        Brand    @relation(fields: [brandId], references: [id])
-  model        Model    @relation(fields: [modelId], references: [id])
-  region       Region   @relation(fields: [regionId], references: [id])
-  variants     ProductVariant[]
-  reviews      Review[]
+  category Category         @relation(fields: [categoryId], references: [id])
+  brand    Brand            @relation(fields: [brandId], references: [id])
+  model    Model            @relation(fields: [modelId], references: [id])
+  region   Region           @relation(fields: [regionId], references: [id])
+  variants ProductVariant[]
+  reviews  Review[]
 
   @@index([categoryId])
   @@index([brandId])
@@ -226,12 +227,12 @@ model ProductVariant {
   price     Decimal  @db.Decimal(10, 2)
   discount  Decimal? @db.Decimal(10, 2)
   productId String
-  code      Int @unique @db.Integer @default(autoincrement())
+  code      Int      @unique @default(autoincrement()) @db.Integer
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  product      Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product      Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
   images       Image[]
   carts        Cart[]
   orderItems   OrderItem[]
@@ -243,7 +244,7 @@ model ProductVariant {
 }
 
 model ProductPriceHistory {
-  id        String @id @default(uuid(7))
+  id        String  @id @default(uuid(7))
   variantId String
   price     Decimal @db.Decimal(10, 2)
 
@@ -274,15 +275,15 @@ model Review {
 }
 
 model Category {
-  id         String @id @default(uuid(7))
+  id         String  @id @default(uuid(7))
   name       String
   short_name String
   slug       String
-  order      Int @default(1)
+  order      Int     @default(1)
   icon       String?
   iconId     String?
   parentId   String?
-  parentKey  String @default("ROOT")
+  parentKey  String  @default("ROOT")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -296,12 +297,12 @@ model Category {
 }
 
 model Brand {
-  id      String @id @default(uuid(7))
+  id      String  @id @default(uuid(7))
   name    String
-  slug    String @unique
+  slug    String  @unique
   logo    String?
   logoId  String?
-  order   Int @default(1)
+  order   Int     @default(1)
   popular Boolean
 
   createdAt DateTime @default(now())
@@ -314,34 +315,34 @@ model Brand {
 }
 
 model Model {
-  id          String @id @default(uuid(7))
+  id          String  @id @default(uuid(7))
   name        String
-  slug        String @unique
+  slug        String  @unique
   description String?
   image       String?
   imageId     String?
   brandId     String
-  order       Int @default(1)
+  order       Int     @default(1)
   popular     Boolean
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  brand    Brand @relation(fields: [brandId], references: [id])
+  brand    Brand     @relation(fields: [brandId], references: [id])
   products Product[]
 
+  @@unique([name, brandId])
   @@index([slug])
   @@index([brandId])
-  @@unique([name, brandId])
 }
 
 model Image {
-  id               String @id @default(uuid(7))
+  id               String  @id @default(uuid(7))
   productVariantId String
   url              String
   urlId            String
   alt              String?
-  order            Int @default(1)
+  order            Int     @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -358,26 +359,26 @@ enum AttributeType {
 }
 
 model Attribute {
-  id         String @id @default(uuid(7))
+  id         String        @id @default(uuid(7))
   name       String
-  slug       String @unique
+  slug       String        @unique
   type       AttributeType
   unit       String?
   groupId    String?
-  required   Boolean @default(false)
-  filterable Boolean @default(false)
-  order      Int     @default(1)
+  required   Boolean       @default(false)
+  filterable Boolean       @default(false)
+  order      Int           @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   ptoductAttributes ProductAttribute[]
   values            AttributeValue[]
-  group             AttributeGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  group             AttributeGroup?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
 }
 
 model AttributeValue {
-  id           String @id @default(uuid(7))
+  id           String   @id @default(uuid(7))
   attributeId  String
   valueString  String?
   valueNumber  Float?
@@ -387,7 +388,7 @@ model AttributeValue {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  attribute         Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attribute         Attribute          @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   productAttributes ProductAttribute[]
 
   @@index([attributeId])
@@ -405,7 +406,7 @@ model AttributeGroup {
 }
 
 model ProductAttribute {
-  id               String @id @default(uuid())
+  id               String   @id @default(uuid())
   attributeId      String
   attributeValueId String
   productVariantId String
@@ -417,8 +418,8 @@ model ProductAttribute {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  attribute      Attribute       @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  attributeValue AttributeValue  @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
+  attribute      Attribute      @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attributeValue AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
   productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
 }
 
@@ -426,7 +427,7 @@ model Cart {
   id               String @id @default(uuid(7))
   userId           String
   productVariantId String
-  quantity         Int @default(1)
+  quantity         Int    @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -434,8 +435,8 @@ model Cart {
   productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
   @@unique([userId, productVariantId])
+  @@index([userId])
 }
 
 enum PaymentMethodType {
@@ -444,10 +445,10 @@ enum PaymentMethodType {
 }
 
 model PaymentMethod {
-  id       String @id @default(uuid(7))
+  id       String            @id @default(uuid(7))
   name     String
   type     PaymentMethodType
-  isActive Boolean @default(true)
+  isActive Boolean           @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -456,33 +457,33 @@ model PaymentMethod {
 }
 
 enum OrderPaymentStatus {
-  UNPAID   // Не оплачен
-  PAID     // Оплачен
-  FAILED   // Ошибка оплаты
+  UNPAID // Не оплачен
+  PAID // Оплачен
+  FAILED // Ошибка оплаты
   REFUNDED // Деньги возвращены
 }
 
 enum OrderDeliveryStatus {
-  NEW                 // Только оформлен
+  NEW // Только оформлен
   PARTIALLY_DELIVERED // Часть товаров доставлена
-  DELIVERED           // Все товары доставлены
-  RECEIVED            // Товар у клиента
-  RETURNED            // Товары возвращены
+  DELIVERED // Все товары доставлены
+  RECEIVED // Товар у клиента
+  RETURNED // Товары возвращены
 }
 
 enum OrderUIStatus {
-  SHOW     // Отображается пользователю
+  SHOW // Отображается пользователю
   ARCHIVED // Заказ скрыт, но не удалён (архив)
-  DELETED  // Удалён из интерфейса (мягкое удаление)
+  DELETED // Удалён из интерфейса (мягкое удаление)
 }
 
 enum OrderType {
-  PICKUP   // Самовывоз
+  PICKUP // Самовывоз
   DELIVERY // Доставка
 }
 
 model Order {
-  id              String @id @default(uuid(7))
+  id              String              @id @default(uuid(7))
   userId          String
   paymentStatus   OrderPaymentStatus  @default(UNPAID)
   deliveryStatus  OrderDeliveryStatus @default(NEW)
@@ -496,10 +497,10 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
-  shop          Shop?          @relation(fields: [shopId], references: [id], onDelete: SetNull)
-  address       Address?       @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  shop          Shop?         @relation(fields: [shopId], references: [id], onDelete: SetNull)
+  address       Address?      @relation(fields: [addressId], references: [id], onDelete: SetNull)
   items         OrderItem[]
   transaction   Transaction?
 
@@ -507,21 +508,21 @@ model Order {
 }
 
 enum OrderItemDeliveryStatus {
-  NEW             // Только добавлен в заказ
-  PROCESSING      // Обрабатывается
-  SHIPPED         // Отправлен
+  NEW // Только добавлен в заказ
+  PROCESSING // Обрабатывается
+  SHIPPED // Отправлен
   AT_PICKUP_POINT // На пункте выдачи
-  DELIVERED       // Доставлен
-  RECEIVED        // Клиент подтвердил получение
-  RETURNED        // Возвращен
+  DELIVERED // Доставлен
+  RECEIVED // Клиент подтвердил получение
+  RETURNED // Возвращен
 }
 
 model OrderItem {
-  id               String @id @default(uuid(7))
+  id               String                  @id @default(uuid(7))
   orderId          String
   productVariantId String
-  quantity         Int     @default(1)
-  price            Decimal @db.Decimal(10, 2)
+  quantity         Int                     @default(1)
+  price            Decimal                 @db.Decimal(10, 2)
   deliveryStatus   OrderItemDeliveryStatus @default(NEW)
   warranty         Int?
   receivedAt       DateTime?
@@ -536,12 +537,12 @@ model OrderItem {
 }
 
 model Notification {
-  id        String @id @default(uuid(7))
-  userId    String
-  type      String
-  message   String
-  isRead    Boolean @default(false)
-  metadata  Json?
+  id       String  @id @default(uuid(7))
+  userId   String
+  type     String
+  message  String
+  isRead   Boolean @default(false)
+  metadata Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -552,15 +553,15 @@ model Notification {
 }
 
 enum TransactionPaymentStatus {
-  PENDING  // В ожидании оплаты
-  SUCCESS  // Успешно оплачено
-  FAILED   // Ошибка оплаты
+  PENDING // В ожидании оплаты
+  SUCCESS // Успешно оплачено
+  FAILED // Ошибка оплаты
   CANCELED // Пользователь отменил
   REFUNDED // Возврат
 }
 
 model Transaction {
-  id         String @id @default(uuid(7))
+  id         String                   @id @default(uuid(7))
   userId     String
   orderId    String                   @unique
   amount     Decimal                  @db.Decimal(10, 2)
@@ -580,18 +581,18 @@ enum CouponType {
 }
 
 model Coupon {
-  id              String @id @default(uuid(7))
-  code            String @unique
+  id              String     @id @default(uuid(7))
+  code            String     @unique
   type            CouponType
-  discountAmount  Decimal? @db.Decimal(10, 2)
+  discountAmount  Decimal?   @db.Decimal(10, 2)
   discountPercent Int?
   startDate       DateTime?
   endDate         DateTime?
   usageLimit      Int?
-  timesUsed       Int     @default(0)
-  isActive        Boolean @default(true)
-  minOrderAmount  Decimal? @db.Decimal(10, 2)
-  maxOrderAmount  Decimal? @db.Decimal(10, 2)
+  timesUsed       Int        @default(0)
+  isActive        Boolean    @default(true)
+  minOrderAmount  Decimal?   @db.Decimal(10, 2)
+  maxOrderAmount  Decimal?   @db.Decimal(10, 2)
   description     String?
 
   createdAt DateTime @default(now())
@@ -612,7 +613,7 @@ enum SupportChatPriority {
 }
 
 model SupportChat {
-  id           String @id @default(uuid(7))
+  id           String              @id @default(uuid(7))
   userId       String?
   status       SupportChatStatus   @default(AI)
   priority     SupportChatPriority @default(NORMAL)
@@ -623,8 +624,8 @@ model SupportChat {
   updatedAt DateTime @updatedAt
 
   messages   SupportMessage[]
-  user       User? @relation(fields: [userId], references: [id])
-  assignedTo User? @relation("AssignedOperator", fields: [assignedToId], references: [id])
+  user       User?             @relation(fields: [userId], references: [id])
+  assignedTo User?             @relation("AssignedOperator", fields: [assignedToId], references: [id])
   AIContext  SupportAIContext?
 
   @@index([userId])
@@ -640,7 +641,7 @@ enum SupportMessageRole {
 }
 
 model SupportMessage {
-  id      String @id @default(uuid(7))
+  id      String             @id @default(uuid(7))
   chatId  String
   role    SupportMessageRole
   content String
@@ -648,7 +649,7 @@ model SupportMessage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chat        SupportChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chat        SupportChat         @relation(fields: [chatId], references: [id], onDelete: Cascade)
   attachments SupportAttachment[]
 
   @@index([chatId])
@@ -656,8 +657,8 @@ model SupportMessage {
 }
 
 model SupportAIContext {
-  id         String @id @default(uuid(7))
-  chatId     String @unique
+  id         String  @id @default(uuid(7))
+  chatId     String  @unique
   lastPrompt String?
   confidence Float?
   model      String?
@@ -674,7 +675,7 @@ enum SupportAttachmentType {
 }
 
 model SupportAttachment {
-  id        String @id @default(uuid(7))
+  id        String                @id @default(uuid(7))
   messageId String
   url       String
   urlId     String
@@ -690,14 +691,14 @@ model SupportAttachment {
 }
 
 model Report {
-  id String @id @default(uuid(7))
-  year Int
-  month Int
-  ordersCount Int
-  revenue Decimal @db.Decimal(14, 2)
-  avgOrderValue Decimal @db.Decimal(14, 2)
+  id              String  @id @default(uuid(7))
+  year            Int
+  month           Int
+  ordersCount     Int
+  revenue         Decimal @db.Decimal(14, 2)
+  avgOrderValue   Decimal @db.Decimal(14, 2)
   paidOrdersCount Int
-  refundedAmount Decimal @db.Decimal(14, 2)
+  refundedAmount  Decimal @db.Decimal(14, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -2,19 +2,24 @@ module.exports = {
   apps: [
     {
       name: 'smarttj-backend',
-      script: 'dist/main.js',
-      cwd: __dirname,
 
-      exec_mode: 'fork',
+      script: 'dist/main.js',
       instances: 1,
+      exec_mode: 'cluster',
+
+      autorestart: true,
+      watch: false,
+
+      max_memory_restart: '500M',
 
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
       },
 
-      error_file: './logs/error.log',
-      out_file: './logs/out.log',
+      error_file: './logs/pm2/error.log',
+      out_file: './logs/pm2/out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     },
   ],
 };
