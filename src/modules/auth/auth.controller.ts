@@ -1,3 +1,5 @@
+import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
 import {
   Controller,
   Post,
@@ -6,6 +8,9 @@ import {
   Headers,
   Delete,
   UseGuards,
+  Get,
+  Req,
+  Res,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -34,6 +39,23 @@ import {
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleAuth() {}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent?: string,
+  ) {
+    const user = await this.authService.googleLogin(req.user, ip, userAgent);
+
+    return res.json(user);
+  }
 
   @Post('register/request-otp')
   @ApiOperation({ summary: 'Request to register' })

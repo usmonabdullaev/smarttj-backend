@@ -7,6 +7,7 @@ import {
   OrderDeliveryStatus,
   OrderPaymentStatus,
   OrderUIStatus,
+  ProductStatus,
 } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -138,7 +139,7 @@ export class OrdersService {
       const orderItemsData = carts.map((item) => {
         const variant = item.productVariant;
 
-        if (!variant || !variant.product.isActive) {
+        if (!variant || variant.product.status !== ProductStatus.ACTIVE) {
           throw new BadRequestException({ message: 'Product not available' });
         }
 

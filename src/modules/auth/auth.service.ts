@@ -32,6 +32,35 @@ export class AuthService {
     private readonly smsService: SmsService,
   ) {}
 
+  async googleLogin(googleUser: any, ip: string, userAgent?: string) {
+    const { googleId, fingerprint } = googleUser;
+
+    const user = await this.prisma.user.findUnique({ where: { googleId } });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const session = await this.upsertSession(user?.id, {
+      fingerprint,
+      ip,
+      userAgent,
+    });
+
+    const token = jwt.sign(
+      { userId: user.id, sessionId: session.id, role: user.role },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: '30d',
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+
+    return { token, user: userWithoutPassword };
+  }
+
   async requestRegisterOtp(dto: RequestRegisterOtpDto) {
     const exists = await this.prisma.user.findUnique({
       where: { phone: dto.phone },

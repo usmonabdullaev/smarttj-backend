@@ -7,10 +7,10 @@ datasource db {
 }
 
 enum UserRole {
-  SYSADMIN
-  USER
-  ADMIN
-  MODERATOR
+  SYSADMIN // Системный администратор, полный доступ ко всем функциям и данным
+  USER // Обычный пользователь, может просматривать и заказывать товары, управлять своим профилем
+  ADMIN // Администратор, может управлять товарами, заказами и пользователями, но не имеет доступа к системным настройкам
+  MODERATOR // Модератор, может управлять отзывами и поддержкой, но не имеет доступа к товарам и заказам
 }
 
 model User {
@@ -74,14 +74,14 @@ model AuthOtp {
 }
 
 enum SmsLogPurpose {
-  REGISTER
-  LOGIN
-  RESET_PASSWORD
+  REGISTER // Регистрация нового пользователя
+  LOGIN // Вход в аккаунт
+  RESET_PASSWORD // Сброс пароля
 }
 
 enum SmsLogStatus {
-  SENT
-  FAILED
+  SENT // Сообщение отправлено
+  FAILED // Ошибка при отправке
 }
 
 model SmsLog {
@@ -98,8 +98,8 @@ model SmsLog {
 }
 
 enum EmployeeStatus {
-  ACTIVE
-  ON_VACATION
+  ACTIVE // Активный
+  ON_VACATION // В отпуске
 }
 
 model Employee {
@@ -122,8 +122,8 @@ model Employee {
 }
 
 enum VerificationStatus {
-  ACTIVE
-  DELETED
+  ACTIVE // Активный
+  DELETED // Удаленный
 }
 
 model Verification {
@@ -193,26 +193,34 @@ model Shop {
   @@index([regionId])
 }
 
+enum ProductStatus {
+  DRAFT // Черновик, не отображается пользователям
+  ACTIVE // Активный, отображается пользователям
+  INACTIVE // Неактивный, не отображается пользователям, но сохраняется в базе
+  DISCONTINUED // Снят с производства, отображается пользователям, но помечен как недоступный
+}
+
 model Product {
-  id          String   @id @default(uuid(7))
-  title       String
-  price       Decimal? @db.Decimal(10, 2)
-  slug        String   @unique
-  description String
+  id          String        @id @default(uuid(7))
+  title       String?
+  price       Decimal?      @db.Decimal(10, 2)
+  slug        String?       @unique
+  description String?
   warranty    Int?
-  categoryId  String
-  brandId     String
-  modelId     String
-  regionId    String
-  isActive    Boolean  @default(true)
+  categoryId  String?
+  brandId     String?
+  modelId     String?
+  regionId    String?
+  publishedAt DateTime? @default(now())
+  status      ProductStatus @default(DRAFT)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category Category         @relation(fields: [categoryId], references: [id])
-  brand    Brand            @relation(fields: [brandId], references: [id])
-  model    Model            @relation(fields: [modelId], references: [id])
-  region   Region           @relation(fields: [regionId], references: [id])
+  category Category?        @relation(fields: [categoryId], references: [id])
+  brand    Brand?           @relation(fields: [brandId], references: [id])
+  model    Model?           @relation(fields: [modelId], references: [id])
+  region   Region?          @relation(fields: [regionId], references: [id])
   variants ProductVariant[]
   reviews  Review[]
 
@@ -353,9 +361,9 @@ model Image {
 }
 
 enum AttributeType {
-  STRING
-  NUMBER
-  BOOLEAN
+  STRING // Строка
+  NUMBER // Число
+  BOOLEAN // Логическое значение
 }
 
 model Attribute {
@@ -440,8 +448,8 @@ model Cart {
 }
 
 enum PaymentMethodType {
-  CASH
-  CARD
+  CASH // Наличные
+  CARD // Банковская карта
 }
 
 model PaymentMethod {
@@ -576,8 +584,8 @@ model Transaction {
 }
 
 enum CouponType {
-  AMOUNT
-  PERCENT
+  AMOUNT // Фиксированная сумма скидки
+  PERCENT // Процент от стоимости заказа
 }
 
 model Coupon {
@@ -600,16 +608,16 @@ model Coupon {
 }
 
 enum SupportChatStatus {
-  AI
-  HUMAN
-  CLOSED
+  AI // Автоматический ответ
+  HUMAN // Ручная обработка
+  CLOSED // Чат закрыт
 }
 
 enum SupportChatPriority {
-  LOW
-  NORMAL
-  HIGH
-  CRITICAL
+  LOW // Низкий приоритет, может обрабатываться позже
+  NORMAL // Обычный приоритет, обрабатывается в порядке очереди
+  HIGH // Высокий приоритет, требует быстрого реагирования
+  CRITICAL // Критический приоритет, требует немедленного реагирования
 }
 
 model SupportChat {
@@ -634,10 +642,10 @@ model SupportChat {
 }
 
 enum SupportMessageRole {
-  USER
-  AI
-  OPERATOR
-  SYSTEM
+  USER // Сообщение от пользователя
+  AI // Сообщение от искусственного интеллекта
+  OPERATOR // Сообщение от оператора поддержки
+  SYSTEM // Системное сообщение
 }
 
 model SupportMessage {
@@ -670,8 +678,8 @@ model SupportAIContext {
 }
 
 enum SupportAttachmentType {
-  IMAGE
-  FILE
+  IMAGE // Изображение (JPEG, PNG и т.д.)
+  FILE // Общий файл (PDF, DOCX и т.д.)
 }
 
 model SupportAttachment {

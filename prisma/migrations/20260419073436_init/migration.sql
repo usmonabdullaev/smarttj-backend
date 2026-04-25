@@ -14,6 +14,9 @@ CREATE TYPE "EmployeeStatus" AS ENUM ('ACTIVE', 'ON_VACATION');
 CREATE TYPE "VerificationStatus" AS ENUM ('ACTIVE', 'DELETED');
 
 -- CreateEnum
+CREATE TYPE "ProductStatus" AS ENUM ('DRAFT', 'ACTIVE', 'INACTIVE', 'DISCONTINUED');
+
+-- CreateEnum
 CREATE TYPE "AttributeType" AS ENUM ('STRING', 'NUMBER', 'BOOLEAN');
 
 -- CreateEnum
@@ -64,6 +67,7 @@ CREATE TABLE "User" (
     "avatarId" TEXT,
     "regionId" TEXT,
     "bonus" INTEGER NOT NULL DEFAULT 0,
+    "googleId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -191,15 +195,16 @@ CREATE TABLE "Shop" (
 -- CreateTable
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
+    "title" TEXT,
     "price" DECIMAL(10,2),
-    "slug" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "slug" TEXT,
+    "description" TEXT,
     "warranty" INTEGER,
-    "categoryId" TEXT NOT NULL,
-    "brandId" TEXT NOT NULL,
-    "modelId" TEXT NOT NULL,
-    "regionId" TEXT NOT NULL,
+    "categoryId" TEXT,
+    "brandId" TEXT,
+    "modelId" TEXT,
+    "regionId" TEXT,
+    "status" "ProductStatus" NOT NULL DEFAULT 'DRAFT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -314,7 +319,9 @@ CREATE TABLE "Attribute" (
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "type" "AttributeType" NOT NULL,
+    "unit" TEXT,
     "groupId" TEXT,
+    "required" BOOLEAN NOT NULL DEFAULT false,
     "filterable" BOOLEAN NOT NULL DEFAULT false,
     "order" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -330,6 +337,7 @@ CREATE TABLE "AttributeValue" (
     "valueString" TEXT,
     "valueNumber" DOUBLE PRECISION,
     "valueBoolean" BOOLEAN,
+    "label" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -353,6 +361,10 @@ CREATE TABLE "ProductAttribute" (
     "attributeId" TEXT NOT NULL,
     "attributeValueId" TEXT NOT NULL,
     "productVariantId" TEXT NOT NULL,
+    "valueString" TEXT,
+    "valueNumber" DOUBLE PRECISION,
+    "valueBoolean" BOOLEAN,
+    "label" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -390,8 +402,9 @@ CREATE TABLE "Order" (
     "paymentStatus" "OrderPaymentStatus" NOT NULL DEFAULT 'UNPAID',
     "deliveryStatus" "OrderDeliveryStatus" NOT NULL DEFAULT 'NEW',
     "uiStatus" "OrderUIStatus" NOT NULL DEFAULT 'SHOW',
-    "type" "OrderType" NOT NULL DEFAULT 'PICKUP',
-    "paymentMethodId" TEXT,
+    "type" "OrderType" NOT NULL,
+    "paymentMethodId" TEXT NOT NULL,
+    "comment" TEXT,
     "shopId" TEXT,
     "addressId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -409,7 +422,6 @@ CREATE TABLE "OrderItem" (
     "price" DECIMAL(10,2) NOT NULL,
     "deliveryStatus" "OrderItemDeliveryStatus" NOT NULL DEFAULT 'NEW',
     "warranty" INTEGER,
-    "warrantyEndsAt" TIMESTAMP(3),
     "receivedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -542,6 +554,9 @@ CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Session_pushToken_key" ON "Session"("pushToken");
 
 -- CreateIndex
@@ -629,9 +644,6 @@ CREATE INDEX "Cart_userId_idx" ON "Cart"("userId");
 CREATE UNIQUE INDEX "Cart_userId_productVariantId_key" ON "Cart"("userId", "productVariantId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PaymentMethod_name_key" ON "PaymentMethod"("name");
-
--- CreateIndex
 CREATE INDEX "Order_userId_idx" ON "Order"("userId");
 
 -- CreateIndex
@@ -698,16 +710,16 @@ ALTER TABLE "Address" ADD CONSTRAINT "Address_regionId_fkey" FOREIGN KEY ("regio
 ALTER TABLE "Shop" ADD CONSTRAINT "Shop_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_modelId_fkey" FOREIGN KEY ("modelId") REFERENCES "Model"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_modelId_fkey" FOREIGN KEY ("modelId") REFERENCES "Model"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProductVariant" ADD CONSTRAINT "ProductVariant_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -755,7 +767,7 @@ ALTER TABLE "Cart" ADD CONSTRAINT "Cart_userId_fkey" FOREIGN KEY ("userId") REFE
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_paymentMethodId_fkey" FOREIGN KEY ("paymentMethodId") REFERENCES "PaymentMethod"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Order" ADD CONSTRAINT "Order_paymentMethodId_fkey" FOREIGN KEY ("paymentMethodId") REFERENCES "PaymentMethod"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "Shop"("id") ON DELETE SET NULL ON UPDATE CASCADE;
