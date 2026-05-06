@@ -6,10 +6,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { CloudinaryService } from '../../cloudinary/cloudinary.service';
-import { SetPasswordDto, UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { LoggerService } from '../../logger/logger.service';
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { LoggerService } from '@/logger/logger.service';
+import {
+  SetPasswordDto,
+  UpdateUserDto,
+} from '@/modules/users/dto/update-user.dto';
 
 @Injectable()
 export class UsersService {

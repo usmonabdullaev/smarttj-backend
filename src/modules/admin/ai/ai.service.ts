@@ -1,16 +1,16 @@
 import { TransactionPaymentStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { AnalyzeRequestDto } from './dto/analyze-request.dto';
-import { AIPurpose } from '../../ai/dto/ai-request.dto';
-import { AIService } from '../../ai/ai.service';
+import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/analyze-request.dto';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { AIService as GlobalAIService } from '@/ai/ai.service';
+import { AIPurpose } from '@/ai/dto/ai-request.dto';
 
 @Injectable()
-export class AdminService {
+export class AIService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly ai: AIService,
+    private readonly aiService: GlobalAIService,
   ) {}
 
   async analyze(dto: AnalyzeRequestDto) {
@@ -42,7 +42,7 @@ export class AdminService {
 answer: <текст>
 confidence: <число от 0 до 1>`;
 
-    const aiResult = await this.ai.ask({
+    const aiResult = await this.aiService.ask({
       purpose: AIPurpose.ANALYTICS,
       prompt,
       temperature: 0.1,

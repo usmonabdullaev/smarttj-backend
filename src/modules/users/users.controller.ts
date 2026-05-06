@@ -17,12 +17,15 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 
-import { CloudinaryService } from '../../cloudinary/cloudinary.service';
-import { SetPasswordDto, UpdateUserDto } from './dto/update-user.dto';
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { UserResponseDto } from './dto/user-response.dto';
-import { UsersService } from './users.service';
+import { UserResponseDto } from '@/modules/users/dto/user-response.dto';
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { UsersService } from '@/modules/users/users.service';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import {
+  SetPasswordDto,
+  UpdateUserDto,
+} from '@/modules/users/dto/update-user.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

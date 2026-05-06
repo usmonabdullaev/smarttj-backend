@@ -1,7 +1,7 @@
 import * as PDFDocument from 'pdfkit';
 import * as path from 'path';
 
-import { PdfTemplate } from '../types/pdf-template.interface';
+import { PdfTemplate } from '@/pdf/types/pdf-template.interface';
 
 export class ReportTemplate implements PdfTemplate<any> {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

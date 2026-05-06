@@ -8,8 +8,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { ROLES_KEY } from '../../../common/decorators/roles.decorator';
-import { JwtPayload } from '../strategies/jwt.strategy';
+import { ROLES_KEY } from '@/common/decorators/roles.decorator';
+import { JwtPayload } from '@/auth/strategies/jwt.strategy';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

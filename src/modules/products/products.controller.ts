@@ -13,11 +13,11 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { ProductResponseDto } from './dto/product-response.dto';
-import { ApiErrorDto } from '../../common/dto/api-error.dto';
-import { GetProductsQueryDto } from './dto/get-products.dto';
-import { CreateProductDto } from './dto/create-product.dto';
-import { ProductsService } from './products.service';
+import { ProductResponseDto } from '@/modules/products/dto/product-response.dto';
+import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
+import { CreateProductDto } from '@/modules/products/dto/create-product.dto';
+import { ProductsService } from '@/modules/products/products.service';
+import { ApiErrorDto } from '@/common/dto/api-error.dto';
 
 @Controller('products')
 export class ProductsController {

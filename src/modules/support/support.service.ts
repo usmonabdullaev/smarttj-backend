@@ -5,17 +5,17 @@ import {
   SupportMessageRole,
 } from '@prisma/client';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { SUPPORT_PROMPT } from '../../ai/prompts/support.prompt';
-import { CreateSupportDto } from './dto/create-support.dto';
-import { AIPurpose } from '../../ai/dto/ai-request.dto';
-import { AIService } from '../../ai/ai.service';
+import { CreateSupportDto } from '@/modules/support/dto/create-support.dto';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { SUPPORT_PROMPT } from '@/ai/prompts/support.prompt';
+import { AIPurpose } from '@/ai/dto/ai-request.dto';
+import { AIService } from '@/ai/ai.service';
 
 @Injectable()
 export class SupportService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly ai: AIService,
+    private readonly aiService: AIService,
   ) {}
 
   async handleUserMessage(dto: CreateSupportDto, userId: string) {
@@ -41,7 +41,7 @@ export class SupportService {
 
     const prompt = this.buildPrompt(history);
 
-    const aiResponse = await this.ai.ask({
+    const aiResponse = await this.aiService.ask({
       purpose: AIPurpose.SUPPORT,
       prompt,
       context: SUPPORT_PROMPT,

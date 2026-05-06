@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { CreateAttributeDto } from './dto/create-attribute.dto';
-import { UpdateAttributeDto } from './dto/update-attribute.dto';
+import { CreateAttributeDto } from '@/modules/attributes/dto/create-attribute.dto';
+import { UpdateAttributeDto } from '@/modules/attributes/dto/update-attribute.dto';
+import { PrismaService } from '@/database/prisma/prisma.service';
 
 @Injectable()
 export class AttributesService {

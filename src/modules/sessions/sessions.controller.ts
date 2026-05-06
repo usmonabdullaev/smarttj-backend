@@ -6,14 +6,14 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiErrorDto } from '../../common/dto/api-error.dto';
-import { SessionsService } from './sessions.service';
+import { SessionsService } from '@/modules/sessions/sessions.service';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { ApiErrorDto } from '@/common/dto/api-error.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import {
   SessionsResponseDto,
   SessionResponseDto,
-} from './dto/session-response.dto';
+} from '@/modules/sessions/dto/session-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

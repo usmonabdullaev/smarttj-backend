@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
-import { BrandsController } from './brands.controller';
-import { BrandsService } from './brands.service';
+import { BrandsController } from '@/modules/brands/brands.controller';
+import { BrandsService } from '@/modules/brands/brands.service';
 
 @Module({
   controllers: [BrandsController],

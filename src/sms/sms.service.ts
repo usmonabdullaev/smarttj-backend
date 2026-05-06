@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { SmsLogStatus } from '@prisma/client';
 
-import { PrismaService } from '../database/prisma/prisma.service';
-import { MockSmsProvider } from './providers/mock.provider';
-import { SendSmsOptions } from './types';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { MockSmsProvider } from '@/sms/providers/mock.provider';
+import { SendSmsOptions } from '@/sms/types';
 
 @Injectable()
 export class SmsService {

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 
-import { SupportController } from './support.controller';
-import { SupportService } from './support.service';
-import { AIModule } from '../../ai/ai.module';
+import { SupportController } from '@/modules/support/support.controller';
+import { SupportService } from '@/modules/support/support.service';
+import { AIModule } from '@/ai/ai.module';
 
 @Module({
   imports: [AIModule],

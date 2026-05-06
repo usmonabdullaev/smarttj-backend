@@ -6,13 +6,13 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 
-import { ApiErrorDto } from '../../common/dto/api-error.dto';
-import { CategoriesService } from './categories.service';
+import { CategoriesService } from '@/modules/categories/categories.service';
+import { ApiErrorDto } from '@/common/dto/api-error.dto';
 import {
   CategoriesTreeResponseDto,
   CategoryItemsResponseDto,
   CategoryResponseDto,
-} from './dto/category-response.dto';
+} from '@/modules/categories/dto/category-response.dto';
 
 @Controller('categories')
 export class CategoriesController {

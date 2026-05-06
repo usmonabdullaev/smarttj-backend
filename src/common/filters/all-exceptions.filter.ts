@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 
-import { LoggerService } from '../../logger/logger.service';
+import { LoggerService } from '@/logger/logger.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -33,7 +33,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = res;
       } else if (typeof res === 'object' && res !== null) {
         const r = res as any;
-        message = r.message?.[0] ? r.message[0] : (r.message ?? message);
+
+        if (typeof r.message === 'string') {
+          message = r.message;
+        } else if (Array.isArray(r.message) && r.message.length > 0) {
+          message = r.message[0];
+        } else if (r.message) {
+          message = r.message;
+        }
+
         code = r.code ?? code;
         error = r.error ?? null;
       }

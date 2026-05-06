@@ -1,9 +1,9 @@
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 
-import { StatisticsResponseDto } from './dto/statistics-response.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { StatisticsService } from './statistics.service';
+import { StatisticsResponseDto } from '@/modules/statistics/dto/statistics-response.dto';
+import { StatisticsService } from '@/modules/statistics/statistics.service';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

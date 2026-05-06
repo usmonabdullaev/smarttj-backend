@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { AIRequestDto } from '../dto/ai-request.dto';
+import { AIRequestDto } from '@/ai/dto/ai-request.dto';
 
 @Injectable()
 export class OpenAIProvider {

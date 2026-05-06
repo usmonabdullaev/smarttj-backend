@@ -1,6 +1,9 @@
 import { Category, PrismaClient } from '@prisma/client';
 
-import { CATEGORIES, CreateCategoriesDto } from './data/categories.data';
+import {
+  CATEGORIES,
+  CreateCategoriesDto,
+} from '@/database/seeds/data/categories.data';
 
 export const seedCategories = async (prisma: PrismaClient) => {
   console.log(' → Seeding categories...');

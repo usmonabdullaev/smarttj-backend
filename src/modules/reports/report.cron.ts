@@ -2,7 +2,7 @@ import { TransactionPaymentStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
+import { PrismaService } from '@/database/prisma/prisma.service';
 
 @Injectable()
 export class ReportCron {

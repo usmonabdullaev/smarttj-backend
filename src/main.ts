@@ -3,7 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { NestFactory } from '@nestjs/core';
 
-import { AppModule } from './app.module';
+import { AppModule } from '@/app.module';
 
 const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0';
@@ -35,13 +35,13 @@ async function bootstrap() {
   const serverUrl = `http://localhost:${PORT}/${PREFIX}`;
 
   const config = new DocumentBuilder()
-    .setTitle('Smart Shop API')
+    .setTitle('Smart Shop')
     .setContact(
       'Abdulloev Usmon',
       'https://abdulloev-usmon.vercel.app',
       'abdullaevusmon2006@gmail.com',
     )
-    .setDescription('The SmartTJ API documentation')
+    .setDescription('The Smart Shop API documentation')
     .setVersion('1.0')
     .addServer(serverUrl, 'Localhost')
     .addBearerAuth({
@@ -52,7 +52,6 @@ async function bootstrap() {
       description: 'Введите JWT токен',
       in: 'header',
     })
-    .addTag('Auth', 'Authorization')
     .build();
 
   SwaggerModule.setup(

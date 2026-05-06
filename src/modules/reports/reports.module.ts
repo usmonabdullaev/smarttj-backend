@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import { ReportsController } from './reports.controller';
-import { ReportsService } from './reports.service';
-import { PdfModule } from '../../pdf/pdf.module';
-import { ReportCron } from './report.cron';
+import { ReportsController } from '@/modules/reports/reports.controller';
+import { ReportsService } from '@/modules/reports/reports.service';
+import { ReportCron } from '@/modules/reports/report.cron';
+import { PdfModule } from '@/pdf/pdf.module';
 
 @Module({
   imports: [PdfModule],

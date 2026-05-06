@@ -10,8 +10,9 @@ import {
   ProductStatus,
 } from '@prisma/client';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { userSelect } from '@/common/selects/user.select';
 
 @Injectable()
 export class OrdersService {
@@ -38,16 +39,7 @@ export class OrdersService {
                       take: 10,
                       include: {
                         user: {
-                          select: {
-                            id: true,
-                            phone: true,
-                            email: true,
-                            name: true,
-                            role: true,
-                            avatar: true,
-                            createdAt: true,
-                            updatedAt: true,
-                          },
+                          select: userSelect,
                         },
                       },
                     },
@@ -89,16 +81,7 @@ export class OrdersService {
                       take: 10,
                       include: {
                         user: {
-                          select: {
-                            id: true,
-                            phone: true,
-                            email: true,
-                            name: true,
-                            role: true,
-                            avatar: true,
-                            createdAt: true,
-                            updatedAt: true,
-                          },
+                          select: userSelect,
                         },
                       },
                     },

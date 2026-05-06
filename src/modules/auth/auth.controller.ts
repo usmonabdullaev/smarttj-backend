@@ -1,5 +1,4 @@
-import { AuthGuard } from '@nestjs/passport';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import {
   Controller,
   Post,
@@ -9,8 +8,8 @@ import {
   Delete,
   UseGuards,
   Get,
-  Req,
   Res,
+  Query,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -21,38 +20,59 @@ import {
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
 
-import { LoginResponseDto, LogoutResponseDto } from './dto/auth-response.dto';
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { ApiErrorDto } from '../../common/dto/api-error.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { AuthService } from './auth.service';
+import { GoogleOAuthService } from '@/auth/google/google-oauth.service';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { AuthService } from '@/modules/auth/auth.service';
+import { ApiErrorDto } from '@/common/dto/api-error.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import {
+  LoginResponseDto,
+  LogoutResponseDto,
+} from '@/modules/auth/dto/auth-response.dto';
 import {
   ConfirmRegisterDto,
   RequestRegisterOtpDto,
-} from './dto/register-auth.dto';
+} from '@/modules/auth/dto/register-auth.dto';
 import {
   ConfirmLoginOtpDto,
   LoginWithPasswordDto,
   RequestLoginOtpDto,
-} from './dto/login-auth.dto';
+} from '@/modules/auth/dto/login-auth.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly googleOAuthService: GoogleOAuthService,
+  ) {}
 
   @Get('google')
-  @UseGuards(AuthGuard('google'))
-  googleAuth() {}
+  googleAuth(@Query('fingerprint') fingerprint: string, @Res() res: Response) {
+    const url = this.googleOAuthService.getAuthUrl(fingerprint);
+
+    return res.redirect(url);
+  }
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
   async googleCallback(
-    @Req() req: Request,
     @Res() res: Response,
+    @Query('code') code: string,
+    @Query('state') fingerprint: string,
     @Ip() ip: string,
     @Headers('user-agent') userAgent?: string,
   ) {
-    const user = await this.authService.googleLogin(req.user, ip, userAgent);
+    const tokens = await this.googleOAuthService.getTokens(code);
+
+    const profile = await this.googleOAuthService.getProfile(
+      tokens.access_token,
+    );
+
+    const user = await this.authService.googleLogin(
+      profile,
+      fingerprint,
+      ip,
+      userAgent,
+    );
 
     return res.json(user);
   }

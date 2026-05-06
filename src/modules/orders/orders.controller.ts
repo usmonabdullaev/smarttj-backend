@@ -9,10 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { OrdersService } from './orders.service';
+import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { OrdersService } from '@/modules/orders/orders.service';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

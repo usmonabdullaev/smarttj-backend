@@ -4,11 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { CloudinaryService } from '../../cloudinary/cloudinary.service';
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { LoggerService } from '../../logger/logger.service';
-import { CreateModelDto } from './dto/create-model.dto';
-import { UpdateModelDto } from './dto/update-model.dto';
+import { CreateModelDto } from '@/modules/models/dto/create-model.dto';
+import { UpdateModelDto } from '@/modules/models/dto/update-model.dto';
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class ModelsService {

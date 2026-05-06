@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
-import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
-import { PrismaService } from '../../database/prisma/prisma.service';
+import { CreatePaymentMethodDto } from '@/modules/payment-methods/dto/create-payment-method.dto';
+import { UpdatePaymentMethodDto } from '@/modules/payment-methods/dto/update-payment-method.dto';
+import { PrismaService } from '@/database/prisma/prisma.service';
 
 @Injectable()
 export class PaymentMethodsService {

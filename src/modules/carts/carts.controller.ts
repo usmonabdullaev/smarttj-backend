@@ -10,11 +10,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateCartDto } from './dto/create-cart.dto';
-import { EditCartDto } from './dto/edit-cart.dto';
-import { CartsService } from './carts.service';
+import { CreateCartDto } from '@/modules/carts/dto/create-cart.dto';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { EditCartDto } from '@/modules/carts/dto/edit-cart.dto';
+import { CartsService } from '@/modules/carts/carts.service';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

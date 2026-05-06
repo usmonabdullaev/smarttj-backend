@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { GoogleGenAI } from '@google/genai';
 import 'dotenv/config';
 
-import { parseAIResponse } from '../utils/parse-ai-response';
-import { LoggerService } from '../../logger/logger.service';
-import { AIRequestDto } from '../dto/ai-request.dto';
+import { parseAIResponse } from '@/ai/utils/parse-ai-response';
+import { LoggerService } from '@/logger/logger.service';
+import { AIRequestDto } from '@/ai/dto/ai-request.dto';
 
 @Injectable()
 export class GeminiProvider {

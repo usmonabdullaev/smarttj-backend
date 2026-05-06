@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { CreateCartDto } from './dto/create-cart.dto';
-import { EditCartDto } from './dto/edit-cart.dto';
+import { CreateCartDto } from '@/modules/carts/dto/create-cart.dto';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { EditCartDto } from '@/modules/carts/dto/edit-cart.dto';
+import { userSelect } from '@/common/selects/user.select';
 
 @Injectable()
 export class CartsService {
@@ -24,16 +25,7 @@ export class CartsService {
                   take: 10,
                   include: {
                     user: {
-                      select: {
-                        id: true,
-                        phone: true,
-                        email: true,
-                        name: true,
-                        role: true,
-                        avatar: true,
-                        createdAt: true,
-                        updatedAt: true,
-                      },
+                      select: userSelect,
                     },
                   },
                 },

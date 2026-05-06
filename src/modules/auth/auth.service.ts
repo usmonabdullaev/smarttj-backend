@@ -1,5 +1,4 @@
 import { SmsLogPurpose } from '@prisma/client';
-import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
@@ -11,31 +10,43 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { generateOtp } from './utils/generate-otp';
-import { SmsService } from '../../sms/sms.service';
+import { GoogleProfileDto } from '@/auth/google/dto/google-oauth.dto';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { generateOtp } from '@/modules/auth/utils/generate-otp';
+import { JwtAuthService } from '@/auth/jwt/jwt-auth.service';
+import { userSelect } from '@/common/selects/user.select';
+import { SmsService } from '@/sms/sms.service';
 import {
   ConfirmRegisterDto,
   RequestRegisterOtpDto,
-} from './dto/register-auth.dto';
+} from '@/modules/auth/dto/register-auth.dto';
 import {
   ConfirmLoginOtpDto,
   LoginMetaDto,
   LoginWithPasswordDto,
   RequestLoginOtpDto,
-} from './dto/login-auth.dto';
+} from '@/modules/auth/dto/login-auth.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly smsService: SmsService,
+    private readonly jwtService: JwtAuthService,
   ) {}
 
-  async googleLogin(googleUser: any, ip: string, userAgent?: string) {
-    const { googleId, fingerprint } = googleUser;
+  async googleLogin(
+    googleProfile: GoogleProfileDto,
+    fingerprint: string,
+    ip: string,
+    userAgent?: string,
+  ) {
+    const { id } = googleProfile;
 
-    const user = await this.prisma.user.findUnique({ where: { googleId } });
+    const user = await this.prisma.user.findUnique({
+      where: { googleId: id },
+      select: userSelect,
+    });
 
     if (!user) {
       throw new UnauthorizedException();
@@ -47,18 +58,13 @@ export class AuthService {
       userAgent,
     });
 
-    const token = jwt.sign(
-      { userId: user.id, sessionId: session.id, role: user.role },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: '30d',
-      },
-    );
+    const token = this.jwtService.sign({
+      userId: user.id,
+      sessionId: session.id,
+      role: user.role,
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
-
-    return { token, user: userWithoutPassword };
+    return { token, user };
   }
 
   async requestRegisterOtp(dto: RequestRegisterOtpDto) {
@@ -166,6 +172,7 @@ export class AuthService {
         name: dto.name,
         phone: dto.phone,
       },
+      select: userSelect,
     });
 
     await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
@@ -176,18 +183,13 @@ export class AuthService {
       userAgent,
     });
 
-    const token = jwt.sign(
-      { userId: user.id, sessionId: session.id, role: user.role },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: '30d',
-      },
-    );
+    const token = this.jwtService.sign({
+      userId: user.id,
+      sessionId: session.id,
+      role: user.role,
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
-
-    return { token, user: userWithoutPassword };
+    return { token, user };
   }
 
   async loginWithPassword(
@@ -225,13 +227,11 @@ export class AuthService {
       userAgent,
     });
 
-    const token = jwt.sign(
-      { userId: user.id, sessionId: session.id, role: user.role },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: '30d',
-      },
-    );
+    const token = this.jwtService.sign({
+      userId: user.id,
+      sessionId: session.id,
+      role: user.role,
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
@@ -348,6 +348,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { phone: dto.phone },
+      select: userSelect,
     });
 
     if (!user) {
@@ -364,21 +365,13 @@ export class AuthService {
       userAgent,
     });
 
-    const token = jwt.sign(
-      { userId: user.id, sessionId: session.id, role: user.role },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: '30d',
-      },
-    );
+    const token = this.jwtService.sign({
+      userId: user.id,
+      sessionId: session.id,
+      role: user.role,
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
-
-    return {
-      token,
-      user: userWithoutPassword,
-    };
+    return { token, user };
   }
 
   async logout(sessionId: string) {
@@ -403,7 +396,7 @@ export class AuthService {
   private async upsertSession(userId: string, meta: LoginMetaDto) {
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    return this.prisma.session.upsert({
+    return await this.prisma.session.upsert({
       where: {
         userId_fingerprint: {
           userId,

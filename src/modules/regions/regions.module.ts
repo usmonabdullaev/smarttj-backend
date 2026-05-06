@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
-import { RegionsController } from './regions.controller';
-import { RegionsService } from './regions.service';
+import { RegionsController } from '@/modules/regions/regions.controller';
+import { RegionsService } from '@/modules/regions/regions.service';
 
 @Module({
   controllers: [RegionsController],

@@ -16,13 +16,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { PaymentMethodResponseDto } from './dto/payment-method-response.dto';
-import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
-import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
-import { PaymentMethodsService } from './payment-methods.service';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { PaymentMethodResponseDto } from '@/modules/payment-methods/dto/payment-method-response.dto';
+import { CreatePaymentMethodDto } from '@/modules/payment-methods/dto/create-payment-method.dto';
+import { UpdatePaymentMethodDto } from '@/modules/payment-methods/dto/update-payment-method.dto';
+import { PaymentMethodsService } from '@/modules/payment-methods/payment-methods.service';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
