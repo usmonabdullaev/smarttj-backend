@@ -44,7 +44,7 @@ export class GoogleOAuthService {
       throw new BadRequestException('Failed to exchange code for tokens');
     }
 
-    return res.json();
+    return await res.json();
   }
 
   async getProfile(accessToken: string): Promise<GoogleProfileDto> {
@@ -58,6 +58,6 @@ export class GoogleOAuthService {
       throw new BadRequestException('Failed to get Google profile');
     }
 
-    return res.json();
+    return await res.json();
   }
 }

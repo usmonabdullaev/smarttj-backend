@@ -9,8 +9,9 @@ datasource db {
 enum UserRole {
   SYSADMIN // Системный администратор, полный доступ ко всем функциям и данным
   USER // Обычный пользователь, может просматривать и заказывать товары, управлять своим профилем
-  ADMIN // Администратор, может управлять товарами, заказами и пользователями, но не имеет доступа к системным настройкам
-  MODERATOR // Модератор, может управлять отзывами и поддержкой, но не имеет доступа к товарам и заказам
+  ADMIN // Администратор, может управлять товарами, заказами и пользователями
+  MODERATOR // Модератор, может управлять отзывами и поддержкой
+  PARTNER // Партнер, может управлять своими товарами и заказами
 }
 
 model User {
@@ -41,6 +42,7 @@ model User {
   supportChats  SupportChat[]
   operatorChats SupportChat[]  @relation("AssignedOperator")
   region        Region?        @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  partners      Partner?
 }
 
 model Session {
@@ -97,6 +99,43 @@ model SmsLog {
   updatedAt DateTime @updatedAt
 }
 
+enum PartnerStatus {
+  IN_MODERATE
+  ACTIVE
+  BLOCKED
+}
+
+enum PartnerIdentification {
+  MINIMUM
+  STANDART
+  MAXIMUM
+}
+
+model Partner {
+  id             String                @id @default(uuid(7))
+  userId         String                @unique
+  bonus          Int                   @default(0)
+  status         PartnerStatus         @default(IN_MODERATE)
+  identification PartnerIdentification @default(MINIMUM)
+  title          String
+  description    String                @default("")
+  logo           String?
+  logoId         String?
+  email          String?
+  phone1         String
+  phone2         String?
+  address1       String?
+  address2       String?
+  about          String?
+  inn            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  products Product[]
+}
+
 enum EmployeeStatus {
   ACTIVE // Активный
   ON_VACATION // В отпуске
@@ -113,7 +152,7 @@ model Employee {
   salary         Int
   passportNumber String
   hireDate       DateTime       @default(now())
-  status         EmployeeStatus
+  status         EmployeeStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -157,14 +196,13 @@ model Region {
   children Region[]  @relation("RegionToSub")
   users    User[]
   products Product[]
-  shops    Shop[]
   adresses Address[]
 }
 
 model Address {
   id        String   @id @default(uuid(7))
   userId    String
-  label     String?
+  label     String
   full      String
   regionId  String
   createdAt DateTime @default(now())
@@ -176,23 +214,6 @@ model Address {
   @@index([userId])
 }
 
-model Shop {
-  id       String @id @default(uuid(7))
-  name     String
-  address  String
-  phone    String
-  regionId String
-  location Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  region Region  @relation(fields: [regionId], references: [id], onDelete: Cascade)
-  orders Order[]
-
-  @@index([regionId])
-}
-
 enum ProductStatus {
   DRAFT // Черновик, не отображается пользователям
   ACTIVE // Активный, отображается пользователям
@@ -202,6 +223,7 @@ enum ProductStatus {
 
 model Product {
   id          String        @id @default(uuid(7))
+  partnerId   String
   title       String?
   price       Decimal?      @db.Decimal(10, 2)
   slug        String?       @unique
@@ -211,12 +233,13 @@ model Product {
   brandId     String?
   modelId     String?
   regionId    String?
-  publishedAt DateTime? @default(now())
+  publishedAt DateTime?     @default(now())
   status      ProductStatus @default(DRAFT)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  partner  Partner          @relation(fields: [partnerId], references: [id])
   category Category?        @relation(fields: [categoryId], references: [id])
   brand    Brand?           @relation(fields: [brandId], references: [id])
   model    Model?           @relation(fields: [modelId], references: [id])
@@ -507,7 +530,6 @@ model Order {
 
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
-  shop          Shop?         @relation(fields: [shopId], references: [id], onDelete: SetNull)
   address       Address?      @relation(fields: [addressId], references: [id], onDelete: SetNull)
   items         OrderItem[]
   transaction   Transaction?
@@ -522,6 +544,8 @@ enum OrderItemDeliveryStatus {
   AT_PICKUP_POINT // На пункте выдачи
   DELIVERED // Доставлен
   RECEIVED // Клиент подтвердил получение
+  RETURN_PROCESS // В процессе возврата
+  RETURN_CANCEL // Возврат отменен
   RETURNED // Возвращен
 }
 
@@ -581,30 +605,6 @@ model Transaction {
 
   order Order @relation(fields: [orderId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
-}
-
-enum CouponType {
-  AMOUNT // Фиксированная сумма скидки
-  PERCENT // Процент от стоимости заказа
-}
-
-model Coupon {
-  id              String     @id @default(uuid(7))
-  code            String     @unique
-  type            CouponType
-  discountAmount  Decimal?   @db.Decimal(10, 2)
-  discountPercent Int?
-  startDate       DateTime?
-  endDate         DateTime?
-  usageLimit      Int?
-  timesUsed       Int        @default(0)
-  isActive        Boolean    @default(true)
-  minOrderAmount  Decimal?   @db.Decimal(10, 2)
-  maxOrderAmount  Decimal?   @db.Decimal(10, 2)
-  description     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 enum SupportChatStatus {

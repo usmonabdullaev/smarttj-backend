@@ -14,6 +14,7 @@ import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
 import { SupportModule } from '@/modules/support/support.module';
 import { ReportsModule } from '@/modules/reports/reports.module';
 import { RegionsModule } from '@/modules/regions/regions.module';
+import { PartnerModule } from '@/modules/partner/partner.module';
 import { PrismaModule } from '@/database/prisma/prisma.module';
 import { BrandsModule } from '@/modules/brands/brands.module';
 import { ModelsModule } from '@/modules/models/models.module';
@@ -51,6 +52,7 @@ import { AppService } from '@/app.service';
     CartsModule,
     ServerModule,
     AdminModule,
+    PartnerModule,
   ],
   controllers: [AppController],
   providers: [

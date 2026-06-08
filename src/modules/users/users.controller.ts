@@ -43,6 +43,13 @@ export class UsersController {
     return await this.usersService.getMe(sessionId);
   }
 
+  @Get('profile')
+  @ApiOperation({ summary: 'Get user profile' })
+  @ApiOkResponse({ type: UserResponseDto })
+  async getProfile(@GetUser('userId') userId: string) {
+    return await this.usersService.getProfile(userId);
+  }
+
   @Put()
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Update current user' })

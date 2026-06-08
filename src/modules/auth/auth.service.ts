@@ -268,7 +268,10 @@ export class AuthService {
           {
             message: 'OTP already sent',
             code: 'TOO_MANY_REQUESTS',
-            error: dto.phone,
+            error: {
+              phone: dto.phone,
+              different: diff,
+            },
           },
           HttpStatus.TOO_MANY_REQUESTS,
         );

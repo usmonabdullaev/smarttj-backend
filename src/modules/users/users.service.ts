@@ -8,6 +8,7 @@ import {
 
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
+import { userSelect } from '@/common/selects/user.select';
 import { LoggerService } from '@/logger/logger.service';
 import {
   SetPasswordDto,
@@ -25,7 +26,11 @@ export class UsersService {
   async getMe(sessionId: string) {
     const session = await this.prisma.session.findFirst({
       where: { id: sessionId, isActive: true },
-      include: { user: true },
+      include: {
+        user: {
+          select: userSelect,
+        },
+      },
     });
 
     if (!session) {
@@ -43,11 +48,10 @@ export class UsersService {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = session.user;
-
-    return userWithoutPassword;
+    return session.user;
   }
+
+  async getProfile(userId: string) {}
 
   async update(id: string, dto: UpdateUserDto, avatarId?: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
