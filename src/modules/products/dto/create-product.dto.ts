@@ -30,6 +30,10 @@ export class CreateProductDto {
   @IsString()
   name!: string;
 
+  @ApiProperty({ example: '019bdffb-8ca1-7065-9b3f-0fcdd97376bf' })
+  @IsUUID()
+  partnerId!: string;
+
   @ApiProperty({ example: 'samsung-a56-8-256-gb-black-2025' })
   @IsString()
   slug!: string;

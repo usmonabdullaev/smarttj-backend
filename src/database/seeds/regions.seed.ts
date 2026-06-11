@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { REGIONS } from '@/database/seeds/data/regions.data';
+import { REGIONS } from './data/regions.data';
 
 export const seedRegions = async (prisma: PrismaClient) => {
   console.log(' → Seeding regions...');

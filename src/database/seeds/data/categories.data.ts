@@ -1,4 +1,4 @@
-import { CreateCategoryDto } from '@/modules/categories/dto/create-category.dto';
+import { CreateCategoryDto } from '../../../modules/categories/dto/create-category.dto';
 
 export class CreateCategoriesDto extends CreateCategoryDto {
   children?: CreateCategoriesDto[];

@@ -6,7 +6,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class RequestRegisterOtpDto {
+export class RequestOtpDto {
   @ApiProperty({
     example: '999999999',
   })
@@ -14,14 +14,7 @@ export class RequestRegisterOtpDto {
   phone!: string;
 }
 
-export class ConfirmRegisterDto {
-  @ApiProperty({
-    example: 'John',
-  })
-  @IsString()
-  @MinLength(2)
-  name!: string;
-
+export class VerifyOtpDto {
   @ApiProperty({
     example: '999999999',
   })

@@ -1,4 +1,4 @@
-import { CreateAttributeDto } from '@/modules/attributes/dto/create-attribute.dto';
+import { CreateAttributeDto } from '../../../modules/attributes/dto/create-attribute.dto';
 
 export const ATTRIBUTES: CreateAttributeDto[] = [
   {

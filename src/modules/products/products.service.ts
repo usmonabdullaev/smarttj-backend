@@ -164,6 +164,7 @@ export class ProductsService {
       const product = await tx.product.create({
         data: {
           title,
+          partnerId: dto.partnerId,
           description: dto.description || title,
           slug: dto.slug,
           warranty: dto.warranty,

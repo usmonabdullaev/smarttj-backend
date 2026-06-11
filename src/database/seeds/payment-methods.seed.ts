@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { CreatePaymentMethodDto } from '@/modules/payment-methods/dto/create-payment-method.dto';
+import { CreatePaymentMethodDto } from '../../modules/payment-methods/dto/create-payment-method.dto';
 
 const PAYMENT_METHODS: CreatePaymentMethodDto[] = [
   { name: 'Наличными', type: 'CASH', isActive: true },

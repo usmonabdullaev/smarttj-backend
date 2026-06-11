@@ -2,7 +2,6 @@ import { SmsLogPurpose } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -14,17 +13,12 @@ import { GoogleProfileDto } from '@/auth/google/dto/google-oauth.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { generateOtp } from '@/modules/auth/utils/generate-otp';
 import { JwtAuthService } from '@/auth/jwt/jwt-auth.service';
+import { RequestOtpDto, VerifyOtpDto } from './dto/auth.dto';
 import { userSelect } from '@/common/selects/user.select';
 import { SmsService } from '@/sms/sms.service';
 import {
-  ConfirmRegisterDto,
-  RequestRegisterOtpDto,
-} from '@/modules/auth/dto/register-auth.dto';
-import {
-  ConfirmLoginOtpDto,
   LoginMetaDto,
   LoginWithPasswordDto,
-  RequestLoginOtpDto,
 } from '@/modules/auth/dto/login-auth.dto';
 
 @Injectable()
@@ -54,131 +48,6 @@ export class AuthService {
 
     const session = await this.upsertSession(user?.id, {
       fingerprint,
-      ip,
-      userAgent,
-    });
-
-    const token = this.jwtService.sign({
-      userId: user.id,
-      sessionId: session.id,
-      role: user.role,
-    });
-
-    return { token, user };
-  }
-
-  async requestRegisterOtp(dto: RequestRegisterOtpDto) {
-    const exists = await this.prisma.user.findUnique({
-      where: { phone: dto.phone },
-    });
-
-    if (exists) {
-      throw new ConflictException({
-        message: 'User already registered',
-        code: 'CONFLICT',
-        error: dto.phone,
-      });
-    }
-
-    const lastOtp = await this.prisma.authOtp.findFirst({
-      where: { phone: dto.phone },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    if (lastOtp) {
-      const diff = Date.now() - new Date(lastOtp.createdAt).getTime();
-
-      if (diff < 60_000) {
-        throw new HttpException(
-          {
-            message: 'Please wait before requesting new OTP',
-            code: 'TOO_MANY_REQUESTS',
-            error: dto.phone,
-          },
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      }
-    }
-
-    await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
-
-    const code = generateOtp();
-
-    await this.prisma.authOtp.create({
-      data: {
-        phone: dto.phone,
-        code,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minute
-      },
-    });
-
-    await this.smsService.send({
-      phone: dto.phone,
-      message: `Ваш код подтверждения: ${code}`,
-      purpose: SmsLogPurpose.REGISTER,
-    });
-
-    return { success: true, message: 'OTP code sent' };
-  }
-
-  async confirmRegisterOtp(
-    dto: ConfirmRegisterDto,
-    ip: string,
-    userAgent?: string,
-  ) {
-    const exists = await this.prisma.user.findUnique({
-      where: { phone: dto.phone },
-    });
-
-    if (exists) {
-      throw new ConflictException({ message: 'User already registered' });
-    }
-
-    const otp = await this.prisma.authOtp.findFirst({
-      where: { phone: dto.phone },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    if (!otp) {
-      throw new BadRequestException({ message: 'OTP not found' });
-    }
-
-    if (otp.expiresAt < new Date()) {
-      await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
-
-      throw new BadRequestException({ message: 'OTP expired' });
-    }
-
-    if (otp.attempts >= 5) {
-      await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
-
-      throw new HttpException(
-        { message: 'Too many attemts. Please request new OTP' },
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-
-    if (otp.code !== dto.code) {
-      await this.prisma.authOtp.update({
-        where: { id: otp.id },
-        data: { attempts: { increment: 1 } },
-      });
-
-      throw new BadRequestException({ message: 'Invalid OTP' });
-    }
-
-    const user = await this.prisma.user.create({
-      data: {
-        name: dto.name,
-        phone: dto.phone,
-      },
-      select: userSelect,
-    });
-
-    await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
-
-    const session = await this.upsertSession(user.id, {
-      fingerprint: dto.fingerprint,
       ip,
       userAgent,
     });
@@ -242,18 +111,10 @@ export class AuthService {
     };
   }
 
-  async requestLoginOtp(dto: RequestLoginOtpDto) {
+  async requestOtp(dto: RequestOtpDto) {
     const user = await this.prisma.user.findUnique({
       where: { phone: dto.phone },
     });
-
-    if (!user) {
-      throw new UnauthorizedException({
-        message: 'User not found',
-        code: 'USER_NOT_FOUND',
-        error: { phone: dto.phone },
-      });
-    }
 
     const lastOtp = await this.prisma.authOtp.findFirst({
       where: { phone: dto.phone },
@@ -293,17 +154,13 @@ export class AuthService {
     await this.smsService.send({
       phone: dto.phone,
       message: `Ваш код подтверждения: ${code}`,
-      purpose: SmsLogPurpose.LOGIN,
+      purpose: user ? SmsLogPurpose.LOGIN : SmsLogPurpose.REGISTER,
     });
 
     return { success: true, message: 'OTP code sent' };
   }
 
-  async confirmLoginOtp(
-    dto: ConfirmLoginOtpDto,
-    ip: string,
-    userAgent?: string,
-  ) {
+  async verifyOtp(dto: VerifyOtpDto, ip: string, userAgent?: string) {
     const otp = await this.prisma.authOtp.findFirst({
       where: { phone: dto.phone },
       orderBy: { createdAt: 'desc' },
@@ -349,14 +206,15 @@ export class AuthService {
       });
     }
 
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.upsert({
       where: { phone: dto.phone },
+      create: {
+        name: 'Гость',
+        phone: dto.phone,
+      },
+      update: {},
       select: userSelect,
     });
-
-    if (!user) {
-      throw new BadRequestException();
-    }
 
     await this.prisma.authOtp.deleteMany({
       where: { phone: dto.phone },

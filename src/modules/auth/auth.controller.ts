@@ -17,11 +17,12 @@ import {
   ApiBearerAuth,
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
-  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 
+import { LoginWithPasswordDto } from '@/modules/auth/dto/login-auth.dto';
 import { GoogleOAuthService } from '@/auth/google/google-oauth.service';
 import { GetUser } from '@/common/decorators/get-user.decorator';
+import { RequestOtpDto, VerifyOtpDto } from './dto/auth.dto';
 import { AuthService } from '@/modules/auth/auth.service';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
@@ -29,15 +30,6 @@ import {
   LoginResponseDto,
   LogoutResponseDto,
 } from '@/modules/auth/dto/auth-response.dto';
-import {
-  ConfirmRegisterDto,
-  RequestRegisterOtpDto,
-} from '@/modules/auth/dto/register-auth.dto';
-import {
-  ConfirmLoginOtpDto,
-  LoginWithPasswordDto,
-  RequestLoginOtpDto,
-} from '@/modules/auth/dto/login-auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -77,23 +69,6 @@ export class AuthController {
     return res.json(user);
   }
 
-  @Post('register/request-otp')
-  @ApiOperation({ summary: 'Request to register' })
-  async requestRegisterOtp(@Body() dto: RequestRegisterOtpDto) {
-    return await this.authService.requestRegisterOtp(dto);
-  }
-
-  @Post('register/confirm-otp')
-  @ApiOperation({ summary: 'Confirm register' })
-  @ApiOkResponse({ type: LoginResponseDto })
-  async confirmRegisterOtp(
-    @Body() dto: ConfirmRegisterDto,
-    @Ip() ip: string,
-    @Headers('user-agent') userAgent?: string,
-  ) {
-    return await this.authService.confirmRegisterOtp(dto, ip, userAgent);
-  }
-
   @Post('login/password')
   @ApiOperation({ summary: 'Login with password' })
   @ApiOkResponse({ type: LoginResponseDto })
@@ -106,23 +81,20 @@ export class AuthController {
     return await this.authService.loginWithPassword(dto, ip, userAgent);
   }
 
-  @Post('login/request-otp')
-  @ApiOperation({ summary: 'Request login OTP' })
-  @ApiUnauthorizedResponse({ type: ApiErrorDto })
-  async requestLoginOtp(@Body() dto: RequestLoginOtpDto) {
-    return await this.authService.requestLoginOtp(dto);
+  @Post('request-otp')
+  @ApiOperation({ summary: 'Request OTP' })
+  async requestOtp(@Body() dto: RequestOtpDto) {
+    return await this.authService.requestOtp(dto);
   }
 
-  @Post('login/confirm-otp')
-  @ApiOperation({ summary: 'Confirm login OTP' })
-  @ApiOkResponse({ type: LoginResponseDto })
-  @ApiBadRequestResponse({ type: ApiErrorDto })
-  async confirmLoginOtp(
-    @Body() dto: ConfirmLoginOtpDto,
+  @Post('verify-otp')
+  @ApiOperation({ summary: 'Verify OTP' })
+  async verifyOtp(
+    @Body() dto: VerifyOtpDto,
     @Ip() ip: string,
     @Headers('user-agent') userAgent?: string,
   ) {
-    return await this.authService.confirmLoginOtp(dto, ip, userAgent);
+    return await this.authService.verifyOtp(dto, ip, userAgent);
   }
 
   @Delete('logout')

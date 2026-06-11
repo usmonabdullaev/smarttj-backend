@@ -2,11 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import 'dotenv/config';
 
-import { seedPaymentMethods } from '@/database/seeds/payment-methods.seed';
-import { seedCategories } from '@/database/seeds/categories.seed';
-import { seedRegions } from '@/database/seeds/regions.seed';
-import { seedBrands } from '@/database/seeds/brands.seed';
-import { seedUsers } from '@/database/seeds/users.seed';
+import { seedPaymentMethods } from './payment-methods.seed';
+import { seedCategories } from './categories.seed';
+import { seedRegions } from './regions.seed';
+import { seedBrands } from './brands.seed';
+import { seedUsers } from './users.seed';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
