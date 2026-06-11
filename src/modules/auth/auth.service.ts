@@ -157,7 +157,10 @@ export class AuthService {
       purpose: user ? SmsLogPurpose.LOGIN : SmsLogPurpose.REGISTER,
     });
 
-    return { success: true, message: 'OTP code sent' };
+    return {
+      success: true,
+      message: `Код подтверждения отправлен на ${dto.phone}, код: ${code}`,
+    };
   }
 
   async verifyOtp(dto: VerifyOtpDto, ip: string, userAgent?: string) {

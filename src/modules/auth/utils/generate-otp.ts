@@ -1,3 +1,5 @@
-export const generateOtp = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+export const generateOtp = (length = 4) => {
+  return Math.floor(Math.random() * Math.pow(10, length))
+    .toString()
+    .padStart(length, '0');
 };

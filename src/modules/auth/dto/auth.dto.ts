@@ -22,10 +22,10 @@ export class VerifyOtpDto {
   phone!: string;
 
   @ApiProperty({
-    example: '123456',
+    example: '1234',
   })
   @IsString()
-  @MinLength(6)
+  @MinLength(4)
   code!: string;
 
   @ApiProperty({
