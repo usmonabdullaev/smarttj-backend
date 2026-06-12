@@ -26,7 +26,45 @@ export class ProductsService {
         where: {
           product: {
             categoryId,
+            ...(query.rating
+              ? {
+                  averageRating: { gte: query.rating },
+                }
+              : {}),
           },
+        },
+        orderBy: {
+          ...(query.sort === 'popular'
+            ? {
+                product: {
+                  soldCount: 'desc',
+                },
+              }
+            : {}),
+          ...(query.sort === 'price-asc'
+            ? {
+                price: 'asc',
+              }
+            : {}),
+          ...(query.sort === 'price-desc'
+            ? {
+                price: 'desc',
+              }
+            : {}),
+          ...(query.sort === 'rating'
+            ? {
+                product: {
+                  averageRating: 'desc',
+                },
+              }
+            : {}),
+          ...(query.sort === 'new'
+            ? {
+                product: {
+                  publishedAt: 'desc',
+                },
+              }
+            : {}),
         },
         take: limit,
         skip,

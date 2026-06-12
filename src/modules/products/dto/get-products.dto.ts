@@ -9,4 +9,12 @@ export class GetProductsQueryDto {
   @ApiPropertyOptional({ example: 18 })
   @IsOptional()
   limit?: number;
+
+  @ApiPropertyOptional({ example: 'price-asc' })
+  @IsOptional()
+  sort?: 'popular' | 'price-asc' | 'price-desc' | 'rating' | 'new';
+
+  @ApiPropertyOptional({ example: 2 })
+  @IsOptional()
+  rating?: 2 | 3 | 4;
 }

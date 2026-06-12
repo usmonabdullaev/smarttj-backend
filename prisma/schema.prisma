@@ -222,19 +222,23 @@ enum ProductStatus {
 }
 
 model Product {
-  id          String        @id @default(uuid(7))
-  partnerId   String
-  title       String?
-  price       Decimal?      @db.Decimal(10, 2)
-  slug        String?       @unique
-  description String?
-  warranty    Int?
-  categoryId  String?
-  brandId     String?
-  modelId     String?
-  regionId    String?
-  publishedAt DateTime?     @default(now())
-  status      ProductStatus @default(DRAFT)
+  id            String        @id @default(uuid(7))
+  partnerId     String
+  title         String?
+  price         Decimal?      @db.Decimal(10, 2)
+  slug          String?       @unique
+  description   String?
+  warranty      Int?
+  categoryId    String?
+  brandId       String?
+  modelId       String?
+  regionId      String?
+  publishedAt   DateTime?     @default(now())
+  status        ProductStatus @default(DRAFT)
+  averageRating Float         @default(0)
+  reviewsCount  Int           @default(0)
+  soldCount     Int           @default(0)
+  viewsCount    Int           @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -269,6 +273,7 @@ model ProductVariant {
   orderItems   OrderItem[]
   priceHistory ProductPriceHistory[]
   attributes   ProductAttribute[]
+  reviews      Review[]
 
   @@index([code])
   @@index([productId])
@@ -288,19 +293,21 @@ model ProductPriceHistory {
 }
 
 model Review {
-  id         String @id @default(uuid(7))
-  userId     String
-  productId  String
-  rating     Int
-  advantages String @default("")
-  flaws      String @default("")
-  comment    String
+  id               String  @id @default(uuid(7))
+  userId           String
+  productId        String
+  productVariantId String?
+  rating           Int
+  advantages       String  @default("")
+  flaws            String  @default("")
+  comment          String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productVariant ProductVariant? @relation(fields: [productVariantId], references: [id])
 
   @@index([productId])
 }
