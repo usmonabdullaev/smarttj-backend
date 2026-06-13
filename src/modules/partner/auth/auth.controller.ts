@@ -1,17 +1,50 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { UserRole } from '@prisma/client';
+import {
+  Body,
+  Controller,
+  Ip,
+  Post,
+  Headers,
+  Get,
+  UseGuards,
+} from '@nestjs/common';
 
 import { AuthService } from '@/modules/partner/auth/auth.service';
-import { ApiErrorDto } from '@/common/dto/api-error.dto';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import {
+  PartnerRegisterRequestDto,
+  PartnerRegisterVerifyDto,
+} from '@/modules/partner/auth/dto/partner-auth.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get()
-  @ApiOperation({ summary: 'Users list' })
-  @ApiUnauthorizedResponse({ type: ApiErrorDto })
-  async getAll() {
-    return await this.authService.register();
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.PARTNER)
+  @ApiBearerAuth()
+  @Get('me')
+  async getProfile(@GetUser('sessionId') sessionId: string) {
+    return await this.authService.getProfile(sessionId);
+  }
+
+  @Post('register/request-otp')
+  @ApiOperation({ summary: 'Request OTP' })
+  async registerRequest(@Body() dto: PartnerRegisterRequestDto) {
+    return await this.authService.registerRequest(dto);
+  }
+
+  @Post('register/verify-otp')
+  @ApiOperation({ summary: 'Verify OTP' })
+  async registerVerify(
+    @Body() dto: PartnerRegisterVerifyDto,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent?: string,
+  ) {
+    return await this.authService.registerVerify(dto, ip, userAgent);
   }
 }

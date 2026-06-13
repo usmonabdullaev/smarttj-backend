@@ -1,4 +1,4 @@
-import { SmsLogPurpose } from '@prisma/client';
+import { SmsLogPurpose, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
@@ -113,7 +113,7 @@ export class AuthService {
 
   async requestOtp(dto: RequestOtpDto) {
     const user = await this.prisma.user.findUnique({
-      where: { phone: dto.phone },
+      where: { phone_role: { phone: dto.phone, role: UserRole.USER } },
     });
 
     const lastOtp = await this.prisma.authOtp.findFirst({
@@ -210,7 +210,7 @@ export class AuthService {
     }
 
     const user = await this.prisma.user.upsert({
-      where: { phone: dto.phone },
+      where: { phone_role: { phone: dto.phone, role: UserRole.USER } },
       create: {
         name: 'Гость',
         phone: dto.phone,
@@ -257,7 +257,7 @@ export class AuthService {
     });
   }
 
-  private async upsertSession(userId: string, meta: LoginMetaDto) {
+  async upsertSession(userId: string, meta: LoginMetaDto) {
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     return await this.prisma.session.upsert({

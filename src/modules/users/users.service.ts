@@ -51,8 +51,6 @@ export class UsersService {
     return session.user;
   }
 
-  async getProfile(userId: string) {}
-
   async update(id: string, dto: UpdateUserDto, avatarId?: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
 

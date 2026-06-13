@@ -243,24 +243,4 @@ export class ProductsService {
       return { product, variant };
     });
   }
-
-  async deleteProduct(id: string) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
-
-    if (!product) {
-      throw new NotFoundException({ message: 'Product not fount' });
-    }
-
-    await this.prisma.productPriceHistory.deleteMany({
-      where: {
-        variant: {
-          product: {
-            id,
-          },
-        },
-      },
-    });
-
-    return await this.prisma.product.delete({ where: { id } });
-  }
 }
