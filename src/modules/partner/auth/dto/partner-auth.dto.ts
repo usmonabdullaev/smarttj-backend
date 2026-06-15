@@ -1,11 +1,10 @@
 import {
   IsNotEmpty,
-  IsOptional,
   IsPhoneNumber,
   IsString,
   MinLength,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class PartnerRegisterRequestDto {
   @ApiProperty({
@@ -49,12 +48,35 @@ export class PartnerRegisterVerifyDto {
   @IsPhoneNumber('TJ')
   phone1!: string;
 
-  @ApiPropertyOptional({
-    example: 'Description',
+  @ApiProperty({
+    example: 'fp_293hf293f23f23',
   })
-  @IsOptional()
   @IsString()
-  description?: string;
+  @IsNotEmpty()
+  fingerprint!: string;
+}
+
+export class PartnerLoginRequestDto {
+  @ApiProperty({
+    example: '999999999',
+  })
+  @IsPhoneNumber('TJ')
+  phone!: string;
+}
+
+export class PartnerLoginVerifyDto {
+  @ApiProperty({
+    example: '999999999',
+  })
+  @IsPhoneNumber('TJ')
+  phone!: string;
+
+  @ApiProperty({
+    example: '1234',
+  })
+  @IsString()
+  @MinLength(4)
+  code!: string;
 
   @ApiProperty({
     example: 'fp_293hf293f23f23',

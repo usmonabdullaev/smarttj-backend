@@ -16,6 +16,8 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import {
+  PartnerLoginRequestDto,
+  PartnerLoginVerifyDto,
   PartnerRegisterRequestDto,
   PartnerRegisterVerifyDto,
 } from '@/modules/partner/auth/dto/partner-auth.dto';
@@ -33,18 +35,34 @@ export class AuthController {
   }
 
   @Post('register/request-otp')
-  @ApiOperation({ summary: 'Request OTP' })
+  @ApiOperation({ summary: 'Register request OTP' })
   async registerRequest(@Body() dto: PartnerRegisterRequestDto) {
     return await this.authService.registerRequest(dto);
   }
 
   @Post('register/verify-otp')
-  @ApiOperation({ summary: 'Verify OTP' })
+  @ApiOperation({ summary: 'Register verify OTP' })
   async registerVerify(
     @Body() dto: PartnerRegisterVerifyDto,
     @Ip() ip: string,
     @Headers('user-agent') userAgent?: string,
   ) {
     return await this.authService.registerVerify(dto, ip, userAgent);
+  }
+
+  @Post('login/request-otp')
+  @ApiOperation({ summary: 'Login request OTP' })
+  async loginRequest(@Body() dto: PartnerLoginRequestDto) {
+    return await this.authService.loginRequest(dto);
+  }
+
+  @Post('login/verify-otp')
+  @ApiOperation({ summary: 'Login verify OTP' })
+  async loginVerify(
+    @Body() dto: PartnerLoginVerifyDto,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent?: string,
+  ) {
+    return await this.authService.loginVerify(dto, ip, userAgent);
   }
 }
