@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { AuthService } from '@/modules/partner/auth/auth.service';
+import { PartnerAuthService } from '@/modules/partner/auth/auth.service';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
@@ -23,21 +23,21 @@ import {
 } from '@/modules/partner/auth/dto/partner-auth.dto';
 
 @Controller('auth')
-export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+export class PartnerAuthController {
+  constructor(private readonly partnerAuthService: PartnerAuthService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.PARTNER)
   @ApiBearerAuth()
   @Get('me')
   async getProfile(@GetUser('sessionId') sessionId: string) {
-    return await this.authService.getProfile(sessionId);
+    return await this.partnerAuthService.getProfile(sessionId);
   }
 
   @Post('register/request-otp')
   @ApiOperation({ summary: 'Register request OTP' })
   async registerRequest(@Body() dto: PartnerRegisterRequestDto) {
-    return await this.authService.registerRequest(dto);
+    return await this.partnerAuthService.registerRequest(dto);
   }
 
   @Post('register/verify-otp')
@@ -47,13 +47,13 @@ export class AuthController {
     @Ip() ip: string,
     @Headers('user-agent') userAgent?: string,
   ) {
-    return await this.authService.registerVerify(dto, ip, userAgent);
+    return await this.partnerAuthService.registerVerify(dto, ip, userAgent);
   }
 
   @Post('login/request-otp')
   @ApiOperation({ summary: 'Login request OTP' })
   async loginRequest(@Body() dto: PartnerLoginRequestDto) {
-    return await this.authService.loginRequest(dto);
+    return await this.partnerAuthService.loginRequest(dto);
   }
 
   @Post('login/verify-otp')
@@ -63,6 +63,6 @@ export class AuthController {
     @Ip() ip: string,
     @Headers('user-agent') userAgent?: string,
   ) {
-    return await this.authService.loginVerify(dto, ip, userAgent);
+    return await this.partnerAuthService.loginVerify(dto, ip, userAgent);
   }
 }

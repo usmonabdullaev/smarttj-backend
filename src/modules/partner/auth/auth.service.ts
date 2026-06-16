@@ -23,7 +23,7 @@ import {
 import { SmsService } from '@/sms/sms.service';
 
 @Injectable()
-export class AuthService {
+export class PartnerAuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly smsService: SmsService,

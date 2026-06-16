@@ -217,17 +217,18 @@ model Address {
 }
 
 enum ProductStatus {
-  DRAFT // Черновик, не отображается пользователям
-  ACTIVE // Активный, отображается пользователям
-  INACTIVE // Неактивный, не отображается пользователям, но сохраняется в базе
-  DISCONTINUED // Снят с производства, отображается пользователям, но помечен как недоступный
+  DRAFT // Черновик
+  IN_MODERATE // В модерации
+  ACTIVE // Активный
+  INACTIVE // Неактивный
+  NOT_AVAILABLE // Нет в наличии
+  DELETED // В процессе удаления
 }
 
 model Product {
   id            String        @id @default(uuid(7))
   partnerId     String
   title         String?
-  price         Decimal?      @db.Decimal(10, 2)
   slug          String?       @unique
   description   String?
   warranty      Int?
@@ -241,6 +242,7 @@ model Product {
   reviewsCount  Int           @default(0)
   soldCount     Int           @default(0)
   viewsCount    Int           @default(0)
+  deletedAt     DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -378,12 +380,11 @@ model Model {
 }
 
 model Image {
-  id               String  @id @default(uuid(7))
+  id               String @id @default(uuid(7))
   productVariantId String
   url              String
   urlId            String
-  alt              String?
-  order            Int     @default(1)
+  order            Int    @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

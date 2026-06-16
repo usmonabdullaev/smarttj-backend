@@ -1,0 +1,121 @@
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UserRole } from '@prisma/client';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+} from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+
+import { PartnerProductsService } from '@/modules/partner/products/products.service';
+import { ProductResponseDto } from '@/modules/products/dto/product-response.dto';
+import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
+import { PartnerAuthService } from '@/modules/partner/auth/auth.service';
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
+import { GetUser } from '@/common/decorators/get-user.decorator';
+import { Roles } from '@/common/decorators/roles.decorator';
+import {
+  CreateProductDto,
+  CreateProductVariantDto,
+} from '@/modules/partner/products/dto/create-product.dto';
+import { ApiErrorDto } from '@/common/dto/api-error.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.PARTNER)
+@ApiBearerAuth()
+@Controller('products')
+export class PartnerProductsController {
+  constructor(
+    private readonly partnerProductsService: PartnerProductsService,
+    private readonly partnerAuthService: PartnerAuthService,
+    private readonly cloudinary: CloudinaryService,
+  ) {}
+
+  @Get('category/:id')
+  @ApiOperation({ summary: 'Category Products' })
+  async getList(
+    @Param('id') categoryId: string,
+    @Query() query: GetProductsQueryDto,
+  ) {
+    return await this.partnerProductsService.getList(categoryId, query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get product' })
+  @ApiOkResponse({ type: ProductResponseDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async getById(@Param('id') id: string) {
+    return await this.partnerProductsService.getById(id);
+  }
+
+  @Post('create/:categoryId')
+  async create(
+    @GetUser('sessionId') sessionId: string,
+    @Param('categoryId') categoryId: string,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.create(profile.id, categoryId);
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() dto: CreateProductDto) {
+    return await this.partnerProductsService.update(id, dto);
+  }
+
+  @Post(':id/create-variant')
+  async createVariant(
+    @Param('id') id: string,
+    @Body() dto: CreateProductVariantDto,
+  ) {
+    return await this.partnerProductsService.createVariant(id, dto);
+  }
+
+  @Put(':id/variant')
+  async updateVariant(
+    @Param('id') id: string,
+    @Body() dto: CreateProductVariantDto,
+  ) {
+    return await this.partnerProductsService.updateVariant(id, dto);
+  }
+
+  @Post(':id/images')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('images'))
+  async uploadImages(
+    @Param('id') id: string,
+    @UploadedFiles() images: Express.Multer.File[],
+  ) {
+    const uploads = await this.cloudinary.uploadFiles(images, 'images');
+
+    return await this.partnerProductsService.uploadImages(
+      id,
+      uploads.map((upload, index) => ({
+        url: upload.secure_url,
+        urlId: upload.public_id,
+        order: index + 1,
+      })),
+    );
+  }
+
+  @Delete('image/:id')
+  async deleteImage(@Param('id') id: string) {
+    return await this.partnerProductsService.deleteImage(id);
+  }
+}

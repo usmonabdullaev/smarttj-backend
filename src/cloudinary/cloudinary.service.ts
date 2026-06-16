@@ -5,6 +5,13 @@ import { Express } from 'express';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Multer } from 'multer';
 
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/avif',
+];
+
 @Injectable()
 export class CloudinaryService {
   constructor() {
@@ -28,8 +35,7 @@ export class CloudinaryService {
       });
     }
 
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
+    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       throw new BadRequestException({
         message: 'Incorrect file type',
         code: 'INCORRECT_FILE_TYPE',
@@ -51,6 +57,31 @@ export class CloudinaryService {
 
       streamifier.createReadStream(file.buffer).pipe(upload);
     });
+  }
+
+  async uploadFiles(
+    files: Express.Multer.File[],
+    folder: string,
+  ): Promise<UploadApiResponse[]> {
+    if (!files || files.length === 0) {
+      throw new BadRequestException({
+        message: 'Files not found',
+        code: 'FILES_NOT_FOUND',
+        error: null,
+      });
+    }
+
+    for (const f of files) {
+      if (!ALLOWED_MIME_TYPES.includes(f.mimetype)) {
+        throw new BadRequestException({
+          message: 'Incorrect file type',
+          code: 'INCORRECT_FILE_TYPE',
+          error: f.mimetype,
+        });
+      }
+    }
+
+    return Promise.all(files.map((file) => this.uploadFile(file, folder)));
   }
 
   async deleteFile(publicId: string) {
