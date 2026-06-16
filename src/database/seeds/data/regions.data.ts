@@ -5,6 +5,6 @@ export const REGIONS = [
   },
   {
     title: 'Худжанд',
-    slug: 'khujand',
+    slug: 'khudjand',
   },
 ];

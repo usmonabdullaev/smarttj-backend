@@ -328,9 +328,10 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  parent   Category?  @relation("CategoryToSub", fields: [parentId], references: [id], onDelete: Cascade)
-  children Category[] @relation("CategoryToSub")
-  products Product[]
+  parent     Category?   @relation("CategoryToSub", fields: [parentId], references: [id], onDelete: Cascade)
+  children   Category[]  @relation("CategoryToSub")
+  products   Product[]
+  attributes Attribute[]
 
   @@unique([parentKey, slug])
   @@index([parentId])
@@ -396,12 +397,14 @@ enum AttributeType {
   STRING // Строка
   NUMBER // Число
   BOOLEAN // Логическое значение
+  SELECT
+  MULTISELECT
 }
 
 model Attribute {
   id         String        @id @default(uuid(7))
+  categoryId String?
   name       String
-  slug       String        @unique
   type       AttributeType
   unit       String?
   groupId    String?
@@ -412,6 +415,7 @@ model Attribute {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  category          Category?          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   ptoductAttributes ProductAttribute[]
   values            AttributeValue[]
   group             AttributeGroup?    @relation(fields: [groupId], references: [id], onDelete: SetNull)

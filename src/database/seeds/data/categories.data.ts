@@ -1,7 +1,9 @@
+import { CreateAttributeDto } from '../../../modules/attributes/dto/create-attribute.dto';
 import { CreateCategoryDto } from '../../../modules/categories/dto/create-category.dto';
 
 export class CreateCategoriesDto extends CreateCategoryDto {
   children?: CreateCategoriesDto[];
+  attributes?: CreateAttributeDto[];
 }
 
 export const CATEGORIES: CreateCategoriesDto[] = [
@@ -10,6 +12,38 @@ export const CATEGORIES: CreateCategoriesDto[] = [
     short_name: 'Смартфоны',
     slug: 'smartfony',
     order: 1,
+    attributes: [
+      {
+        name: 'Оперативная память',
+        type: 'SELECT',
+        unit: 'ГБ',
+        required: true,
+        filterable: true,
+        order: 1,
+        values: [
+          {
+            valueNumber: 4,
+            label: '4',
+          },
+          {
+            valueNumber: 6,
+            label: '6',
+          },
+          {
+            valueNumber: 8,
+            label: '8',
+          },
+          {
+            valueNumber: 12,
+            label: '12',
+          },
+          {
+            valueNumber: 16,
+            label: '16',
+          },
+        ],
+      },
+    ],
   },
   {
     name: 'Ноутбуки',

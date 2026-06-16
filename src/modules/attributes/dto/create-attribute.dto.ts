@@ -8,13 +8,13 @@ export class CreateAttributeValueDto {
 }
 
 export class CreateAttributeDto {
+  categoryId?: string;
   name!: string;
-  slug!: string;
   type!: AttributeType;
   unit?: string;
   groupId?: string;
   required?: boolean;
   filterable?: boolean;
   order?: number;
-  values!: CreateAttributeValueDto[];
+  values?: CreateAttributeValueDto[];
 }
