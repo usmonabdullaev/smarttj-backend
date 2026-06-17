@@ -84,18 +84,20 @@ enum SmsLogPurpose {
 }
 
 enum SmsLogStatus {
+  NEW // In progress
   SENT // Сообщение отправлено
   FAILED // Ошибка при отправке
 }
 
 model SmsLog {
-  id       String        @id @default(uuid(7))
-  phone    String
-  message  String
-  purpose  SmsLogPurpose
-  provider String?
-  status   SmsLogStatus
-  error    String?
+  id        String        @id @default(uuid(7))
+  phone     String
+  message   String
+  purpose   SmsLogPurpose
+  provider  String?
+  status    SmsLogStatus
+  messageId String?
+  error     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

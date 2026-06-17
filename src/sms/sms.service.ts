@@ -1,27 +1,36 @@
-import { Injectable } from '@nestjs/common';
 import { SmsLogStatus } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
 
+import { SmsgateProvider } from '@/sms/providers/smsgate.provider';
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { MockSmsProvider } from '@/sms/providers/mock.provider';
 import { SendSmsOptions } from '@/sms/types';
 
 @Injectable()
 export class SmsService {
-  private provider = new MockSmsProvider();
+  private provider = new SmsgateProvider();
 
   constructor(private readonly prisma: PrismaService) {}
 
   async send({ phone, message, purpose }: SendSmsOptions) {
     try {
-      this.provider.send(phone, message);
+      const response = await this.provider.send({
+        phone,
+        message,
+        label: purpose,
+      });
 
       await this.prisma.smsLog.create({
         data: {
           phone,
           message,
           purpose,
-          status: SmsLogStatus.SENT,
-          provider: 'mock',
+          provider: 'SMS GATE',
+          status:
+            response.MessageResult === 'OK'
+              ? SmsLogStatus.SENT
+              : SmsLogStatus.FAILED,
+          messageId: response.MessageId,
+          error: undefined, // FIX
         },
       });
 
