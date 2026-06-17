@@ -32,8 +32,6 @@ async function bootstrap() {
       return res.redirect(301, `/${PREFIX}`);
     });
 
-  const serverUrl = `http://localhost:${PORT}/${PREFIX}`;
-
   const config = new DocumentBuilder()
     .setTitle('Smart Shop')
     .setContact(
@@ -43,7 +41,8 @@ async function bootstrap() {
     )
     .setDescription('The Smart Shop API documentation')
     .setVersion('1.0')
-    .addServer(serverUrl, 'Localhost')
+    .addServer(`http://localhost:${PORT}/${PREFIX}`, 'Localhost')
+    .addServer(`http://72.56.38.66:${PORT}/${PREFIX}`, 'Server (IP)')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',
