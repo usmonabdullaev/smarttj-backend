@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ProductStatus } from '@prisma/client';
 
 import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
@@ -24,6 +25,9 @@ export class ProductsService {
       this.prisma.productVariant.findMany({
         where: {
           product: {
+            status: {
+              in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
+            },
             categoryId,
             ...(query.rating
               ? {
@@ -102,7 +106,21 @@ export class ProductsService {
           },
         },
       }),
-      this.prisma.productVariant.count({ where: { product: { categoryId } } }),
+      this.prisma.productVariant.count({
+        where: {
+          product: {
+            status: {
+              in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
+            },
+            categoryId,
+            ...(query.rating
+              ? {
+                  averageRating: { gte: query.rating },
+                }
+              : {}),
+          },
+        },
+      }),
     ]);
 
     return {
@@ -117,8 +135,13 @@ export class ProductsService {
   }
 
   async getById(id: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id,
+        status: {
+          in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
+        },
+      },
       include: {
         category: true,
         brand: true,

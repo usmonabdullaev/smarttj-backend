@@ -10,8 +10,8 @@ import {
 
 import { AnalyzeResponseDto } from '@/modules/admin/ai/dto/analyze-response.dto';
 import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/analyze-request.dto';
+import { AdminAIService } from '@/modules/admin/ai/ai.service';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { AIService } from '@/modules/admin/ai/ai.service';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
@@ -20,8 +20,8 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 @Roles(UserRole.ADMIN)
 @ApiBearerAuth()
 @Controller('ai')
-export class AIController {
-  constructor(private readonly aiService: AIService) {}
+export class AdminAIController {
+  constructor(private readonly adminAIService: AdminAIService) {}
 
   @Post('analyze')
   @ApiOperation({ summary: 'AI Analysis' })
@@ -29,6 +29,6 @@ export class AIController {
   @ApiUnauthorizedResponse({ type: ApiErrorDto })
   @ApiForbiddenResponse({ type: ApiErrorDto })
   async analyze(@Body() dto: AnalyzeRequestDto) {
-    return await this.aiService.analyze(dto);
+    return await this.adminAIService.analyze(dto);
   }
 }

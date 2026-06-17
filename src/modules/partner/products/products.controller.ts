@@ -13,6 +13,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -31,6 +32,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import {
   CreateProductDto,
   CreateProductVariantDto,
+  PublishProductDto,
 } from '@/modules/partner/products/dto/create-product.dto';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
@@ -65,6 +67,7 @@ export class PartnerProductsController {
   }
 
   @Post('create/:categoryId')
+  @ApiOperation({ summary: 'Create product (status=DRAFT)' })
   async create(
     @GetUser('sessionId') sessionId: string,
     @Param('categoryId') categoryId: string,
@@ -75,11 +78,13 @@ export class PartnerProductsController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'Update product' })
   async update(@Param('id') id: string, @Body() dto: CreateProductDto) {
     return await this.partnerProductsService.update(id, dto);
   }
 
-  @Post(':id/create-variant')
+  @Post(':id/variant')
+  @ApiOperation({ summary: 'Create variant' })
   async createVariant(
     @Param('id') id: string,
     @Body() dto: CreateProductVariantDto,
@@ -87,7 +92,8 @@ export class PartnerProductsController {
     return await this.partnerProductsService.createVariant(id, dto);
   }
 
-  @Put(':id/variant')
+  @Put('variant/:id')
+  @ApiOperation({ summary: 'Update variant' })
   async updateVariant(
     @Param('id') id: string,
     @Body() dto: CreateProductVariantDto,
@@ -98,6 +104,7 @@ export class PartnerProductsController {
   @Post(':id/images')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('images'))
+  @ApiOperation({ summary: 'Upload images' })
   async uploadImages(
     @Param('id') id: string,
     @UploadedFiles() images: Express.Multer.File[],
@@ -114,8 +121,33 @@ export class PartnerProductsController {
     );
   }
 
+  @Post(':id/publish')
+  @ApiOperation({ summary: 'Publish product (status=IN_MODERATE)' })
+  async publish(@Param('id') id: string, @Body() dto: PublishProductDto) {
+    return await this.partnerProductsService.publish(id, dto);
+  }
+
   @Delete('image/:id')
+  @ApiOperation({ summary: 'Delete image' })
   async deleteImage(@Param('id') id: string) {
     return await this.partnerProductsService.deleteImage(id);
+  }
+
+  @Delete('variant/:id')
+  @ApiOperation({ summary: 'Delete variant' })
+  async deleteVariant(@Param('id') id: string) {
+    return await this.partnerProductsService.deleteVariant(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Inactive product (status=INACTIVE)' })
+  async inactive(@Param('id') id: string) {
+    return await this.partnerProductsService.inactive(id);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete product (status=DELETED)' })
+  async delete(@Param('id') id: string) {
+    return await this.partnerProductsService.delete(id);
   }
 }

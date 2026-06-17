@@ -4,7 +4,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 import { userSelect } from '@/common/selects/user.select';
 
 @Injectable()
-export class UsersService {
+export class AdminUsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getAll() {

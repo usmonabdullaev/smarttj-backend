@@ -97,4 +97,34 @@ export class CloudinaryService {
       });
     }
   }
+
+  async deleteFiles(publicIds: string[]) {
+    if (!publicIds || publicIds.length === 0) {
+      throw new BadRequestException({
+        message: 'Files not found',
+        code: 'FILES_NOT_FOUND',
+        error: null,
+      });
+    }
+
+    return Promise.all(
+      publicIds.map(async (publicId) => {
+        try {
+          const result = await this.deleteFile(publicId);
+
+          return {
+            publicId,
+            success: true,
+            result,
+          };
+        } catch (error) {
+          return {
+            publicId,
+            success: false,
+            error,
+          };
+        }
+      }),
+    );
+  }
 }

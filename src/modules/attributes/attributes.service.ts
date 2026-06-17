@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { CreateAttributeDto } from '@/modules/attributes/dto/create-attribute.dto';
 import { UpdateAttributeDto } from '@/modules/attributes/dto/update-attribute.dto';
@@ -13,14 +9,6 @@ export class AttributesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateAttributeDto) {
-    const exists = await this.prisma.attribute.findUnique({
-      where: { slug: dto.slug },
-    });
-
-    if (exists) {
-      throw new ConflictException();
-    }
-
     if (dto.groupId) {
       const group = await this.prisma.attributeGroup.findUnique({
         where: { id: dto.groupId },
@@ -34,7 +22,6 @@ export class AttributesService {
     const attribute = await this.prisma.attribute.create({
       data: {
         name: dto.name,
-        slug: dto.slug,
         type: dto.type,
         unit: dto.unit,
         groupId: dto.groupId,
@@ -44,7 +31,7 @@ export class AttributesService {
 
         values: {
           createMany: {
-            data: dto.values,
+            data: dto.values || [],
           },
         },
       },
@@ -80,16 +67,6 @@ export class AttributesService {
       throw new NotFoundException();
     }
 
-    if (dto.slug && dto.slug !== attribute.slug) {
-      const exists = await this.prisma.attribute.findUnique({
-        where: { slug: dto.slug },
-      });
-
-      if (exists) {
-        throw new ConflictException();
-      }
-    }
-
     if (dto.groupId && attribute.groupId !== dto.groupId) {
       const group = await this.prisma.attributeGroup.findUnique({
         where: { id: dto.groupId },
@@ -104,7 +81,6 @@ export class AttributesService {
       where: { id },
       data: {
         name: dto.name,
-        slug: dto.slug,
         type: dto.type,
         groupId: dto.groupId,
         filterable: dto.filterable,

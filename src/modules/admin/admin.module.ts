@@ -1,17 +1,17 @@
 import { RouterModule } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
-import { UsersModule } from '@/modules/admin/users/users.module';
-import { AIModule } from '@/modules/admin/ai/ai.module';
+import { AdminUsersModule } from '@/modules/admin/users/users.module';
+import { AdminAIModule } from '@/modules/admin/ai/ai.module';
 
 @Module({
   imports: [
-    AIModule,
-    UsersModule,
+    AdminAIModule,
+    AdminUsersModule,
     RouterModule.register([
       {
         path: 'admin',
-        children: [AIModule, UsersModule],
+        children: [AdminAIModule, AdminUsersModule],
       },
     ]),
   ],

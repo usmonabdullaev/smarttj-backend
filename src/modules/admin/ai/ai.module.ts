@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 
-import { AIController } from '@/modules/admin/ai/ai.controller';
-import { AIModule as GlobalAIModule } from '@/ai/ai.module';
-import { AIService } from '@/modules/admin/ai/ai.service';
+import { AdminAIController } from '@/modules/admin/ai/ai.controller';
+import { AdminAIService } from '@/modules/admin/ai/ai.service';
+import { AIModule } from '@/ai/ai.module';
 
 @Module({
-  imports: [GlobalAIModule],
-  controllers: [AIController],
-  providers: [AIService],
+  imports: [AIModule],
+  controllers: [AdminAIController],
+  providers: [AdminAIService],
 })
-export class AIModule {}
+export class AdminAIModule {}

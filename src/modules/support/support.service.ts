@@ -63,6 +63,17 @@ export class SupportService {
     return { text: aiResponse.text };
   }
 
+  async getChats(userId: string) {
+    return await this.prisma.supportChat.findMany({
+      where: { userId },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+  }
+
   private async getOrCreateActiveChat(userId: string) {
     const chat = await this.prisma.supportChat.findFirst({
       where: {
@@ -100,17 +111,6 @@ export class SupportService {
         chatId,
         role: SupportMessageRole.SYSTEM,
         content: 'Чат передан оператору',
-      },
-    });
-  }
-
-  async getChats(userId: string) {
-    return await this.prisma.supportChat.findMany({
-      where: { userId },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'asc' },
-        },
       },
     });
   }

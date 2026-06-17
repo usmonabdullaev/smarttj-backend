@@ -6,7 +6,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-import { UsersService } from '@/modules/admin/users/users.service';
+import { AdminUsersService } from '@/modules/admin/users/users.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
@@ -16,13 +16,13 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 @Roles(UserRole.SYSADMIN, UserRole.ADMIN)
 @ApiBearerAuth()
 @Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+export class AdminUsersController {
+  constructor(private readonly adminUsersService: AdminUsersService) {}
 
   @Get()
   @ApiOperation({ summary: 'Users list' })
   @ApiUnauthorizedResponse({ type: ApiErrorDto })
   async getAll() {
-    return await this.usersService.getAll();
+    return await this.adminUsersService.getAll();
   }
 }

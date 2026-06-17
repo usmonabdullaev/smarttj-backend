@@ -236,7 +236,7 @@ model Product {
   brandId       String?
   modelId       String?
   regionId      String?
-  publishedAt   DateTime?     @default(now())
+  publishedAt   DateTime?
   status        ProductStatus @default(DRAFT)
   averageRating Float         @default(0)
   reviewsCount  Int           @default(0)
@@ -566,7 +566,7 @@ enum OrderItemDeliveryStatus {
 model OrderItem {
   id               String                  @id @default(uuid(7))
   orderId          String
-  productVariantId String
+  productVariantId String?
   quantity         Int                     @default(1)
   price            Decimal                 @db.Decimal(10, 2)
   deliveryStatus   OrderItemDeliveryStatus @default(NEW)
@@ -576,8 +576,8 @@ model OrderItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order          Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productVariant ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
 }

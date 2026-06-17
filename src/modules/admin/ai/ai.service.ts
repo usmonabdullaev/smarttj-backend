@@ -3,14 +3,14 @@ import { Injectable } from '@nestjs/common';
 
 import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/analyze-request.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { AIService as GlobalAIService } from '@/ai/ai.service';
+import { AIService } from '@/ai/ai.service';
 import { AIPurpose } from '@/ai/dto/ai-request.dto';
 
 @Injectable()
-export class AIService {
+export class AdminAIService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly aiService: GlobalAIService,
+    private readonly aiService: AIService,
   ) {}
 
   async analyze(dto: AnalyzeRequestDto) {
