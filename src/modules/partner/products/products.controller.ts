@@ -46,7 +46,7 @@ export class PartnerProductsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Category Products' })
+  @ApiOperation({ summary: 'Get list' })
   async getList(@GetUser('sessionId') sessionId: string) {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 

@@ -28,26 +28,24 @@ export class PartnerProductsService {
   ) {}
 
   async getList(profileId: string) {
-    const products = await this.prisma.productVariant.findMany({
+    const products = await this.prisma.product.findMany({
       where: {
-        product: {
-          partnerId: profileId,
-        },
+        partnerId: profileId,
       },
       include: {
-        product: {
+        category: true,
+        brand: true,
+        model: true,
+        region: true,
+        variants: {
           include: {
-            category: true,
-            brand: true,
-            model: true,
-            region: true,
-          },
-        },
-        images: true,
-        attributes: {
-          include: {
-            attribute: true,
-            attributeValue: true,
+            images: true,
+            attributes: {
+              include: {
+                attribute: true,
+                attributeValue: true,
+              },
+            },
           },
         },
       },
