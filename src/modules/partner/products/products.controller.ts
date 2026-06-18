@@ -4,7 +4,6 @@ import {
   ApiBearerAuth,
   ApiConsumes,
   ApiNotFoundResponse,
-  ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
 import {
@@ -16,15 +15,12 @@ import {
   Patch,
   Post,
   Put,
-  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 
 import { PartnerProductsService } from '@/modules/partner/products/products.service';
-import { ProductResponseDto } from '@/modules/products/dto/product-response.dto';
-import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
 import { PartnerAuthService } from '@/modules/partner/auth/auth.service';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { GetUser } from '@/common/decorators/get-user.decorator';
@@ -49,21 +45,24 @@ export class PartnerProductsController {
     private readonly cloudinary: CloudinaryService,
   ) {}
 
-  @Get('category/:id')
+  @Get()
   @ApiOperation({ summary: 'Category Products' })
-  async getList(
-    @Param('id') categoryId: string,
-    @Query() query: GetProductsQueryDto,
-  ) {
-    return await this.partnerProductsService.getList(categoryId, query);
+  async getList(@GetUser('sessionId') sessionId: string) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.getList(profile.id);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get product' })
-  @ApiOkResponse({ type: ProductResponseDto })
   @ApiNotFoundResponse({ type: ApiErrorDto })
-  async getById(@Param('id') id: string) {
-    return await this.partnerProductsService.getById(id);
+  async getById(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.getById(id, profile.id);
   }
 
   @Post('create/:categoryId')
