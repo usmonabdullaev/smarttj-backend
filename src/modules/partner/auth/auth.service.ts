@@ -8,11 +8,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { AuthService as UserAuthService } from '@/modules/auth/auth.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { generateOtp } from '@/modules/auth/utils/generate-otp';
 import { JwtAuthService } from '@/auth/jwt/jwt-auth.service';
 import { UsersService } from '@/modules/users/users.service';
+import { AuthService } from '@/modules/auth/auth.service';
 import { userSelect } from '@/common/selects/user.select';
 import {
   PartnerLoginRequestDto,
@@ -28,7 +28,7 @@ export class PartnerAuthService {
     private readonly prisma: PrismaService,
     private readonly smsService: SmsService,
     private readonly jwtService: JwtAuthService,
-    private readonly userAuthService: UserAuthService,
+    private readonly authService: AuthService,
     private readonly userService: UsersService,
   ) {}
 
@@ -180,7 +180,7 @@ export class PartnerAuthService {
       where: { phone: dto.user_phone },
     });
 
-    const session = await this.userAuthService.upsertSession(user?.id, {
+    const session = await this.authService.upsertSession(user?.id, {
       fingerprint: dto.fingerprint,
       ip,
       userAgent,
@@ -328,7 +328,7 @@ export class PartnerAuthService {
       where: { phone: dto.phone },
     });
 
-    const session = await this.userAuthService.upsertSession(user.id, {
+    const session = await this.authService.upsertSession(user.id, {
       fingerprint: dto.fingerprint,
       ip,
       userAgent,

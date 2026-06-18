@@ -3,6 +3,7 @@ import { SmsResponseDto, SmsSendDto } from '@/sms/dto/smsgate.dto';
 export class SmsgateProvider {
   private SMSGATE_API_KEY = process.env.SMSGATE_API_KEY as string;
   private SMSGATE_SENDER_ADDRESS = process.env.SMSGATE_SENDER_ADDRESS as string;
+  private SMSGATE_API_URL = process.env.SMSGATE_API_URL as string;
 
   async send({
     phone,
@@ -13,7 +14,7 @@ export class SmsgateProvider {
     expiresIn = 0,
     label,
   }: SmsSendDto): Promise<SmsResponseDto> {
-    const res = await fetch('https://sms2.aliftech.net/api/v1/sms', {
+    const res = await fetch(this.SMSGATE_API_URL, {
       method: 'POST',
       headers: {
         'X-Api-Key': this.SMSGATE_API_KEY,
