@@ -13,7 +13,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix(PREFIX);
-  app.enableCors();
+
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: '*',
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -25,6 +31,7 @@ async function bootstrap() {
       stopAtFirstError: true,
     }),
   );
+
   app
     .getHttpAdapter()
     .getInstance()
@@ -43,6 +50,10 @@ async function bootstrap() {
     .setVersion('1.0')
     .addServer(`http://localhost:${PORT}/${PREFIX}`, 'Localhost')
     .addServer(`http://72.56.38.66:${PORT}/${PREFIX}`, 'Server (IP)')
+    .addServer(
+      `https://sciences-web-planner-anti.trycloudflare.com/${PREFIX}`,
+      'Server (IP)',
+    )
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',
