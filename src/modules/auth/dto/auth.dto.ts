@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsPhoneNumber,
   IsString,
+  Matches,
   MinLength,
 } from 'class-validator';
 
@@ -18,7 +19,10 @@ export class VerifyOtpDto {
   @ApiProperty({
     example: '999999999',
   })
-  @IsPhoneNumber('TJ')
+  @IsString()
+  @Matches(/^\d{9}$/, {
+    message: 'Номер должен содержать ровно 9 цифр',
+  })
   phone!: string;
 
   @ApiProperty({

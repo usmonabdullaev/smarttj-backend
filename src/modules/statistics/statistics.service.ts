@@ -48,6 +48,7 @@ export class StatisticsService {
     const previousIncome = +(previousIncomeTransaction._sum.amount || 0);
     const incomeTotal = +(totalIncomeTransaction._sum.amount || 0);
 
+    // eslint-disable-next-line no-useless-assignment
     let incomeGrowth = 0;
 
     if (previousIncome === 0) {
@@ -91,6 +92,7 @@ export class StatisticsService {
       }),
     ]);
 
+    // eslint-disable-next-line no-useless-assignment
     let ordersGrowth = 0;
 
     if (previousOrdersCount === 0) {
@@ -136,6 +138,7 @@ export class StatisticsService {
            AND u."role" = 'USER'`,
     ]);
 
+    // eslint-disable-next-line no-useless-assignment
     let usersGrowth = 0;
 
     if (previousUsersCount === 0) {

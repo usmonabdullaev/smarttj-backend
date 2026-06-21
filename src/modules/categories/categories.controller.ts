@@ -1,6 +1,5 @@
-import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import {
-  ApiConflictResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -46,13 +45,5 @@ export class CategoriesController {
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async getById(@Param('id') id: string) {
     return await this.categoriesService.getById(id);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete category' })
-  @ApiNotFoundResponse({ type: ApiErrorDto })
-  @ApiConflictResponse({ type: ApiErrorDto })
-  async delete(@Param('id') id: string) {
-    return await this.categoriesService.delete(id);
   }
 }

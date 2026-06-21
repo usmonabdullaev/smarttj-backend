@@ -14,24 +14,33 @@ export class SmsgateProvider {
     expiresIn = 0,
     label,
   }: SmsSendDto): Promise<SmsResponseDto> {
-    const res = await fetch(this.SMSGATE_API_URL, {
-      method: 'POST',
-      headers: {
-        'X-Api-Key': this.SMSGATE_API_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        PhoneNumber: phone,
-        Text: message,
-        SenderAddress: this.SMSGATE_SENDER_ADDRESS,
-        Priority: priority,
-        SmsType: smsType,
-        ScheduledAt: scheduledAt,
-        ExpiresIn: expiresIn,
-        SmsLabel: label,
-      }),
-    });
+    // eslint-disable-next-line no-useless-catch
+    try {
+      const res = await fetch(this.SMSGATE_API_URL, {
+        method: 'POST',
+        headers: {
+          'X-Api-Key': this.SMSGATE_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          PhoneNumber: `992${phone}`,
+          Text: message,
+          SenderAddress: this.SMSGATE_SENDER_ADDRESS,
+          Priority: priority,
+          SmsType: smsType,
+          ScheduledAt: scheduledAt,
+          ExpiresIn: expiresIn,
+          SmsLabel: label,
+        }),
+      });
 
-    return await res.json();
+      if (!res.ok) {
+        throw await res.json();
+      }
+
+      return await res.json();
+    } catch (error) {
+      throw error;
+    }
   }
 }

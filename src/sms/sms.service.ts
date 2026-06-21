@@ -3,13 +3,17 @@ import { Injectable } from '@nestjs/common';
 
 import { SmsgateProvider } from '@/sms/providers/smsgate.provider';
 import { PrismaService } from '@/database/prisma/prisma.service';
+import { LoggerService } from '@/logger/logger.service';
 import { SendSmsOptions } from '@/sms/types';
 
 @Injectable()
 export class SmsService {
   private provider = new SmsgateProvider();
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logger: LoggerService,
+  ) {}
 
   async send({ phone, message, purpose }: SendSmsOptions) {
     try {
@@ -30,24 +34,28 @@ export class SmsService {
               ? SmsLogStatus.SENT
               : SmsLogStatus.FAILED,
           messageId: response.MessageId,
-          error: undefined, // FIX
         },
       });
 
       return { success: true };
     } catch (error: any) {
-      await this.prisma.smsLog.create({
+      const smsLog = await this.prisma.smsLog.create({
         data: {
           phone,
           message,
           purpose,
           status: SmsLogStatus.FAILED,
-          provider: 'mock',
-          error: error?.message ?? 'Unknown error',
+          provider: 'SMS GATE',
+          error: error?.Title || error?.message || 'Unknown error',
         },
       });
 
-      throw error;
+      this.logger.error('Ошибка отправки SMS код', {
+        smsLogId: smsLog.id,
+        error,
+      });
+
+      return { success: false };
     }
   }
 }
