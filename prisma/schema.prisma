@@ -12,6 +12,7 @@ enum UserRole {
   ADMIN // Администратор, может управлять товарами, заказами и пользователями
   MODERATOR // Модератор, может управлять отзывами и поддержкой
   PARTNER // Партнер, может управлять своими товарами и заказами
+  PARTNER_EMPLOYEE // Работник партнера
 }
 
 model User {
@@ -269,6 +270,8 @@ model ProductVariant {
   discount  Decimal? @db.Decimal(10, 2)
   productId String
   code      Int      @unique @default(autoincrement()) @db.Integer
+  variantId String?
+  label     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -280,6 +283,8 @@ model ProductVariant {
   priceHistory ProductPriceHistory[]
   attributes   ProductAttribute[]
   reviews      Review[]
+  variants     ProductVariant[]      @relation("VariantImageSource")
+  variant      ProductVariant?       @relation("VariantImageSource", fields: [variantId], references: [id], onDelete: SetNull)
 
   @@index([code])
   @@index([productId])
