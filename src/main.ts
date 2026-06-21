@@ -51,7 +51,7 @@ async function bootstrap() {
     .addServer(`http://localhost:${PORT}/${PREFIX}`, 'Localhost')
     .addServer(`http://72.56.38.66:${PORT}/${PREFIX}`, 'Server (IP)')
     .addServer(
-      `https://acknowledge-drama-imperial-expiration.trycloudflare.com//${PREFIX}`,
+      `https://acknowledge-drama-imperial-expiration.trycloudflare.com/${PREFIX}`,
       'Server (Tunnel)',
     )
     .addBearerAuth({
