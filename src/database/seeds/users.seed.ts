@@ -19,7 +19,12 @@ export const seedUsers = async (prisma: PrismaClient) => {
   const password = await bcrypt.hash(SYSADMIN_PASSWORD, 10);
 
   await prisma.user.upsert({
-    where: { email: ADMIN.email, role: ADMIN.role },
+    where: {
+      email_role: {
+        email: ADMIN.email,
+        role: ADMIN.role,
+      },
+    },
     update: { ...ADMIN, password },
     create: { ...ADMIN, password },
   });

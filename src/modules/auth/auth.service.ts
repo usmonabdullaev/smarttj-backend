@@ -37,8 +37,10 @@ export class AuthService {
   ) {
     const { id } = googleProfile;
 
-    const user = await this.prisma.user.findUnique({
-      where: { googleId: id },
+    const user = await this.prisma.user.findFirst({
+      where: {
+        googleId: id,
+      },
       select: userSelect,
     });
 

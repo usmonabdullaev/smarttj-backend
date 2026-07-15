@@ -18,7 +18,7 @@ enum UserRole {
 model User {
   id       String   @id @default(uuid(7))
   phone    String
-  email    String?  @unique
+  email    String?
   password String?
   name     String
   role     UserRole @default(USER)
@@ -26,7 +26,7 @@ model User {
   avatarId String?
   regionId String?
   bonus    Int      @default(0)
-  googleId String?  @unique
+  googleId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -46,18 +46,20 @@ model User {
   partner       Partner?
 
   @@unique([phone, role])
+  @@unique([email, role])
+  @@unique([googleId, role])
 }
 
 model Session {
-  id           String   @id @default(uuid(7))
-  userId       String
-  fingerprint  String
-  userAgent    String?
-  ip           String?
-  expiresAt    DateTime
-  isActive     Boolean  @default(true)
-  pushToken    String?  @unique
-  lastActiveAt DateTime @default(now())
+  id            String   @id @default(uuid(7))
+  userId        String
+  fingerprint   String
+  userAgent     String?
+  ip            String?
+  expiresAt     DateTime
+  isActive      Boolean  @default(true)
+  expoPushToken String?  @unique
+  lastActiveAt  DateTime @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -171,7 +173,7 @@ enum VerificationStatus {
 }
 
 model Verification {
-  id        String             @id @default(uuid())
+  id        String             @id @default(uuid(7))
   phone     String
   code      String
   expiresAt DateTime
@@ -458,7 +460,7 @@ model AttributeGroup {
 }
 
 model ProductAttribute {
-  id               String   @id @default(uuid())
+  id               String   @id @default(uuid(7))
   attributeId      String
   attributeValueId String
   productVariantId String
