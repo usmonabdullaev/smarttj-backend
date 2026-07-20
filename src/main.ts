@@ -49,10 +49,14 @@ async function bootstrap() {
     .setDescription('The Smart Shop API documentation')
     .setVersion('1.0')
     .addServer(`http://localhost:${PORT}/${PREFIX}`, 'Localhost')
-    .addServer(`http://72.56.38.66:${PORT}/${PREFIX}`, 'Server (IP)')
+    .addServer(`http://169.58.46.174:${PORT}/${PREFIX}`, 'Server (IP) - HTTP')
     .addServer(
-      `https://acknowledge-drama-imperial-expiration.trycloudflare.com/${PREFIX}`,
-      'Server (Tunnel)',
+      `http://smarttj.duckdns.org/${PREFIX}`,
+      'Server (DuckDNS) - HTTP',
+    )
+    .addServer(
+      `https://smarttj.duckdns.org/${PREFIX}`,
+      'Server (DuckDNS) - HTTPS',
     )
     .addBearerAuth({
       type: 'http',
