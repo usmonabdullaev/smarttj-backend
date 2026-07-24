@@ -12,7 +12,7 @@ export class GeminiProvider {
 
   constructor(private readonly logger: LoggerService) {
     this.client = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY as string,
+      apiKey: process.env.GEMINI_API_KEY,
     });
   }
 

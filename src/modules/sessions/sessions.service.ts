@@ -36,7 +36,6 @@ export class SessionsService {
       throw new NotFoundException({
         message: 'Session not found',
         code: 'SESSION_NOT_FOUND',
-        error: id,
       });
     }
 

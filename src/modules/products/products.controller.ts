@@ -14,13 +14,13 @@ import { ApiErrorDto } from '@/common/dto/api-error.dto';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Get('category/:id')
+  @Get('category/:slug')
   @ApiOperation({ summary: 'Category Products' })
   async getList(
-    @Param('id') categoryId: string,
+    @Param('slug') categorySlug: string,
     @Query() query: GetProductsQueryDto,
   ) {
-    return await this.productsService.getList(categoryId, query);
+    return await this.productsService.getList(categorySlug, query);
   }
 
   @Get(':id')

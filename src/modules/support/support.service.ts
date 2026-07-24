@@ -56,7 +56,7 @@ export class SupportService {
       },
     });
 
-    if (aiResponse.confidense !== undefined && aiResponse.confidense < 0.6) {
+    if (aiResponse.confidense !== undefined && aiResponse.confidense <= 0.6) {
       await this.transferToHuman(chat.id);
     }
 
@@ -104,14 +104,6 @@ export class SupportService {
     await this.prisma.supportChat.update({
       where: { id: chatId },
       data: { status: SupportChatStatus.HUMAN },
-    });
-
-    await this.prisma.supportMessage.create({
-      data: {
-        chatId,
-        role: SupportMessageRole.SYSTEM,
-        content: 'Чат передан оператору',
-      },
     });
   }
 }

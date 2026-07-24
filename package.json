@@ -18,7 +18,7 @@
     "start:prod": "node dist/main",
     "prisma:migrate": "npx prisma migrate dev --name init",
     "prisma:generate": "npx prisma generate",
-    "prisma:seed": "ts-node src/database/seeds/index.ts",
+    "prisma:seed": "node dist/database/seeds/index.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "generate:jwt-secret": "node -e \"console.log(require('crypto').randomBytes(16).toString('hex'))\"",
     "test": "jest",

@@ -8,9 +8,9 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getList(categoryId: string, query: GetProductsQueryDto) {
-    const category = await this.prisma.category.findUnique({
-      where: { id: categoryId },
+  async getList(categorySlug: string, query: GetProductsQueryDto) {
+    const category = await this.prisma.category.findFirst({
+      where: { slug: categorySlug },
     });
 
     if (!category) {
@@ -28,7 +28,7 @@ export class ProductsService {
             status: {
               in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
             },
-            categoryId,
+            categoryId: category.id,
             ...(query.rating
               ? {
                   averageRating: { gte: query.rating },
@@ -112,7 +112,7 @@ export class ProductsService {
             status: {
               in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
             },
-            categoryId,
+            categoryId: category.id,
             ...(query.rating
               ? {
                   averageRating: { gte: query.rating },

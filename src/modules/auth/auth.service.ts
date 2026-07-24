@@ -78,7 +78,7 @@ export class AuthService {
       throw new UnauthorizedException({
         message: 'User not found',
         code: 'USER_NOT_FOUND',
-        error: { login: dto.login, password: dto.password },
+        error: { login: dto.login },
       });
     }
 
@@ -88,7 +88,7 @@ export class AuthService {
       throw new UnauthorizedException({
         message: 'User not found',
         code: 'USER_NOT_FOUND',
-        error: { login: dto.login, password: dto.password },
+        error: { login: dto.login },
       });
     }
 
@@ -249,7 +249,6 @@ export class AuthService {
       throw new NotFoundException({
         message: 'Session not found',
         code: 'SESSION_NOT_FOUND',
-        error: sessionId,
       });
     }
 
