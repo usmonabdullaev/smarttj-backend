@@ -50,3 +50,4 @@ volumes:
 
 networks:
   smarttj-network:
+    external: true
