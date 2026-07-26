@@ -31,6 +31,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   regionId?: string;
+
+  @ApiPropertyOptional({
+    example: '1234...',
+    description: 'Telegram user ID',
+  })
+  @IsOptional()
+  @IsString()
+  telegramId?: string;
 }
 
 export class SetPasswordDto {

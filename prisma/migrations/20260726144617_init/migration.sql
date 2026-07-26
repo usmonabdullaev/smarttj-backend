@@ -71,6 +71,7 @@ CREATE TABLE "User" (
     "regionId" TEXT,
     "bonus" INTEGER NOT NULL DEFAULT 0,
     "googleId" TEXT,
+    "telegramId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
