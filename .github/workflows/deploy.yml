@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,3 +24,5 @@ jobs:
             git reset --hard origin/main
 
             docker compose up -d --build
+
+            docker compose exec -T backend npm run prisma:deploy

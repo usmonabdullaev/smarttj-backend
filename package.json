@@ -17,6 +17,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "prisma:migrate": "npx prisma migrate dev --name init",
+    "prisma:deploy": "npx prisma migrate deploy",
     "prisma:generate": "npx prisma generate",
     "prisma:seed": "node dist/database/seeds/index.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
