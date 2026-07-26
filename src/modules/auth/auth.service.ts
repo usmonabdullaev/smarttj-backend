@@ -1,5 +1,6 @@
 import { SmsLogPurpose, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 import {
   BadRequestException,
   Injectable,
@@ -145,10 +146,12 @@ export class AuthService {
 
     const code = generateOtp();
 
+    const codeHash = await argon2.hash(code, { type: argon2.argon2id });
+
     await this.prisma.authOtp.create({
       data: {
         phone: dto.phone,
-        code,
+        code: codeHash,
         expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minute
       },
     });
@@ -198,7 +201,9 @@ export class AuthService {
       );
     }
 
-    if (otp.code !== dto.code) {
+    const isValid = await argon2.verify(otp.code, dto.code);
+
+    if (!isValid) {
       await this.prisma.authOtp.update({
         where: { id: otp.id },
         data: { attempts: { increment: 1 } },

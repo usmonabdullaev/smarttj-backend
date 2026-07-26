@@ -86,7 +86,7 @@ CREATE TABLE "Session" (
     "ip" TEXT,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "pushToken" TEXT,
+    "expoPushToken" TEXT,
     "lastActiveAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -234,8 +234,8 @@ CREATE TABLE "Product" (
 -- CreateTable
 CREATE TABLE "ProductVariant" (
     "id" TEXT NOT NULL,
-    "price" DECIMAL(10,2) NOT NULL,
-    "discount" DECIMAL(10,2),
+    "price" INTEGER NOT NULL,
+    "discount" INTEGER,
     "productId" TEXT NOT NULL,
     "code" SERIAL NOT NULL,
     "variantId" TEXT,
@@ -250,7 +250,7 @@ CREATE TABLE "ProductVariant" (
 CREATE TABLE "ProductPriceHistory" (
     "id" TEXT NOT NULL,
     "variantId" TEXT NOT NULL,
-    "price" DECIMAL(10,2) NOT NULL,
+    "price" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -441,7 +441,7 @@ CREATE TABLE "OrderItem" (
     "orderId" TEXT NOT NULL,
     "productVariantId" TEXT,
     "quantity" INTEGER NOT NULL DEFAULT 1,
-    "price" DECIMAL(10,2) NOT NULL,
+    "price" INTEGER NOT NULL,
     "deliveryStatus" "OrderItemDeliveryStatus" NOT NULL DEFAULT 'NEW',
     "warranty" INTEGER,
     "receivedAt" TIMESTAMP(3),
@@ -470,7 +470,7 @@ CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
-    "amount" DECIMAL(10,2) NOT NULL,
+    "amount" INTEGER NOT NULL,
     "status" "TransactionPaymentStatus" NOT NULL DEFAULT 'PENDING',
     "providerId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -538,10 +538,10 @@ CREATE TABLE "Report" (
     "year" INTEGER NOT NULL,
     "month" INTEGER NOT NULL,
     "ordersCount" INTEGER NOT NULL,
-    "revenue" DECIMAL(14,2) NOT NULL,
-    "avgOrderValue" DECIMAL(14,2) NOT NULL,
+    "revenue" INTEGER NOT NULL,
+    "avgOrderValue" INTEGER NOT NULL,
     "paidOrdersCount" INTEGER NOT NULL,
-    "refundedAmount" DECIMAL(14,2) NOT NULL,
+    "refundedAmount" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -549,16 +549,16 @@ CREATE TABLE "Report" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "User_phone_role_key" ON "User"("phone", "role");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Session_pushToken_key" ON "Session"("pushToken");
+CREATE UNIQUE INDEX "User_email_role_key" ON "User"("email", "role");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_googleId_role_key" ON "User"("googleId", "role");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Session_expoPushToken_key" ON "Session"("expoPushToken");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_userId_fingerprint_key" ON "Session"("userId", "fingerprint");

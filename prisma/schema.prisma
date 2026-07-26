@@ -16,17 +16,18 @@ enum UserRole {
 }
 
 model User {
-  id       String   @id @default(uuid(7))
-  phone    String
-  email    String?
-  password String?
-  name     String
-  role     UserRole @default(USER)
-  avatar   String?
-  avatarId String?
-  regionId String?
-  bonus    Int      @default(0)
-  googleId String?
+  id         String   @id @default(uuid(7))
+  phone      String
+  email      String?
+  password   String?
+  name       String
+  role       UserRole @default(USER)
+  avatar     String?
+  avatarId   String?
+  regionId   String?
+  bonus      Int      @default(0)
+  googleId   String?
+  telegramId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -267,11 +268,11 @@ model Product {
 }
 
 model ProductVariant {
-  id        String   @id @default(uuid(7))
-  price     Decimal  @db.Decimal(10, 2)
-  discount  Decimal? @db.Decimal(10, 2)
+  id        String  @id @default(uuid(7))
+  price     Int
+  discount  Int?
   productId String
-  code      Int      @unique @default(autoincrement()) @db.Integer
+  code      Int     @unique @default(autoincrement()) @db.Integer
   variantId String?
   label     String?
 
@@ -293,9 +294,9 @@ model ProductVariant {
 }
 
 model ProductPriceHistory {
-  id        String  @id @default(uuid(7))
+  id        String @id @default(uuid(7))
   variantId String
-  price     Decimal @db.Decimal(10, 2)
+  price     Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -577,7 +578,7 @@ model OrderItem {
   orderId          String
   productVariantId String?
   quantity         Int                     @default(1)
-  price            Decimal                 @db.Decimal(10, 2)
+  price            Int
   deliveryStatus   OrderItemDeliveryStatus @default(NEW)
   warranty         Int?
   receivedAt       DateTime?
@@ -619,7 +620,7 @@ model Transaction {
   id         String                   @id @default(uuid(7))
   userId     String
   orderId    String                   @unique
-  amount     Decimal                  @db.Decimal(10, 2)
+  amount     Int
   status     TransactionPaymentStatus @default(PENDING)
   providerId String?
 
@@ -722,14 +723,14 @@ model SupportAttachment {
 }
 
 model Report {
-  id              String  @id @default(uuid(7))
+  id              String @id @default(uuid(7))
   year            Int
   month           Int
   ordersCount     Int
-  revenue         Decimal @db.Decimal(14, 2)
-  avgOrderValue   Decimal @db.Decimal(14, 2)
+  revenue         Int
+  avgOrderValue   Int
   paidOrdersCount Int
-  refundedAmount  Decimal @db.Decimal(14, 2)
+  refundedAmount  Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
