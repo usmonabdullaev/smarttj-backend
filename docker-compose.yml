@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    
-    container_name: smarttj-backend
 
     restart: unless-stopped
 
