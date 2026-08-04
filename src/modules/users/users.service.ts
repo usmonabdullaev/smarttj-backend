@@ -76,7 +76,6 @@ export class UsersService {
       where: { id },
       data: {
         ...dto,
-        regionId: dto.regionId || undefined,
         ...(avatarId && { avatarId }),
       },
     });
