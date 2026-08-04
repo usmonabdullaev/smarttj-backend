@@ -25,6 +25,7 @@ import { AdminModule } from '@/modules/admin/admin.module';
 import { CartsModule } from '@/modules/carts/carts.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { LoggerModule } from '@/logger/logger.module';
+import { TelegramModule } from '@/modules/telegram/telegram.module';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 
@@ -53,6 +54,7 @@ import { AppService } from '@/app.service';
     ServerModule,
     AdminModule,
     PartnerModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [

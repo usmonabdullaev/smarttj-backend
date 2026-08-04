@@ -9,6 +9,7 @@ export const userSelect = {
   avatar: true,
   regionId: true,
   bonus: true,
+  telegramId: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
