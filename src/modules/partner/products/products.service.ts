@@ -202,14 +202,6 @@ export class PartnerProductsService {
       throw new NotFoundException();
     }
 
-    if (!product.title) {
-      throw new BadRequestException();
-    }
-
-    if (!product.description) {
-      throw new BadRequestException();
-    }
-
     if (!product.categoryId) {
       throw new BadRequestException();
     }
@@ -307,7 +299,7 @@ export class PartnerProductsService {
     categoryId: string,
   ) {
     if (variant._count.images === 0) {
-      throw new BadRequestException('Add images');
+      throw new BadRequestException('Images not found for variant');
     }
 
     const requiredAttributes = await this.prisma.attribute.findMany({

@@ -1,4 +1,12 @@
-import { IsInt, IsNumber, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import {
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProductVariantDto {
@@ -39,7 +47,12 @@ export class CreateProductDto {
 }
 
 export class PublishProductDto {
+  @ApiProperty({ example: 'Product title' })
+  @IsString()
   title!: string;
+
+  @ApiProperty({ example: 'Product description' })
+  @IsString()
   description!: string;
 }
 
