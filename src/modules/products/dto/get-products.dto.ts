@@ -16,5 +16,5 @@ export class GetProductsQueryDto {
 
   @ApiPropertyOptional({ example: 2 })
   @IsOptional()
-  rating?: 2 | 3 | 4;
+  rating?: 1 | 2 | 3 | 4 | 5;
 }

@@ -69,6 +69,28 @@ class ProductVariantDto {
   attributes: any;
 }
 
+class ResponseListMetaDto {
+  @ApiProperty({
+    example: 1,
+  })
+  page!: number;
+
+  @ApiProperty({
+    example: 20,
+  })
+  limit!: number;
+
+  @ApiProperty({
+    example: 56,
+  })
+  total!: number;
+
+  @ApiProperty({
+    example: 3,
+  })
+  totalPages!: number;
+}
+
 export class ProductResponseDto {
   @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
   id!: string;
@@ -236,4 +258,17 @@ export class ProductResponseDto {
     ],
   })
   reviews: any;
+}
+
+export class ProductListResponseDto {
+  @ApiProperty({
+    type: ProductResponseDto,
+    isArray: true,
+  })
+  data!: ProductResponseDto;
+
+  @ApiProperty({
+    type: ResponseListMetaDto,
+  })
+  meta!: ResponseListMetaDto;
 }

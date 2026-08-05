@@ -5,7 +5,10 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 
-import { ProductResponseDto } from '@/modules/products/dto/product-response.dto';
+import {
+  ProductListResponseDto,
+  ProductResponseDto,
+} from '@/modules/products/dto/product-response.dto';
 import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
 import { ProductsService } from '@/modules/products/products.service';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
@@ -16,6 +19,7 @@ export class ProductsController {
 
   @Get('category/:slug')
   @ApiOperation({ summary: 'Category Products' })
+  @ApiOkResponse({ type: ProductListResponseDto })
   async getList(
     @Param('slug') categorySlug: string,
     @Query() query: GetProductsQueryDto,

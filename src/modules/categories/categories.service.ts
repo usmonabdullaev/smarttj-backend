@@ -1,9 +1,5 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Category } from '@prisma/client';
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
 
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
@@ -92,40 +88,17 @@ export class CategoriesService {
     return category;
   }
 
-  async delete(id: string) {
-    const category = await this.prisma.category.findUnique({
-      where: { id },
-      include: { _count: { select: { children: true } } },
-    });
+  async getBySlug(slug: string) {
+    const category = await this.prisma.category.findFirst({ where: { slug } });
 
     if (!category) {
       throw new NotFoundException({
         message: 'Category not found',
         code: 'CATEGORY_NOT_FOUND',
-        error: id,
+        error: slug,
       });
     }
 
-    if (category._count.children) {
-      throw new ConflictException({
-        message:
-          'Category cannot be deleted, because it has related categories',
-        code: 'CATEGORY_HAS_CATEGORIES',
-        error: { id, categories: category._count.children },
-      });
-    }
-
-    if (category.iconId) {
-      try {
-        await this.cloudinary.deleteFile(category.iconId);
-      } catch (error) {
-        this.logger.error(
-          'Ошибка при удалении изображения [delete/categories]',
-          { error },
-        );
-      }
-    }
-
-    return await this.prisma.category.delete({ where: { id } });
+    return category;
   }
 }

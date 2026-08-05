@@ -40,10 +40,18 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get single category' })
+  @ApiOperation({ summary: 'Get single category by id' })
   @ApiOkResponse({ type: CategoryResponseDto })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async getById(@Param('id') id: string) {
+    return await this.categoriesService.getById(id);
+  }
+
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get single category by slug' })
+  @ApiOkResponse({ type: CategoryResponseDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async getBySlug(@Param('slug') id: string) {
     return await this.categoriesService.getById(id);
   }
 }
