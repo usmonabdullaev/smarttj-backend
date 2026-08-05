@@ -1,4 +1,4 @@
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@prisma/client';
 import {
   ApiBearerAuth,
@@ -102,7 +102,7 @@ export class PartnerProductsController {
 
   @Post(':id/images')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('images'))
+  @UseInterceptors(FilesInterceptor('images'))
   @ApiOperation({ summary: 'Upload images' })
   async uploadImages(
     @Param('id') id: string,
