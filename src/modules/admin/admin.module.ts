@@ -1,6 +1,7 @@
 import { RouterModule } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
+import { AdminProductsModule } from '@/modules/admin/products/products.module';
 import { AdminUsersModule } from '@/modules/admin/users/users.module';
 import { AdminAIModule } from '@/modules/admin/ai/ai.module';
 
@@ -8,10 +9,11 @@ import { AdminAIModule } from '@/modules/admin/ai/ai.module';
   imports: [
     AdminAIModule,
     AdminUsersModule,
+    AdminProductsModule,
     RouterModule.register([
       {
         path: 'admin',
-        children: [AdminAIModule, AdminUsersModule],
+        children: [AdminAIModule, AdminUsersModule, AdminProductsModule],
       },
     ]),
   ],

@@ -17,7 +17,7 @@ import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
 @ApiBearerAuth()
 @Controller('ai')
 export class AdminAIController {
