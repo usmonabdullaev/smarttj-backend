@@ -592,10 +592,16 @@ model OrderItem {
   @@index([orderId])
 }
 
+enum NotificationType {
+  DEFAULT
+  PRODUCT_MODERATION
+}
+
 model Notification {
   id       String  @id @default(uuid(7))
   userId   String
-  type     String
+  type     NotificationType @default(DEFAULT)
+  title    String
   message  String
   isRead   Boolean @default(false)
   metadata Json?

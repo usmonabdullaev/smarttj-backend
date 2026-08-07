@@ -2,6 +2,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@prisma/client';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiConsumes,
   ApiNotFoundResponse,
   ApiOperation,
@@ -102,6 +103,21 @@ export class PartnerProductsController {
 
   @Post(':id/images')
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+      required: ['images'],
+    },
+  })
   @UseInterceptors(FilesInterceptor('images'))
   @ApiOperation({ summary: 'Upload images' })
   async uploadImages(

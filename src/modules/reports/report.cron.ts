@@ -9,7 +9,7 @@ export class ReportCron {
   constructor(private readonly prisma: PrismaService) {}
 
   @Cron('0 2 1 * *')
-  async generateReport() {
+  async createMonthlyReport() {
     const now = new Date();
 
     let year = now.getUTCFullYear();

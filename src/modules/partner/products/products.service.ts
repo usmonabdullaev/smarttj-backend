@@ -9,6 +9,7 @@ import {
   ProductVariant,
 } from '@prisma/client';
 
+import { ProductModerationService } from 'src/bullmq/product-moderation/product-moderation.service';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import {
@@ -25,6 +26,7 @@ export class PartnerProductsService {
     private readonly prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
     private readonly logger: LoggerService,
+    private readonly productModeration: ProductModerationService,
   ) {}
 
   async getList(profileId: string) {
@@ -214,10 +216,17 @@ export class PartnerProductsService {
       throw new BadRequestException();
     }
 
+    const requiredAttributes = await this.prisma.attribute.findMany({
+      where: { categoryId: product.categoryId, required: true },
+      select: { id: true },
+    });
+
     for (let i = 0; i < product.variants.length; i++) {
       const variant = product.variants[i];
-      await this.checkVariant(variant, product.categoryId);
+      this.checkVariant(variant, requiredAttributes);
     }
+
+    await this.productModeration.addProduct(id);
 
     return await this.prisma.product.update({
       where: { id },
@@ -291,21 +300,16 @@ export class PartnerProductsService {
     });
   }
 
-  private async checkVariant(
+  private checkVariant(
     variant: ProductVariant & {
       _count: { images: number };
       attributes: ProductAttribute[];
     },
-    categoryId: string,
+    requiredAttributes: { id: string }[],
   ) {
     if (variant._count.images === 0) {
       throw new BadRequestException('Images not found for variant');
     }
-
-    const requiredAttributes = await this.prisma.attribute.findMany({
-      where: { categoryId, required: true },
-      select: { id: true },
-    });
 
     const providedIds = new Set(
       variant.attributes.map((attr) => attr.attributeId),

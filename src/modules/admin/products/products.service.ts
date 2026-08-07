@@ -121,7 +121,7 @@ export class AdminProductsService {
       throw new NotFoundException('Product not found');
     }
 
-    // Proverki zdes
+    // TODO: add moderations
 
     return await this.prisma.product.update({
       where: { id },
