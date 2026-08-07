@@ -9,7 +9,6 @@ import { SessionsModule } from '@/modules/sessions/sessions.module';
 import { ProductsModule } from '@/modules/products/products.module';
 import { TelegramModule } from '@/modules/telegram/telegram.module';
 import { SupportModule } from '@/modules/support/support.module';
-import { ReportsModule } from '@/modules/reports/reports.module';
 import { RegionsModule } from '@/modules/regions/regions.module';
 import { PartnerModule } from '@/modules/partner/partner.module';
 import { BrandsModule } from '@/modules/brands/brands.module';
@@ -33,7 +32,6 @@ import { AuthModule } from '@/modules/auth/auth.module';
     ProductsModule,
     CategoriesModule,
     SupportModule,
-    ReportsModule,
     RegionsModule,
     AttributesModule,
     OrdersModule,

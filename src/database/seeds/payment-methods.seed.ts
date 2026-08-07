@@ -1,11 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { CreatePaymentMethodDto } from '../../modules/payment-methods/dto/create-payment-method.dto';
-
-const PAYMENT_METHODS: CreatePaymentMethodDto[] = [
-  { name: 'Наличными', type: 'CASH', isActive: true },
-  { name: 'Картой', type: 'CARD', isActive: true },
-];
+import { PAYMENT_METHODS } from './data/payment-methods.data';
 
 export const seedPaymentMethods = async (prisma: PrismaClient) => {
   console.log(' → Seeding payment methods...');
@@ -14,7 +9,11 @@ export const seedPaymentMethods = async (prisma: PrismaClient) => {
 
   if (paymentMethodsCount === 0) {
     await prisma.paymentMethod.createMany({
-      data: PAYMENT_METHODS,
+      data: PAYMENT_METHODS.map((paymentMethod) => ({
+        name: paymentMethod.name,
+        type: paymentMethod.type,
+        isActive: paymentMethod.isActive,
+      })),
     });
   }
 };

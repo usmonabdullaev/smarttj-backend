@@ -5,7 +5,7 @@ import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '@/database/prisma/prisma.service';
 
 @Injectable()
-export class ReportCron {
+export class AdminReportCron {
   constructor(private readonly prisma: PrismaService) {}
 
   @Cron('0 2 1 * *')

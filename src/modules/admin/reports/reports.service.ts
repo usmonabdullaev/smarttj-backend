@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { GetReportsDto } from '@/modules/reports/dto/get-reports.dto';
+import { GetReportsDto } from '@/modules/admin/reports/dto/get-reports.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { ReportTemplate } from '@/pdf/templates/report.template';
 import { PdfService } from '@/pdf/pdf.service';
 
 @Injectable()
-export class ReportsService {
+export class AdminReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pdfService: PdfService,

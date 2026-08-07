@@ -21,10 +21,39 @@ export const seedCategories = async (prisma: PrismaClient) => {
             short_name: category.short_name,
             slug: category.slug,
             order: category.order,
-            parentId: parent?.id || null,
-            parentKey: parent?.id || 'ROOT',
+            parentId: parent?.id ?? null,
+            parentKey: parent?.id ?? 'ROOT',
           },
         });
+
+        if (category.attributes?.length) {
+          for (let j = 0; j < category.attributes.length; j++) {
+            const attribute = category.attributes[j];
+
+            await prisma.attribute.create({
+              data: {
+                categoryId: created.id,
+                name: attribute.name,
+                type: attribute.type,
+                unit: attribute.unit,
+                required: attribute.required,
+                filterable: attribute.filterable,
+                order: attribute.order,
+                values: {
+                  createMany: {
+                    data:
+                      attribute.values?.map((v) => ({
+                        valueString: v.valueString,
+                        valueNumber: v.valueNumber,
+                        valueBoolean: v.valueBoolean,
+                        label: v.label,
+                      })) || [],
+                  },
+                },
+              },
+            });
+          }
+        }
 
         if (category.children?.length) {
           await seedFn(category.children, created);
