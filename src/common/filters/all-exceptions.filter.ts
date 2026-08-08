@@ -24,6 +24,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let code = 'INTERNAL_ERROR';
     let error: any = null;
 
+    console.log('RES: ', String(exception));
+
     if (exception instanceof HttpException) {
       status = exception.getStatus();
 
@@ -45,6 +47,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
         code = r.code ?? code;
         error = r.error ?? null;
       }
+    } else {
+      const parsed = JSON.parse(JSON.stringify(exception));
+
+      if (parsed?.status && typeof parsed.status === 'number') {
+        status = parsed.status;
+      }
+
+      if (parsed?.error?.message && typeof parsed.error.message === 'string') {
+        message = parsed.error.message;
+      }
+
+      if (parsed?.code && typeof parsed.code === 'string') {
+        code = parsed.code;
+      }
+
+      error = parsed?.error || parsed;
     }
 
     this.logger.error('HTTP Exception', {

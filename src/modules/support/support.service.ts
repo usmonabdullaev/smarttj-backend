@@ -56,7 +56,7 @@ export class SupportService {
       },
     });
 
-    if (aiResponse.confidense !== undefined && aiResponse.confidense <= 0.6) {
+    if (aiResponse.confidence !== undefined && aiResponse.confidence <= 0.6) {
       await this.transferToHuman(chat.id);
     }
 

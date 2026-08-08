@@ -3,8 +3,10 @@ import { Injectable } from '@nestjs/common';
 
 import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/analyze-request.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { AIService } from '@/ai/ai.service';
+import { ANALYTICS_PROMPT } from '@/ai/prompts/analytics.prompt';
+import { ProvidersEnum } from '@/ai/dto/providers.dto';
 import { AIPurpose } from '@/ai/dto/ai-request.dto';
+import { AIService } from '@/ai/ai.service';
 
 @Injectable()
 export class AdminAIService {
@@ -38,17 +40,19 @@ export class AdminAIService {
 - Средний чек: ${previous.avgOrder}
 
 Сделай краткий бизнес-анализ.
-Формат ответа:
-answer: <текст>
-confidence: <число от 0 до 1>`;
+`;
 
-    const aiResult = await this.aiService.ask({
-      purpose: AIPurpose.ANALYTICS,
-      prompt,
-      temperature: 0.1,
-    });
+    const aiResult = await this.aiService.ask(
+      {
+        context: ANALYTICS_PROMPT,
+        purpose: AIPurpose.ANALYTICS,
+        prompt,
+        temperature: 0.2,
+      },
+      ProvidersEnum.GEMINI,
+    );
 
-    return aiResult;
+    return { result: aiResult.text };
   }
 
   private async getStats(from: Date, to: Date) {

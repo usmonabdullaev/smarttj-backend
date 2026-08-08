@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { GoogleGenAI } from '@google/genai';
 import 'dotenv/config';
 
-import { parseAIResponse } from '@/ai/utils/parse-ai-response';
 import { LoggerService } from '@/logger/logger.service';
 import { AIRequestDto } from '@/ai/dto/ai-request.dto';
 
@@ -23,18 +22,17 @@ export class GeminiProvider {
       'gemini-3-flash-preview';
 
     try {
-      const prompt = this.buildPrompt(input);
-
       const result = await this.client.models.generateContent({
         model,
         contents: [
           {
             role: 'user',
-            parts: [{ text: prompt }],
+            parts: [{ text: input.prompt }],
           },
         ],
         config: {
           temperature: input.temperature ?? 0.3,
+          systemInstruction: input.context,
         },
       });
 
@@ -42,10 +40,10 @@ export class GeminiProvider {
         result.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ??
         '';
 
-      const parsed = parseAIResponse(text);
+      const parsed = JSON.parse(text);
 
       return {
-        text: parsed.text,
+        text: parsed.text as string,
         confidense: parsed.confidense,
         raw: result,
       };
@@ -58,13 +56,5 @@ export class GeminiProvider {
 
       throw error;
     }
-  }
-
-  private buildPrompt(input: AIRequestDto) {
-    if (!input.context) {
-      return input.prompt;
-    }
-
-    return `${input.context}\n\nUser:\n${input.prompt}`;
   }
 }
