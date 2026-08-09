@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { ProductModerationProcessor } from '@/bullmq/product-moderation/product-moderation.processor';
 import { ProductModerationService } from '@/bullmq/product-moderation/product-moderation.service';
 import { NotificationModule } from '@/bullmq/notification/notification.module';
+import { AIModule } from '@/ai/ai.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { NotificationModule } from '@/bullmq/notification/notification.module';
       name: 'product-moderation',
     }),
     NotificationModule,
+    AIModule,
   ],
   providers: [ProductModerationService, ProductModerationProcessor],
   exports: [ProductModerationService],
