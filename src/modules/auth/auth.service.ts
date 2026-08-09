@@ -1,5 +1,4 @@
 import { SmsLogPurpose, UserRole } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
 import * as argon2 from 'argon2';
 import {
   BadRequestException,
@@ -83,7 +82,7 @@ export class AuthService {
       });
     }
 
-    const isValid = await bcrypt.compare(dto.password, user.password);
+    const isValid = await argon2.verify(user.password, dto.password);
 
     if (!isValid) {
       throw new UnauthorizedException({

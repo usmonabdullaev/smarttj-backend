@@ -49,7 +49,7 @@ export class AdminAIService {
         prompt,
         temperature: 0.2,
       },
-      ProvidersEnum.GEMINI,
+      ProvidersEnum.GROQ,
     );
 
     return { result: aiResult.text };

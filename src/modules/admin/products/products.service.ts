@@ -39,10 +39,10 @@ export class AdminProductsService {
     });
   }
 
-  async getInModerate(page: number = 1, limit: number = 10) {
+  async getManualModeration(page: number = 1, limit: number = 10) {
     return await this.prisma.product.findMany({
       where: {
-        status: ProductStatus.IN_MODERATE,
+        status: ProductStatus.MANUAL_MODERATION,
       },
       skip: (page - 1) * limit,
       take: limit,

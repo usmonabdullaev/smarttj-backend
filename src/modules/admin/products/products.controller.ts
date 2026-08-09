@@ -31,13 +31,13 @@ export class AdminProductsController {
     return await this.adminProductsService.getAll(page, limit);
   }
 
-  @Get('moderate')
-  @ApiOperation({ summary: 'Get in moderate products' })
-  async getInModerate(
+  @Get('moderation/manual')
+  @ApiOperation({ summary: 'Get in manual moderation products' })
+  async getManualModeration(
     @Query('page', ParseIntPipe) page: number = 1,
     @Query('limit', ParseIntPipe) limit: number = 10,
   ) {
-    return await this.adminProductsService.getInModerate(page, limit);
+    return await this.adminProductsService.getManualModeration(page, limit);
   }
 
   @Get('single/:id')

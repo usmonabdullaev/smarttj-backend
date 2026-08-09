@@ -24,8 +24,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let code = 'INTERNAL_ERROR';
     let error: any = null;
 
-    console.log('RES: ', String(exception));
-
     if (exception instanceof HttpException) {
       status = exception.getStatus();
 

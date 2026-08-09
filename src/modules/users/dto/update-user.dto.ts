@@ -42,10 +42,18 @@ export class UpdateUserDto {
 }
 
 export class SetPasswordDto {
+  @ApiProperty({
+    example: '',
+    description: 'Password',
+  })
   @IsString()
   @MinLength(6)
   password!: string;
 
+  @ApiPropertyOptional({
+    example: false,
+    description: 'If its true terminate other sessions',
+  })
   @IsOptional()
   @IsBoolean()
   terminateOtherSessions?: boolean;

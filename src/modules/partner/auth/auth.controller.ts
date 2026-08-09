@@ -1,4 +1,4 @@
-import { ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiOperation, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import {
   Body,
@@ -29,6 +29,7 @@ export class PartnerAuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.PARTNER)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get partner user and profile' })
   @Get('me')
   async getProfile(@GetUser('sessionId') sessionId: string) {
     return await this.partnerAuthService.getProfile(sessionId);
@@ -42,6 +43,12 @@ export class PartnerAuthController {
 
   @Post('register/verify-otp')
   @ApiOperation({ summary: 'Register verify OTP' })
+  @ApiHeader({
+    name: 'user-agent',
+    description: 'The browser or client user agent string',
+    required: false,
+    schema: { type: 'string' },
+  })
   async registerVerify(
     @Body() dto: PartnerRegisterVerifyDto,
     @Ip() ip: string,
@@ -58,6 +65,12 @@ export class PartnerAuthController {
 
   @Post('login/verify-otp')
   @ApiOperation({ summary: 'Login verify OTP' })
+  @ApiHeader({
+    name: 'user-agent',
+    description: 'The browser or client user agent string',
+    required: false,
+    schema: { type: 'string' },
+  })
   async loginVerify(
     @Body() dto: PartnerLoginVerifyDto,
     @Ip() ip: string,

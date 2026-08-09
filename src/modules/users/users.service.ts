@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 import {
   BadRequestException,
   Injectable,
@@ -94,7 +94,8 @@ export class UsersService {
     }
 
     if (user.password) {
-      const same = await bcrypt.compare(dto.password, user.password);
+      const same = await argon2.verify(user.password, dto.password);
+
       if (same) {
         throw new BadRequestException({
           message: 'New password must be different',
@@ -102,7 +103,9 @@ export class UsersService {
       }
     }
 
-    const hashed = await bcrypt.hash(dto.password, 10);
+    const hashed = await argon2.hash(dto.password, {
+      type: argon2.argon2id,
+    });
 
     await this.prisma.user.update({
       where: { id: userId },

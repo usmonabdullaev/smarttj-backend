@@ -230,7 +230,7 @@ export class PartnerProductsService {
 
     return await this.prisma.product.update({
       where: { id },
-      data: { status: ProductStatus.IN_MODERATE },
+      data: { status: ProductStatus.AUTO_MODERATION },
     });
   }
 

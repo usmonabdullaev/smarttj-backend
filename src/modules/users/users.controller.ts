@@ -68,6 +68,11 @@ export class UsersController {
   }
 
   @Post('set-password')
+  @ApiOperation({
+    summary: 'Change or set password',
+    description:
+      'You can terminate other sessions with option terminateOtherSessions',
+  })
   async setPassword(
     @Body() dto: SetPasswordDto,
     @GetUser('userId') userId: string,

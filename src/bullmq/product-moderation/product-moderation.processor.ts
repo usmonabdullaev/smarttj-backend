@@ -1,11 +1,14 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { NotificationType, ProductStatus } from '@prisma/client';
+import { AttributeType, NotificationType, ProductStatus } from '@prisma/client';
 import { Job } from 'bullmq';
 
 import { NotificationService } from '@/bullmq/notification/notification.service';
+import { PRODUCT_MODERATE_PROMPT } from '@/ai/prompts/product-moderate.prompt';
 import { PrismaService } from '@/database/prisma/prisma.service';
-// import { userSelect } from '@/common/selects/user.select';
 import { LoggerService } from '@/logger/logger.service';
+import { ProvidersEnum } from '@/ai/dto/providers.dto';
+import { AIPurpose } from '@/ai/dto/ai-request.dto';
+import { AIService } from '@/ai/ai.service';
 
 @Processor('product-moderation')
 export class ProductModerationProcessor extends WorkerHost {
@@ -13,6 +16,7 @@ export class ProductModerationProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly logger: LoggerService,
     private readonly notification: NotificationService,
+    private readonly ai: AIService,
   ) {
     super();
   }
@@ -22,6 +26,7 @@ export class ProductModerationProcessor extends WorkerHost {
       case 'moderate-product': {
         const id = job.data.productId;
         const state = await job.getState();
+        const isLastAttempt = job.attemptsMade + 1 === job.opts.attempts;
 
         const product = await this.prisma.product.findUnique({
           where: { id },
@@ -31,17 +36,24 @@ export class ProductModerationProcessor extends WorkerHost {
                 _count: {
                   select: { images: true },
                 },
-                attributes: true,
+                attributes: {
+                  include: {
+                    attribute: true,
+                    attributeValue: true,
+                  },
+                },
               },
             },
             partner: true,
+            category: true,
+            brand: true,
+            model: true,
           },
         });
 
         if (!product) {
           this.logger.warn(`[BullMQ] - Product ${id} not found`, {
             productId: id,
-            jobId: job.id,
             state,
             attempt: job.attemptsMade + 1,
             attempts: job.opts.attempts,
@@ -135,6 +147,73 @@ export class ProductModerationProcessor extends WorkerHost {
 
             return;
           }
+        }
+
+        const prompt = JSON.stringify({
+          title: product.title,
+          description: product.description,
+          category: product.category?.name,
+          brand: product.brand?.name,
+          model: product.model?.name,
+          attributes: product.variants.map((v) => ({
+            code: v.code,
+            attributes: v.attributes
+              .filter(
+                (a) =>
+                  a.attribute.type === AttributeType.NUMBER ||
+                  a.attribute.type === AttributeType.STRING,
+              )
+              .map((a) => ({
+                type: a.attribute.type,
+                value: a.valueString || a.valueNumber,
+              })),
+          })),
+        });
+
+        const { text, ok } = await this.ai.ask(
+          {
+            context: PRODUCT_MODERATE_PROMPT,
+            prompt,
+            purpose: AIPurpose.PRODUCT_MODERATE,
+            temperature: 0.2,
+          },
+          ProvidersEnum.GROQ,
+        );
+
+        if (ok === undefined || !text) {
+          this.logger.warn(`[BullMQ] - AI response error`, {
+            text: text,
+            state,
+            attempt: job.attemptsMade + 1,
+            attempts: job.opts.attempts,
+          });
+
+          if (isLastAttempt) {
+            await this.prisma.product.update({
+              where: { id },
+              data: {
+                status: ProductStatus.MANUAL_MODERATION,
+              },
+            });
+
+            return;
+          }
+
+          throw new Error('AI moderation error');
+        }
+
+        if (!ok) {
+          await this.notification.send({
+            userId: product.partner.userId,
+            type: NotificationType.PRODUCT_MODERATION,
+            title: 'Товар не прошел проверку',
+            message: text,
+            metadata: {
+              productId: product.id,
+            },
+          });
+
+          return;
         }
 
         await this.prisma.product.update({

@@ -1,5 +1,5 @@
 import { PrismaClient, UserRole } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 
 const SYSADMIN_EMAIL = process.env.SYSADMIN_EMAIL as string;
 const SYSADMIN_PASSWORD = process.env.SYSADMIN_PASSWORD as string;
@@ -16,7 +16,9 @@ const ADMIN = {
 export const seedUsers = async (prisma: PrismaClient) => {
   console.log(' → Seeding users...');
 
-  const password = await bcrypt.hash(SYSADMIN_PASSWORD, 10);
+  const password = await argon2.hash(SYSADMIN_PASSWORD, {
+    type: argon2.argon2id,
+  });
 
   await prisma.user.upsert({
     where: {

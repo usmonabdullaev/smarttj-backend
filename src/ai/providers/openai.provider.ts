@@ -33,6 +33,7 @@ export class OpenAIProvider {
       return {
         text: parsed.text as string,
         confidense: parsed.confidense,
+        ok: parsed.ok,
         raw: result,
       };
     } catch (error) {

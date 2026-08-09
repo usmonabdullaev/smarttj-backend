@@ -20,7 +20,6 @@ export class NotificationProcessor extends WorkerHost {
       case 'notification': {
         const dto = job.data as SendNotificationDto;
         const state = await job.getState();
-        // const isLastAttempt = job.attemptsMade + 1 === job.opts.attempts;
 
         const user = await this.prisma.user.findUnique({
           where: { id: dto.userId },

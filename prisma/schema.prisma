@@ -224,7 +224,8 @@ model Address {
 
 enum ProductStatus {
   DRAFT // Черновик
-  IN_MODERATE // В модерации
+  AUTO_MODERATION // В автоматическом модерации
+  MANUAL_MODERATION // В ручном модерации
   ACTIVE // Активный
   INACTIVE // Неактивный
   NOT_AVAILABLE // Нет в наличии

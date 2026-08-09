@@ -1,6 +1,7 @@
 export enum AIPurpose {
-  SUPPORT = 'support',
-  ANALYTICS = 'analytics',
+  SUPPORT = 'SUPPORT',
+  ANALYTICS = 'ANALYTICS',
+  PRODUCT_MODERATE = 'PRODUCT_MODERATE',
 }
 
 export class AIRequestDto {

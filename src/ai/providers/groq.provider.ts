@@ -1,44 +1,41 @@
 import { Injectable } from '@nestjs/common';
-import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 import 'dotenv/config';
 
 import { LoggerService } from '@/logger/logger.service';
 import { AIRequestDto } from '@/ai/dto/ai-request.dto';
 
 @Injectable()
-export class GeminiProvider {
-  private readonly client: GoogleGenAI;
+export class GroqProvider {
+  private readonly client: Groq;
 
   constructor(private readonly logger: LoggerService) {
-    this.client = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+    this.client = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
     });
   }
 
   async ask(input: AIRequestDto) {
     const model =
-      input.model ||
-      process.env.GEMINI_DEFAULT_MODEL ||
-      'gemini-3-flash-preview';
+      input.model || process.env.GROQ_DEFAULT_MODEL || 'llama-3.1-8b-instant';
 
     try {
-      const result = await this.client.models.generateContent({
+      const result = await this.client.chat.completions.create({
         model,
-        contents: [
+        messages: [
+          {
+            role: 'system',
+            content: input.context || '',
+          },
           {
             role: 'user',
-            parts: [{ text: input.prompt }],
+            content: input.prompt,
           },
         ],
-        config: {
-          temperature: input.temperature ?? 0.3,
-          systemInstruction: input.context,
-        },
+        temperature: input.temperature ?? 0.3,
       });
 
-      const text =
-        result.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ??
-        '';
+      const text = result.choices[0].message.content || '{}';
 
       const parsed = JSON.parse(text);
 

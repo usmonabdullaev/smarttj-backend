@@ -17,6 +17,7 @@ import {
   ApiBearerAuth,
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
+  ApiHeader,
 } from '@nestjs/swagger';
 
 import { LoginWithPasswordDto } from '@/modules/auth/dto/login-auth.dto';
@@ -71,6 +72,12 @@ export class AuthController {
 
   @Post('login/password')
   @ApiOperation({ summary: 'Login with password' })
+  @ApiHeader({
+    name: 'user-agent',
+    description: 'The browser or client user agent string',
+    required: false,
+    schema: { type: 'string' },
+  })
   @ApiOkResponse({ type: LoginResponseDto })
   @ApiUnauthorizedResponse({ type: ApiErrorDto })
   async loginWithPassword(
@@ -89,6 +96,12 @@ export class AuthController {
 
   @Post('verify-otp')
   @ApiOperation({ summary: 'Verify OTP' })
+  @ApiHeader({
+    name: 'user-agent',
+    description: 'The browser or client user agent string',
+    required: false,
+    schema: { type: 'string' },
+  })
   async verifyOtp(
     @Body() dto: VerifyOtpDto,
     @Ip() ip: string,
