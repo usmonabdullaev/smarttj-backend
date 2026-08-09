@@ -16,6 +16,7 @@ import {
   CreateProductDto,
   CreateProductVariantDto,
   PublishProductDto,
+  UpdateProductVariantDto,
   UploadImageDto,
 } from '@/modules/partner/products/dto/create-product.dto';
 import { LoggerService } from '@/logger/logger.service';
@@ -158,7 +159,15 @@ export class PartnerProductsService {
     });
   }
 
-  async updateVariant(id: string, dto: CreateProductVariantDto) {
+  async updateVariant(id: string, dto: UpdateProductVariantDto) {
+    const variant = await this.prisma.productVariant.findUnique({
+      where: { id },
+    });
+
+    if (!variant) {
+      throw new NotFoundException();
+    }
+
     return this.prisma.productVariant.update({
       where: { id },
       data: { price: dto.price },

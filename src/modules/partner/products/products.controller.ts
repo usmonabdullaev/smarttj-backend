@@ -30,6 +30,7 @@ import {
   CreateProductDto,
   CreateProductVariantDto,
   PublishProductDto,
+  UpdateProductVariantDto,
 } from '@/modules/partner/products/dto/create-product.dto';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
@@ -96,7 +97,7 @@ export class PartnerProductsController {
   @ApiOperation({ summary: 'Update variant' })
   async updateVariant(
     @Param('id') id: string,
-    @Body() dto: CreateProductVariantDto,
+    @Body() dto: UpdateProductVariantDto,
   ) {
     return await this.partnerProductsService.updateVariant(id, dto);
   }

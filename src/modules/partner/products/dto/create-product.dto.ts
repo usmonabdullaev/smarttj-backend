@@ -17,6 +17,30 @@ export class CreateProductVariantDto {
   price!: number;
 }
 
+export class UpdateProductVariantDto {
+  @ApiProperty({ example: 10000 })
+  @IsNumber()
+  @Min(0)
+  @Max(999_999_999_999)
+  price!: number;
+
+  @ApiPropertyOptional({
+    isArray: true,
+    required: false,
+    items: {
+      example: {
+        attributeId: 'ID',
+        attributeValueId: 'ID',
+        valueString: 'string',
+        valueNumber: 12,
+        valueBoolean: true,
+        label: 'string',
+      },
+    },
+  })
+  attributes?: [];
+}
+
 export class CreateProductDto {
   @ApiPropertyOptional({ example: 12 })
   @IsOptional()

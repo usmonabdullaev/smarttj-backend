@@ -1,61 +1,27 @@
-import { UserRole } from '@prisma/client';
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 
-import { CreateAttributeDto } from '@/modules/attributes/dto/create-attribute.dto';
-import { UpdateAttributeDto } from '@/modules/attributes/dto/update-attribute.dto';
 import { AttributesService } from '@/modules/attributes/attributes.service';
-import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
-import { RolesGuard } from '@/auth/guards/roles.guard';
 
 @Controller('attributes')
 export class AttributesController {
   constructor(private readonly attributesService: AttributesService) {}
 
-  @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  async create(@Body() dto: CreateAttributeDto) {
-    return await this.attributesService.create(dto);
-  }
-
   @Get()
+  @ApiOperation({ summary: 'Get all attributes' })
   async findAll() {
     return await this.attributesService.findAll();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get one by ID' })
   async findOne(@Param('id') id: string) {
     return await this.attributesService.findOne(id);
   }
 
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  async update(@Param('id') id: string, @Body() dto: UpdateAttributeDto) {
-    return await this.attributesService.update(id, dto);
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  async remove(@Param('id') id: string) {
-    return await this.attributesService.remove(id);
-  }
-
-  @Delete('value/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  async deleteValue(@Param('id') id: string) {
-    return await this.attributesService.deleteValue(id);
+  @Get('category/:id')
+  @ApiOperation({ summary: 'Get category attributes' })
+  async findByCategory(@Param('id') id: string) {
+    return await this.attributesService.findByCategory(id);
   }
 }

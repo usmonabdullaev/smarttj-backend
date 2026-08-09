@@ -464,7 +464,7 @@ model AttributeGroup {
 model ProductAttribute {
   id               String   @id @default(uuid(7))
   attributeId      String
-  attributeValueId String
+  attributeValueId String?
   productVariantId String
   valueString      String?
   valueNumber      Float?
@@ -474,9 +474,9 @@ model ProductAttribute {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  attribute      Attribute      @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  attributeValue AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
-  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  attribute      Attribute       @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attributeValue AttributeValue? @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
+  productVariant ProductVariant  @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
 }
 
 model Cart {
