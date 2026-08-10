@@ -1,4 +1,6 @@
 import {
+  IsArray,
+  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
@@ -17,6 +19,47 @@ export class CreateProductVariantDto {
   price!: number;
 }
 
+class UpdateProductVariantAttributesDto {
+  @ApiProperty({ example: 'ID' })
+  @IsUUID(7)
+  attributeId!: string;
+
+  @ApiPropertyOptional({
+    example: 'ID',
+  })
+  @IsOptional()
+  @IsUUID(7)
+  attributeValueId?: string;
+
+  @ApiPropertyOptional({
+    example: 'string',
+  })
+  @IsOptional()
+  @IsString()
+  valueString?: string;
+
+  @ApiPropertyOptional({
+    example: 12,
+  })
+  @IsOptional()
+  @IsNumber()
+  valueNumber?: number;
+
+  @ApiPropertyOptional({
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  valueBoolean?: boolean;
+
+  @ApiPropertyOptional({
+    example: 'Label',
+  })
+  @IsOptional()
+  @IsString()
+  label?: string;
+}
+
 export class UpdateProductVariantDto {
   @ApiProperty({ example: 10000 })
   @IsNumber()
@@ -26,26 +69,12 @@ export class UpdateProductVariantDto {
 
   @ApiPropertyOptional({
     isArray: true,
-    required: false,
-    items: {
-      example: {
-        attributeId: 'ID',
-        attributeValueId: 'ID',
-        valueString: 'string',
-        valueNumber: 12,
-        valueBoolean: true,
-        label: 'string',
-      },
-    },
+    nullable: true,
+    type: UpdateProductVariantAttributesDto,
   })
-  attributes?: {
-    attributeId: string;
-    attributeValueId?: string;
-    valueString?: string;
-    valueNumber?: number;
-    valueBoolean?: boolean;
-    label: string;
-  }[];
+  @IsOptional()
+  @IsArray()
+  attributes?: UpdateProductVariantAttributesDto[];
 }
 
 export class CreateProductDto {
