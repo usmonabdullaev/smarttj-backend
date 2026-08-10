@@ -11,7 +11,7 @@ export class LoginWithPasswordDto {
   login!: string;
 
   @ApiProperty({
-    example: 'admin123',
+    example: '',
     description: 'Пароль',
   })
   @IsString()
