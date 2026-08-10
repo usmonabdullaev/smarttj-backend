@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'smart-shop-backend',
+      name: 'smarttj-backend',
 
       script: 'dist/main.js',
       instances: 1,
