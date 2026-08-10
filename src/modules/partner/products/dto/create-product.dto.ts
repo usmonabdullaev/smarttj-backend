@@ -38,7 +38,14 @@ export class UpdateProductVariantDto {
       },
     },
   })
-  attributes?: [];
+  attributes?: {
+    attributeId: string;
+    attributeValueId?: string;
+    valueString?: string;
+    valueNumber?: number;
+    valueBoolean?: boolean;
+    label: string;
+  }[];
 }
 
 export class CreateProductDto {

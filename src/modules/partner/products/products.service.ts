@@ -168,9 +168,27 @@ export class PartnerProductsService {
       throw new NotFoundException();
     }
 
-    return this.prisma.productVariant.update({
+    await this.prisma.productAttribute.deleteMany({
+      where: { productVariantId: id },
+    });
+
+    return await this.prisma.productVariant.update({
       where: { id },
-      data: { price: dto.price },
+      data: {
+        price: dto.price,
+        attributes: {
+          createMany: {
+            data: (dto.attributes || [])?.map((i) => ({
+              attributeId: i.attributeId,
+              attributeValueId: i.attributeValueId,
+              valueString: i.valueString,
+              valueNumber: i.valueNumber,
+              valueBoolean: i.valueBoolean,
+              label: i.label,
+            })),
+          },
+        },
+      },
     });
   }
 
