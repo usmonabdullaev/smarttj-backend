@@ -125,7 +125,10 @@ export class PartnerProductsController {
     @Param('id') id: string,
     @UploadedFiles() images: Express.Multer.File[],
   ) {
-    const uploads = await this.cloudinary.uploadFiles(images, 'images');
+    const uploads = await this.cloudinary.uploadFiles({
+      files: images,
+      folder: 'images',
+    });
 
     return await this.partnerProductsService.uploadImages(
       id,

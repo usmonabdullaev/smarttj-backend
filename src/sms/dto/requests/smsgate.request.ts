@@ -1,4 +1,4 @@
-export interface SmsSendDto {
+export interface SmsgateRequest {
   phone: string;
   message: string;
   priority?: 0 | 1 | 2;
@@ -6,10 +6,4 @@ export interface SmsSendDto {
   scheduledAt?: string;
   expiresIn?: number;
   label?: string;
-}
-
-export interface SmsResponseDto {
-  MessageId: string;
-  MessageResult: string;
-  MessageError: boolean;
 }

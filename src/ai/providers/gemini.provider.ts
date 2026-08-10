@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { GoogleGenAI } from '@google/genai';
 import 'dotenv/config';
 
+import { AskRequest } from '@/ai/dto/requests/ask.request';
 import { LoggerService } from '@/logger/logger.service';
-import { AIRequestDto } from '@/ai/dto/ai-request.dto';
 
 @Injectable()
 export class GeminiProvider {
@@ -15,11 +15,9 @@ export class GeminiProvider {
     });
   }
 
-  async ask(input: AIRequestDto) {
+  async ask(dto: AskRequest) {
     const model =
-      input.model ||
-      process.env.GEMINI_DEFAULT_MODEL ||
-      'gemini-3-flash-preview';
+      dto.model || process.env.GEMINI_DEFAULT_MODEL || 'gemini-3-flash-preview';
 
     try {
       const result = await this.client.models.generateContent({
@@ -27,12 +25,12 @@ export class GeminiProvider {
         contents: [
           {
             role: 'user',
-            parts: [{ text: input.prompt }],
+            parts: [{ text: dto.prompt }],
           },
         ],
         config: {
-          temperature: input.temperature ?? 0.3,
-          systemInstruction: input.context,
+          temperature: dto.temperature ?? 0.3,
+          systemInstruction: dto.context,
         },
       });
 
@@ -44,7 +42,7 @@ export class GeminiProvider {
 
       return {
         text: parsed.text as string,
-        confidense: parsed.confidense,
+        confidence: parsed.confidence,
         ok: parsed.ok,
         raw: result,
       };
@@ -52,7 +50,7 @@ export class GeminiProvider {
       this.logger.error('Gemini request failed', {
         error,
         model,
-        purpose: input.purpose,
+        purpose: dto.purpose,
       });
 
       throw error;

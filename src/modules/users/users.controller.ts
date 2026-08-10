@@ -54,7 +54,10 @@ export class UsersController {
     @UploadedFile() avatar: Express.Multer.File,
   ) {
     const upload = avatar
-      ? await this.cloudinary.uploadFile(avatar, 'avatar')
+      ? await this.cloudinary.uploadFile({
+          file: avatar,
+          folder: 'avatar',
+        })
       : null;
 
     return this.usersService.update(

@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import * as streamifier from 'streamifier';
-import { Express } from 'express';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Multer } from 'multer';
+
+import { UploadFilesRequest } from '@/cloudinary/dto/requests/upload-files.request';
+import { UploadFileRequest } from '@/cloudinary/dto/requests/upload-file.request';
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -23,11 +23,8 @@ export class CloudinaryService {
     });
   }
 
-  async uploadFile(
-    file: Express.Multer.File,
-    folder: string,
-  ): Promise<UploadApiResponse> {
-    if (!file) {
+  async uploadFile(dto: UploadFileRequest): Promise<UploadApiResponse> {
+    if (!dto.file) {
       throw new BadRequestException({
         message: 'File not found',
         code: 'FILE_NOT_FOUND',
@@ -35,18 +32,18 @@ export class CloudinaryService {
       });
     }
 
-    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+    if (!ALLOWED_MIME_TYPES.includes(dto.file.mimetype)) {
       throw new BadRequestException({
         message: 'Incorrect file type',
         code: 'INCORRECT_FILE_TYPE',
-        error: file.mimetype,
+        error: dto.file.mimetype,
       });
     }
 
     return new Promise((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         {
-          folder,
+          folder: dto.folder,
           resource_type: 'image',
         },
         (error, result) => {
@@ -55,15 +52,12 @@ export class CloudinaryService {
         },
       );
 
-      streamifier.createReadStream(file.buffer).pipe(upload);
+      streamifier.createReadStream(dto.file.buffer).pipe(upload);
     });
   }
 
-  async uploadFiles(
-    files: Express.Multer.File[],
-    folder: string,
-  ): Promise<UploadApiResponse[]> {
-    if (!files || files.length === 0) {
+  async uploadFiles(dto: UploadFilesRequest): Promise<UploadApiResponse[]> {
+    if (!dto.files || dto.files.length === 0) {
       throw new BadRequestException({
         message: 'Files not found',
         code: 'FILES_NOT_FOUND',
@@ -71,7 +65,7 @@ export class CloudinaryService {
       });
     }
 
-    for (const f of files) {
+    for (const f of dto.files) {
       if (!ALLOWED_MIME_TYPES.includes(f.mimetype)) {
         throw new BadRequestException({
           message: 'Incorrect file type',
@@ -81,7 +75,14 @@ export class CloudinaryService {
       }
     }
 
-    return Promise.all(files.map((file) => this.uploadFile(file, folder)));
+    return Promise.all(
+      dto.files.map((file) =>
+        this.uploadFile({
+          file,
+          folder: dto.folder,
+        }),
+      ),
+    );
   }
 
   async deleteFile(publicId: string) {

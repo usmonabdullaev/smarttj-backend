@@ -9,11 +9,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
-import { GoogleProfileDto } from '@/auth/google/dto/google-oauth.dto';
+import { GetProfileResponse } from '@/auth/google/dto/responses/get-profile.response';
+import { RequestOtpDto, VerifyOtpDto } from '@/modules/auth/dto/auth.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { generateOtp } from '@/modules/auth/utils/generate-otp';
 import { JwtAuthService } from '@/auth/jwt/jwt-auth.service';
-import { RequestOtpDto, VerifyOtpDto } from './dto/auth.dto';
 import { userSelect } from '@/common/selects/user.select';
 import { SmsService } from '@/sms/sms.service';
 import {
@@ -30,7 +30,7 @@ export class AuthService {
   ) {}
 
   async googleLogin(
-    googleProfile: GoogleProfileDto,
+    googleProfile: GetProfileResponse,
     fingerprint: string,
     ip: string,
     userAgent?: string,

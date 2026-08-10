@@ -1,7 +1,7 @@
 import { SmsLogPurpose } from '@prisma/client';
 
-export type SendSmsOptions = {
+export interface SendRequest {
   phone: string;
   message: string;
   purpose: SmsLogPurpose;
-};
+}

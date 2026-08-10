@@ -1,11 +1,11 @@
 import { TransactionPaymentStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
-import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/analyze-request.dto';
+import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/requests/analyze.request';
+import { AskRequestProvider } from '@/ai/dto/requests/ask.request';
+import { AskRequestPurpose } from '@/ai/dto/requests/ask.request';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { ANALYTICS_PROMPT } from '@/ai/prompts/analytics.prompt';
-import { ProvidersEnum } from '@/ai/dto/providers.dto';
-import { AIPurpose } from '@/ai/dto/ai-request.dto';
 import { AIService } from '@/ai/ai.service';
 
 @Injectable()
@@ -42,17 +42,15 @@ export class AdminAIService {
 Сделай краткий бизнес-анализ.
 `;
 
-    const aiResult = await this.aiService.ask(
-      {
-        context: ANALYTICS_PROMPT,
-        purpose: AIPurpose.ANALYTICS,
-        prompt,
-        temperature: 0.2,
-      },
-      ProvidersEnum.GROQ,
-    );
+    const aiResult = await this.aiService.ask({
+      context: ANALYTICS_PROMPT,
+      purpose: AskRequestPurpose.ANALYTICS,
+      prompt,
+      temperature: 0.2,
+      provider: AskRequestProvider.GROQ,
+    });
 
-    return { result: aiResult.text };
+    return { text: aiResult.text };
   }
 
   private async getStats(from: Date, to: Date) {

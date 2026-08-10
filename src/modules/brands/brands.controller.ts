@@ -58,7 +58,10 @@ export class BrandsController {
     @UploadedFile() logo: Express.Multer.File,
   ) {
     const upload = logo
-      ? await this.cloudinary.uploadFile(logo, 'brand')
+      ? await this.cloudinary.uploadFile({
+          file: logo,
+          folder: 'brand',
+        })
       : null;
 
     return await this.brandsService.create(
@@ -103,7 +106,10 @@ export class BrandsController {
     @UploadedFile() logo: Express.Multer.File,
   ) {
     const upload = logo
-      ? await this.cloudinary.uploadFile(logo, 'brand')
+      ? await this.cloudinary.uploadFile({
+          file: logo,
+          folder: 'brand',
+        })
       : null;
 
     return this.brandsService.update(

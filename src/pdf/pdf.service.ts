@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 
+import { GenerateRequest } from '@/pdf/dto/requests/generate.request';
+
 @Injectable()
 export class PdfService {
-  generate<T>(
-    template: { render(doc: typeof PDFDocument.default, data: any): void },
-    data: T,
-  ) {
+  generate<T>(dto: GenerateRequest<T>) {
     return new Promise((resolve) => {
       const doc = new PDFDocument.default({ margin: 40 });
       const chunks: Buffer[] = [];
@@ -14,7 +13,7 @@ export class PdfService {
       doc.on('data', (c) => chunks.push(c));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
 
-      template.render(doc, data);
+      dto.template.render(doc, dto.data);
 
       doc.end();
     });

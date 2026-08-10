@@ -1,5 +1,5 @@
-export class AIResponseDto {
-  text!: string;
+export interface AskResponse {
+  text: string;
   confidence?: number;
   ok?: boolean;
   tokens?: number;

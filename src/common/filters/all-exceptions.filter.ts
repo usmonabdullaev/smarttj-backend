@@ -1,3 +1,4 @@
+import { Response, Request } from 'express';
 import {
   ArgumentsHost,
   Catch,
@@ -5,7 +6,6 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { Response, Request } from 'express';
 
 import { LoggerService } from '@/logger/logger.service';
 

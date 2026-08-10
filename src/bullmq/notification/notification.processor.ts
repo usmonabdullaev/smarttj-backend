@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 
-import { SendNotificationDto } from '@/bullmq/notification/dto/notification.dto';
+import { SendRequest } from '@/bullmq/notification/dto/requests/send.request';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { userSelect } from '@/common/selects/user.select';
 import { LoggerService } from '@/logger/logger.service';
@@ -18,7 +18,7 @@ export class NotificationProcessor extends WorkerHost {
   async process(job: Job) {
     switch (job.name) {
       case 'notification': {
-        const dto = job.data as SendNotificationDto;
+        const dto = job.data as SendRequest;
         const state = await job.getState();
 
         const user = await this.prisma.user.findUnique({

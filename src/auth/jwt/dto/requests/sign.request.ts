@@ -1,6 +1,6 @@
 import { UserRole } from '@prisma/client';
 
-export interface JwtSignDto {
+export interface SignRequest {
   userId: string;
   sessionId: string;
   role: UserRole;

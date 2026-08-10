@@ -1,13 +1,13 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { AttributeType, NotificationType, ProductStatus } from '@prisma/client';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 
 import { NotificationService } from '@/bullmq/notification/notification.service';
 import { PRODUCT_MODERATE_PROMPT } from '@/ai/prompts/product-moderate.prompt';
+import { AskRequestProvider } from '@/ai/dto/requests/ask.request';
+import { AskRequestPurpose } from '@/ai/dto/requests/ask.request';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { LoggerService } from '@/logger/logger.service';
-import { ProvidersEnum } from '@/ai/dto/providers.dto';
-import { AIPurpose } from '@/ai/dto/ai-request.dto';
 import { AIService } from '@/ai/ai.service';
 
 @Processor('product-moderation')
@@ -170,15 +170,13 @@ export class ProductModerationProcessor extends WorkerHost {
           })),
         });
 
-        const { text, ok } = await this.ai.ask(
-          {
-            context: PRODUCT_MODERATE_PROMPT,
-            prompt,
-            purpose: AIPurpose.PRODUCT_MODERATE,
-            temperature: 0.2,
-          },
-          ProvidersEnum.GROQ,
-        );
+        const { text, ok } = await this.ai.ask({
+          context: PRODUCT_MODERATE_PROMPT,
+          prompt,
+          purpose: AskRequestPurpose.PRODUCT_MODERATE,
+          temperature: 0.2,
+          provider: AskRequestProvider.GROQ,
+        });
 
         if (ok === undefined || !text) {
           this.logger.warn(`[BullMQ] - AI response error`, {

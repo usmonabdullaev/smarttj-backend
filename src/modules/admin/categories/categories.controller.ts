@@ -9,8 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
+import { GetAllRequest } from '@/modules/admin/categories/dto/requests/get-all.request';
 import { AdminCategoriesService } from '@/modules/admin/categories/categories.service';
-import { GetCategoriesDto } from '@/modules/admin/categories/dto/get-categories.dto';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
@@ -26,7 +26,7 @@ export class AdminCategoriesController {
 
   @Get()
   @ApiOperation({ summary: 'Get categories' })
-  async getAll(@Query() query: GetCategoriesDto) {
+  async getAll(@Query() query: GetAllRequest) {
     return await this.adminCategoriesService.getAll(query);
   }
 

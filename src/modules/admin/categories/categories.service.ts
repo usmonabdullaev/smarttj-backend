@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { GetCategoriesDto } from '@/modules/admin/categories/dto/get-categories.dto';
+import { GetAllRequest } from 'src/modules/admin/categories/dto/requests/get-all.request';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -17,7 +17,7 @@ export class AdminCategoriesService {
     private readonly logger: LoggerService,
   ) {}
 
-  async getAll(query: GetCategoriesDto) {
+  async getAll(query: GetAllRequest) {
     const page = query.page || 1;
     const limit = query.limit || 18;
     const skip = (page - 1) * limit;

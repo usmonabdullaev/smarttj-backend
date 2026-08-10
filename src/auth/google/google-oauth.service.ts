@@ -1,9 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
-import {
-  GoogleProfileDto,
-  GoogleTokensDto,
-} from '@/auth/google/dto/google-oauth.dto';
+import { GetProfileResponse } from '@/auth/google/dto/responses/get-profile.response';
+import { GetTokensResponse } from '@/auth/google/dto/responses/get-tokens.response';
 
 @Injectable()
 export class GoogleOAuthService {
@@ -25,7 +23,7 @@ export class GoogleOAuthService {
     return `${this.GOOGLE_AUTH_URL}?${params.toString()}`;
   }
 
-  async getTokens(code: string): Promise<GoogleTokensDto> {
+  async getTokens(code: string): Promise<GetTokensResponse> {
     const res = await fetch(this.GOOGLE_TOKEN_URL, {
       method: 'POST',
       headers: {
@@ -47,7 +45,7 @@ export class GoogleOAuthService {
     return await res.json();
   }
 
-  async getProfile(accessToken: string): Promise<GoogleProfileDto> {
+  async getProfile(accessToken: string): Promise<GetProfileResponse> {
     const res = await fetch(this.GOOGLE_USERINFO_URL, {
       headers: {
         Authorization: `Bearer ${accessToken}`,

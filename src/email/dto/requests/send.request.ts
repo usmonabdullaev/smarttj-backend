@@ -1,4 +1,4 @@
-export interface SendEmailOptions {
+export interface SendRequest {
   to: string;
   subject: string;
   html: string;

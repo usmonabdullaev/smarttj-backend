@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 
 import { ROLES_KEY } from '@/common/decorators/roles.decorator';
-import { JwtPayload } from '@/auth/strategies/jwt.strategy';
+import { ValidateRequest } from '@/auth/strategies/dto/requests/validate.request';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -25,7 +25,9 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<{ user: JwtPayload }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<{ user: ValidateRequest }>();
     const user = request.user;
 
     if (!user) {

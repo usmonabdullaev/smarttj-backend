@@ -1,12 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ApiErrorDto {
-  @ApiProperty()
+  @ApiProperty({
+    example: 'SERVER_ERROR',
+    description: 'Error code',
+  })
   code!: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: 'Server Error',
+    description: 'Error message',
+  })
   message!: string;
 
-  @ApiProperty({ example: null, nullable: true, description: 'Error details' })
+  @ApiProperty({
+    example: null,
+    nullable: true,
+    description: 'Error details',
+  })
   error?: any;
 }

@@ -2,7 +2,7 @@ import { Report } from '@prisma/client';
 import * as PDFDocument from 'pdfkit';
 import * as path from 'path';
 
-import { PdfTemplate } from '@/pdf/types/pdf-template.interface';
+import { PdfTemplate } from '@/pdf/dto/templates/pdf.template';
 
 const COLORS = {
   primary: '#2F5CE8',

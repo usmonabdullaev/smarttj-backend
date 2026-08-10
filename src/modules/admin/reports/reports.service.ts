@@ -49,7 +49,10 @@ export class AdminReportsService {
 
   async exportPdf(id: string) {
     const report = await this.getById(id);
-    const buffer = await this.pdfService.generate(new ReportTemplate(), report);
+    const buffer = await this.pdfService.generate({
+      template: new ReportTemplate(),
+      data: report,
+    });
 
     return { report, buffer };
   }

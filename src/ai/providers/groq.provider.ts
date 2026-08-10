@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import Groq from 'groq-sdk';
 import 'dotenv/config';
 
+import { AskRequest } from '@/ai/dto/requests/ask.request';
 import { LoggerService } from '@/logger/logger.service';
-import { AIRequestDto } from '@/ai/dto/ai-request.dto';
 
 @Injectable()
 export class GroqProvider {
@@ -15,9 +15,9 @@ export class GroqProvider {
     });
   }
 
-  async ask(input: AIRequestDto) {
+  async ask(dto: AskRequest) {
     const model =
-      input.model || process.env.GROQ_DEFAULT_MODEL || 'llama-3.1-8b-instant';
+      dto.model || process.env.GROQ_DEFAULT_MODEL || 'llama-3.1-8b-instant';
 
     try {
       const result = await this.client.chat.completions.create({
@@ -25,14 +25,14 @@ export class GroqProvider {
         messages: [
           {
             role: 'system',
-            content: input.context || '',
+            content: dto.context || '',
           },
           {
             role: 'user',
-            content: input.prompt,
+            content: dto.prompt,
           },
         ],
-        temperature: input.temperature ?? 0.3,
+        temperature: dto.temperature ?? 0.3,
       });
 
       const text = result.choices[0].message.content || '{}';
@@ -41,7 +41,7 @@ export class GroqProvider {
 
       return {
         text: parsed.text as string,
-        confidense: parsed.confidense,
+        confidence: parsed.confidence,
         ok: parsed.ok,
         raw: result,
       };
@@ -49,7 +49,7 @@ export class GroqProvider {
       this.logger.error('Gemini request failed', {
         error,
         model,
-        purpose: input.purpose,
+        purpose: dto.purpose,
       });
 
       throw error;

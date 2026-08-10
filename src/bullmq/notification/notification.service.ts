@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 
-import { SendNotificationDto } from '@/bullmq/notification/dto/notification.dto';
+import { SendRequest } from '@/bullmq/notification/dto/requests/send.request';
 
 @Injectable()
 export class NotificationService {
@@ -11,7 +11,7 @@ export class NotificationService {
     private readonly queue: Queue,
   ) {}
 
-  async send(dto: SendNotificationDto) {
+  async send(dto: SendRequest) {
     await this.queue.add('notification', dto, {
       attempts: 5,
       backoff: {

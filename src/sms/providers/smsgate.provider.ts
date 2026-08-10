@@ -1,4 +1,5 @@
-import { SmsResponseDto, SmsSendDto } from '@/sms/dto/smsgate.dto';
+import { SmsgateResponse } from '@/sms/dto/responses/smsgate.response';
+import { SmsgateRequest } from '@/sms/dto/requests/smsgate.request';
 
 export class SmsgateProvider {
   private SMSGATE_API_KEY = process.env.SMSGATE_API_KEY as string;
@@ -13,7 +14,7 @@ export class SmsgateProvider {
     scheduledAt,
     expiresIn = 0,
     label,
-  }: SmsSendDto): Promise<SmsResponseDto> {
+  }: SmsgateRequest): Promise<SmsgateResponse> {
     // eslint-disable-next-line no-useless-catch
     try {
       const res = await fetch(this.SMSGATE_API_URL, {

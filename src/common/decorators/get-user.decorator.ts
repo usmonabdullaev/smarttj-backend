@@ -1,14 +1,13 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-import { JwtPayload } from 'src/auth/strategies/jwt.strategy';
-
-export type GetUserDataType = 'userId' | 'sessionId' | 'role';
+import { GetUserRequest } from '@/common/decorators/dto/requests/get-user.request';
+import { ValidateRequest } from '@/auth/strategies/dto/requests/validate.request';
 
 export const GetUser = createParamDecorator(
-  (data: GetUserDataType | undefined, ctx: ExecutionContext) => {
+  (dto: GetUserRequest | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user as JwtPayload;
+    const user = request.user as ValidateRequest;
 
-    return data ? user?.[data] : user;
+    return dto ? user?.[dto] : user;
   },
 );

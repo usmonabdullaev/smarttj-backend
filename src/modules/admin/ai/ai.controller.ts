@@ -1,18 +1,11 @@
+import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
-import {
-  ApiBearerAuth,
-  ApiForbiddenResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
 
-import { AnalyzeResponseDto } from '@/modules/admin/ai/dto/analyze-response.dto';
-import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/analyze-request.dto';
+import { AnalyzeResponseDto } from '@/modules/admin/ai/dto/responses/analyze.response';
+import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/requests/analyze.request';
 import { AdminAIService } from '@/modules/admin/ai/ai.service';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { ApiErrorDto } from '@/common/dto/api-error.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 
@@ -26,9 +19,7 @@ export class AdminAIController {
   @Post('analyze')
   @ApiOperation({ summary: 'AI Analysis' })
   @ApiOkResponse({ type: AnalyzeResponseDto })
-  @ApiUnauthorizedResponse({ type: ApiErrorDto })
-  @ApiForbiddenResponse({ type: ApiErrorDto })
-  async analyze(@Body() dto: AnalyzeRequestDto) {
+  async analyze(@Body() dto: AnalyzeRequestDto): Promise<AnalyzeResponseDto> {
     return await this.adminAIService.analyze(dto);
   }
 }

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { SendEmailOptions } from '@/email/dto/email.dto';
+import { SendRequest } from '@/email/dto/requests/send.request';
 
 @Injectable()
 export class EmailService {
-  async send({ to, subject, html }: SendEmailOptions) {
+  async send(dto: SendRequest) {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -12,10 +12,10 @@ export class EmailService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Smart Shop <onboarding@resend.dev>',
-        to,
-        subject,
-        html,
+        from: 'SmartTJ <onboarding@resend.dev>',
+        to: dto.to,
+        subject: dto.subject,
+        html: dto.html,
       }),
     });
   }

@@ -6,9 +6,9 @@ import {
 } from '@prisma/client';
 
 import { CreateSupportDto } from '@/modules/support/dto/create-support.dto';
+import { AskRequestPurpose } from '@/ai/dto/requests/ask.request';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { SUPPORT_PROMPT } from '@/ai/prompts/support.prompt';
-import { AIPurpose } from '@/ai/dto/ai-request.dto';
 import { AIService } from '@/ai/ai.service';
 
 @Injectable()
@@ -42,7 +42,7 @@ export class SupportService {
     const prompt = this.buildPrompt(history);
 
     const aiResponse = await this.aiService.ask({
-      purpose: AIPurpose.SUPPORT,
+      purpose: AskRequestPurpose.SUPPORT,
       prompt,
       context: SUPPORT_PROMPT,
       temperature: 0.25,

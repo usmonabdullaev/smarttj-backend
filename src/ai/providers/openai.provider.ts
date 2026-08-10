@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import 'dotenv/config';
 
+import { AskRequest } from '@/ai/dto/requests/ask.request';
 import { LoggerService } from '@/logger/logger.service';
-import { AIRequestDto } from '@/ai/dto/ai-request.dto';
 
 @Injectable()
 export class OpenAIProvider {
@@ -15,15 +15,15 @@ export class OpenAIProvider {
     });
   }
 
-  async ask(input: AIRequestDto) {
-    const model = input.model || process.env.OPENAI_DEFAULT_MODEL || 'gpt-5.1';
+  async ask(dto: AskRequest) {
+    const model = dto.model || process.env.OPENAI_DEFAULT_MODEL || 'gpt-5.1';
 
     try {
       const result = await this.client.responses.create({
         model,
-        instructions: input.context,
-        input: input.prompt,
-        temperature: input.temperature ?? 0.3,
+        instructions: dto.context,
+        input: dto.prompt,
+        temperature: dto.temperature ?? 0.3,
       });
 
       const text = result.output_text;
@@ -32,7 +32,7 @@ export class OpenAIProvider {
 
       return {
         text: parsed.text as string,
-        confidense: parsed.confidense,
+        confidence: parsed.confidence,
         ok: parsed.ok,
         raw: result,
       };
@@ -40,7 +40,7 @@ export class OpenAIProvider {
       this.logger.error('Gemini request failed', {
         error,
         model,
-        purpose: input.purpose,
+        purpose: dto.purpose,
       });
 
       throw error;

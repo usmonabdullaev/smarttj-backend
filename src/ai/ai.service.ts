@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import { AskRequest, AskRequestProvider } from '@/ai/dto/requests/ask.request';
 import { GeminiProvider } from '@/ai/providers/gemini.provider';
 import { OpenAIProvider } from '@/ai/providers/openai.provider';
-import { AIResponseDto } from '@/ai/dto/ai-response.dto';
-import { AIRequestDto } from '@/ai/dto/ai-request.dto';
-import { ProvidersEnum } from '@/ai/dto/providers.dto';
-import { GroqProvider } from './providers/groq.provider';
+import { GroqProvider } from '@/ai/providers/groq.provider';
 
 @Injectable()
 export class AIService {
@@ -15,22 +13,19 @@ export class AIService {
     private readonly groqProvider: GroqProvider,
   ) {}
 
-  async ask(
-    input: AIRequestDto,
-    provider?: ProvidersEnum,
-  ): Promise<AIResponseDto> {
-    switch (provider) {
-      case ProvidersEnum.OPENAI:
-        return await this.openaiProvider.ask(input);
+  async ask(dto: AskRequest) {
+    switch (dto.provider) {
+      case AskRequestProvider.OPENAI:
+        return await this.openaiProvider.ask(dto);
 
-      case ProvidersEnum.GEMINI:
-        return await this.geminiProvider.ask(input);
+      case AskRequestProvider.GEMINI:
+        return await this.geminiProvider.ask(dto);
 
-      case ProvidersEnum.GROQ:
-        return await this.groqProvider.ask(input);
+      case AskRequestProvider.GROQ:
+        return await this.groqProvider.ask(dto);
 
       default:
-        return await this.geminiProvider.ask(input);
+        return await this.geminiProvider.ask(dto);
     }
   }
 }

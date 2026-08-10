@@ -3,8 +3,8 @@ import { Injectable } from '@nestjs/common';
 
 import { SmsgateProvider } from '@/sms/providers/smsgate.provider';
 import { PrismaService } from '@/database/prisma/prisma.service';
+import { SendRequest } from '@/sms/dto/requests/send.request';
 import { LoggerService } from '@/logger/logger.service';
-import { SendSmsOptions } from '@/sms/types';
 
 @Injectable()
 export class SmsService {
@@ -15,19 +15,19 @@ export class SmsService {
     private readonly logger: LoggerService,
   ) {}
 
-  async send({ phone, message, purpose }: SendSmsOptions) {
+  async send(dto: SendRequest) {
     try {
       const response = await this.provider.send({
-        phone,
-        message,
-        label: purpose,
+        phone: dto.phone,
+        message: dto.message,
+        label: dto.purpose,
       });
 
       await this.prisma.smsLog.create({
         data: {
-          phone,
-          message,
-          purpose,
+          phone: dto.phone,
+          message: dto.message,
+          purpose: dto.purpose,
           provider: 'SMS GATE',
           status:
             response.MessageResult === 'OK'
@@ -41,9 +41,9 @@ export class SmsService {
     } catch (error: any) {
       const smsLog = await this.prisma.smsLog.create({
         data: {
-          phone,
-          message,
-          purpose,
+          phone: dto.phone,
+          message: dto.message,
+          purpose: dto.purpose,
           status: SmsLogStatus.FAILED,
           provider: 'SMS GATE',
           error: error?.Title || error?.message || 'Unknown error',

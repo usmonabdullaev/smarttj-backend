@@ -50,7 +50,10 @@ export class ModelsController {
     @UploadedFile() image: Express.Multer.File,
   ) {
     const upload = image
-      ? await this.cloudinary.uploadFile(image, 'model')
+      ? await this.cloudinary.uploadFile({
+          file: image,
+          folder: 'model',
+        })
       : null;
 
     return await this.modelsService.create(
@@ -90,7 +93,10 @@ export class ModelsController {
     @UploadedFile() image: Express.Multer.File,
   ) {
     const upload = image
-      ? await this.cloudinary.uploadFile(image, 'model')
+      ? await this.cloudinary.uploadFile({
+          file: image,
+          folder: 'model',
+        })
       : null;
 
     return await this.modelsService.update(
