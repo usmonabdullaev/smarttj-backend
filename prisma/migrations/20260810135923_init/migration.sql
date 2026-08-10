@@ -20,7 +20,7 @@ CREATE TYPE "EmployeeStatus" AS ENUM ('ACTIVE', 'ON_VACATION');
 CREATE TYPE "VerificationStatus" AS ENUM ('ACTIVE', 'DELETED');
 
 -- CreateEnum
-CREATE TYPE "ProductStatus" AS ENUM ('DRAFT', 'IN_MODERATE', 'ACTIVE', 'INACTIVE', 'NOT_AVAILABLE', 'DELETED');
+CREATE TYPE "ProductStatus" AS ENUM ('DRAFT', 'AUTO_MODERATION', 'MANUAL_MODERATION', 'ACTIVE', 'INACTIVE', 'NOT_AVAILABLE', 'DELETED');
 
 -- CreateEnum
 CREATE TYPE "AttributeType" AS ENUM ('STRING', 'NUMBER', 'BOOLEAN', 'SELECT', 'MULTISELECT');
@@ -42,6 +42,9 @@ CREATE TYPE "OrderType" AS ENUM ('PICKUP', 'DELIVERY');
 
 -- CreateEnum
 CREATE TYPE "OrderItemDeliveryStatus" AS ENUM ('NEW', 'PROCESSING', 'SHIPPED', 'AT_PICKUP_POINT', 'DELIVERED', 'RECEIVED', 'RETURN_PROCESS', 'RETURN_CANCEL', 'RETURNED');
+
+-- CreateEnum
+CREATE TYPE "NotificationType" AS ENUM ('DEFAULT', 'PRODUCT_MODERATION');
 
 -- CreateEnum
 CREATE TYPE "TransactionPaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED', 'CANCELED', 'REFUNDED');
@@ -237,6 +240,7 @@ CREATE TABLE "ProductVariant" (
     "id" TEXT NOT NULL,
     "price" INTEGER NOT NULL,
     "discount" INTEGER,
+    "stock" INTEGER NOT NULL,
     "productId" TEXT NOT NULL,
     "code" SERIAL NOT NULL,
     "variantId" TEXT,
@@ -382,7 +386,7 @@ CREATE TABLE "AttributeGroup" (
 CREATE TABLE "ProductAttribute" (
     "id" TEXT NOT NULL,
     "attributeId" TEXT NOT NULL,
-    "attributeValueId" TEXT NOT NULL,
+    "attributeValueId" TEXT,
     "productVariantId" TEXT NOT NULL,
     "valueString" TEXT,
     "valueNumber" DOUBLE PRECISION,
@@ -398,12 +402,22 @@ CREATE TABLE "ProductAttribute" (
 CREATE TABLE "Cart" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Cart_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CartItem" (
+    "id" TEXT NOT NULL,
+    "cartId" TEXT NOT NULL,
     "productVariantId" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Cart_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "CartItem_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -427,6 +441,7 @@ CREATE TABLE "Order" (
     "uiStatus" "OrderUIStatus" NOT NULL DEFAULT 'SHOW',
     "type" "OrderType" NOT NULL,
     "paymentMethodId" TEXT NOT NULL,
+    "totalPrice" INTEGER NOT NULL,
     "comment" TEXT,
     "shopId" TEXT,
     "addressId" TEXT,
@@ -456,7 +471,8 @@ CREATE TABLE "OrderItem" (
 CREATE TABLE "Notification" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
+    "type" "NotificationType" NOT NULL DEFAULT 'DEFAULT',
+    "title" TEXT NOT NULL,
     "message" TEXT NOT NULL,
     "isRead" BOOLEAN NOT NULL DEFAULT false,
     "metadata" JSONB,
@@ -637,10 +653,13 @@ CREATE INDEX "AttributeValue_attributeId_idx" ON "AttributeValue"("attributeId")
 CREATE UNIQUE INDEX "AttributeGroup_name_key" ON "AttributeGroup"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Cart_userId_key" ON "Cart"("userId");
+
+-- CreateIndex
 CREATE INDEX "Cart_userId_idx" ON "Cart"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Cart_userId_productVariantId_key" ON "Cart"("userId", "productVariantId");
+CREATE UNIQUE INDEX "CartItem_cartId_productVariantId_key" ON "CartItem"("cartId", "productVariantId");
 
 -- CreateIndex
 CREATE INDEX "Order_userId_idx" ON "Order"("userId");
@@ -766,10 +785,13 @@ ALTER TABLE "ProductAttribute" ADD CONSTRAINT "ProductAttribute_attributeValueId
 ALTER TABLE "ProductAttribute" ADD CONSTRAINT "ProductAttribute_productVariantId_fkey" FOREIGN KEY ("productVariantId") REFERENCES "ProductVariant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Cart" ADD CONSTRAINT "Cart_productVariantId_fkey" FOREIGN KEY ("productVariantId") REFERENCES "ProductVariant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Cart" ADD CONSTRAINT "Cart_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Cart" ADD CONSTRAINT "Cart_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "CartItem" ADD CONSTRAINT "CartItem_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CartItem" ADD CONSTRAINT "CartItem_productVariantId_fkey" FOREIGN KEY ("productVariantId") REFERENCES "ProductVariant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

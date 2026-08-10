@@ -15,6 +15,7 @@ import { BrandsModule } from '@/modules/brands/brands.module';
 import { ModelsModule } from '@/modules/models/models.module';
 import { OrdersModule } from '@/modules/orders/orders.module';
 import { ServerModule } from '@/modules/server/server.module';
+import { SearchModule } from '@/modules/search/search.module';
 import { UsersModule } from '@/modules/users/users.module';
 import { AdminModule } from '@/modules/admin/admin.module';
 import { CartsModule } from '@/modules/carts/carts.module';
@@ -41,6 +42,7 @@ import { AuthModule } from '@/modules/auth/auth.module';
     AdminModule,
     PartnerModule,
     NotificationModule,
+    SearchModule,
   ],
 })
 export class DefaultModule {}

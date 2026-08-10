@@ -155,6 +155,7 @@ export class PartnerProductsService {
       data: {
         productId,
         price: dto.price,
+        stock: dto.stock,
       },
     });
   }

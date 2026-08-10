@@ -1,4 +1,4 @@
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { CreateCartDto } from '@/modules/carts/dto/create-cart.dto';
+import { AddToCartDto } from '@/modules/carts/dto/add-to-cart.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { EditCartDto } from '@/modules/carts/dto/edit-cart.dto';
 import { CartsService } from '@/modules/carts/carts.service';
@@ -23,26 +23,35 @@ export class CartsController {
   constructor(private readonly cartsService: CartsService) {}
 
   @Get()
-  async getList(@GetUser('userId') userId: string) {
-    return await this.cartsService.getList(userId);
+  @ApiOperation({ summary: 'Get user cart' })
+  async getCart(@GetUser('userId') userId: string) {
+    return await this.cartsService.getCart(userId);
   }
 
   @Post()
-  async create(@Body() dto: CreateCartDto, @GetUser('userId') userId: string) {
-    return await this.cartsService.create(dto, userId);
+  @ApiOperation({ summary: 'Add product variant to cart' })
+  async addToCart(
+    @Body() dto: AddToCartDto,
+    @GetUser('userId') userId: string,
+  ) {
+    return await this.cartsService.addToCart(dto, userId);
   }
 
   @Patch(':id')
-  async edit(
-    @Param('id') id: string,
-    @Body() dto: EditCartDto,
-    @GetUser('userId') userId: string,
-  ) {
-    return await this.cartsService.edit(dto, id, userId);
+  @ApiOperation({ summary: 'Edit cart item' })
+  async edit(@Param('id') id: string, @Body() dto: EditCartDto) {
+    return await this.cartsService.edit(dto, id);
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string, @GetUser('userId') userId: string) {
-    return await this.cartsService.delete(id, userId);
+  @ApiOperation({ summary: 'Delete cart item' })
+  async deleteItem(@Param('id') id: string) {
+    return await this.cartsService.deleteItem(id);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Clear cart' })
+  async clear(@GetUser('userId') userId: string) {
+    return await this.cartsService.clear(userId);
   }
 }

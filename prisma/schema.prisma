@@ -33,7 +33,6 @@ model User {
   updatedAt DateTime @updatedAt
 
   sessions      Session[]
-  carts         Cart[]
   orders        Order[]
   notifications Notification[]
   transactions  Transaction[]
@@ -45,6 +44,7 @@ model User {
   operatorChats SupportChat[]  @relation("AssignedOperator")
   region        Region?        @relation(fields: [regionId], references: [id], onDelete: SetNull)
   partner       Partner?
+  cart          Cart?
 
   @@unique([phone, role])
   @@unique([email, role])
@@ -272,6 +272,7 @@ model ProductVariant {
   id        String  @id @default(uuid(7))
   price     Int
   discount  Int?
+  stock     Int
   productId String
   code      Int     @unique @default(autoincrement()) @db.Integer
   variantId String?
@@ -282,7 +283,7 @@ model ProductVariant {
 
   product      Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
   images       Image[]
-  carts        Cart[]
+  cartItems    CartItem[]
   orderItems   OrderItem[]
   priceHistory ProductPriceHistory[]
   attributes   ProductAttribute[]
@@ -480,19 +481,31 @@ model ProductAttribute {
 }
 
 model Cart {
+  id     String @id @default(uuid(7))
+  userId String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([userId])
+}
+
+model CartItem {
   id               String @id @default(uuid(7))
-  userId           String
+  cartId           String
   productVariantId String
   quantity         Int    @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  cart           Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, productVariantId])
-  @@index([userId])
+  @@unique([cartId, productVariantId])
 }
 
 enum PaymentMethodType {
@@ -546,6 +559,7 @@ model Order {
   uiStatus        OrderUIStatus       @default(SHOW)
   type            OrderType
   paymentMethodId String
+  totalPrice      Int
   comment         String?
   shopId          String?
   addressId       String?

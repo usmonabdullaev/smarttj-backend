@@ -1,41 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ProductStatus } from '@prisma/client';
 
-import { CreateCartDto } from '@/modules/carts/dto/create-cart.dto';
+import { AddToCartDto } from '@/modules/carts/dto/add-to-cart.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { EditCartDto } from '@/modules/carts/dto/edit-cart.dto';
-import { userSelect } from '@/common/selects/user.select';
 
 @Injectable()
 export class CartsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getList(userId: string) {
-    return await this.prisma.cart.findMany({
+  async getCart(userId: string) {
+    return await this.prisma.cart.findUnique({
       where: { userId },
       include: {
-        productVariant: {
+        items: {
           include: {
-            product: {
+            productVariant: {
               include: {
-                category: true,
-                brand: true,
-                model: true,
-                region: true,
-                reviews: {
-                  take: 10,
+                product: {
                   include: {
-                    user: {
-                      select: userSelect,
-                    },
+                    brand: true,
+                    model: true,
                   },
                 },
-              },
-            },
-            images: true,
-            attributes: {
-              include: {
-                attribute: true,
-                attributeValue: true,
+                images: true,
+                attributes: {
+                  include: {
+                    attribute: true,
+                    attributeValue: true,
+                  },
+                },
               },
             },
           },
@@ -44,49 +38,90 @@ export class CartsService {
     });
   }
 
-  async create(dto: CreateCartDto, userId: string) {
-    const productVariant = await this.prisma.productVariant.findUnique({
-      where: { id: dto.productVariantId },
+  async addToCart(dto: AddToCartDto, userId: string) {
+    const productVariant = await this.prisma.productVariant.findFirst({
+      where: {
+        id: dto.productVariantId,
+        product: {
+          status: ProductStatus.ACTIVE,
+        },
+      },
     });
 
     if (!productVariant) {
       throw new NotFoundException();
     }
 
-    return await this.prisma.cart.create({
-      data: {
+    const cart = await this.prisma.cart.upsert({
+      where: {
         userId,
+      },
+      create: {
+        userId,
+      },
+      update: {},
+    });
+
+    await this.prisma.cartItem.upsert({
+      where: {
+        cartId_productVariantId: {
+          cartId: cart.id,
+          productVariantId: dto.productVariantId,
+        },
+      },
+      create: {
+        cartId: cart.id,
         productVariantId: dto.productVariantId,
+        quantity: dto.quantity,
+      },
+      update: {
+        quantity: {
+          increment: dto.quantity,
+        },
+      },
+    });
+
+    return { success: true, message: 'Product added to cart' };
+  }
+
+  async edit(dto: EditCartDto, id: string) {
+    const cartItem = await this.prisma.cartItem.findUnique({
+      where: { id },
+    });
+
+    if (!cartItem) {
+      throw new NotFoundException();
+    }
+
+    return await this.prisma.cartItem.update({
+      where: { id },
+      data: {
         quantity: dto.quantity,
       },
     });
   }
 
-  async edit(dto: EditCartDto, id: string, userId: string) {
-    const cart = await this.prisma.cart.findFirst({ where: { id, userId } });
+  async deleteItem(id: string) {
+    const cartItem = await this.prisma.cartItem.findUnique({
+      where: { id },
+    });
 
-    if (!cart) {
+    if (!cartItem) {
       throw new NotFoundException();
     }
 
-    const quantity =
-      dto.quantity === 'increment' ? { increment: 1 } : { decrement: 1 };
-
-    return await this.prisma.cart.update({
-      where: { id },
-      data: {
-        quantity,
-      },
-    });
+    return await this.prisma.cartItem.delete({ where: { id } });
   }
 
-  async delete(id: string, userId: string) {
-    const cart = await this.prisma.cart.findFirst({ where: { id, userId } });
+  async clear(userId: string) {
+    const cart = await this.prisma.cart.findUnique({ where: { userId } });
 
     if (!cart) {
-      throw new NotFoundException();
+      return { message: 'Cart cleared', success: true };
     }
 
-    return await this.prisma.cart.delete({ where: { id } });
+    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+    return { message: 'Cart cleared', success: true };
   }
 }

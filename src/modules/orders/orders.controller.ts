@@ -1,4 +1,4 @@
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto';
+import { CheckoutOrderDto } from '@/modules/orders/dto/checkout-order.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { OrdersService } from '@/modules/orders/orders.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
@@ -21,21 +21,28 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get user orders' })
   async getList(@GetUser('userId') userId: string) {
     return await this.ordersService.getList(userId);
   }
 
   @Get('archive')
+  @ApiOperation({ summary: 'Get archived orders' })
   async getArchive(@GetUser('userId') userId: string) {
     return await this.ordersService.getArchive(userId);
   }
 
   @Post()
-  async create(@Body() dto: CreateOrderDto, @GetUser('userId') userId: string) {
-    return await this.ordersService.create(dto, userId);
+  @ApiOperation({ summary: 'Checkout' })
+  async checkout(
+    @Body() dto: CheckoutOrderDto,
+    @GetUser('userId') userId: string,
+  ) {
+    return await this.ordersService.checkout(dto, userId);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete order for UI' })
   async delete(@Param('id') id: string, @GetUser('userId') userId: string) {
     return await this.ordersService.delete(id, userId);
   }

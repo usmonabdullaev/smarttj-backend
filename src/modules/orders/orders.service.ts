@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,7 +11,7 @@ import {
   ProductStatus,
 } from '@prisma/client';
 
-import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto';
+import { CheckoutOrderDto } from '@/modules/orders/dto/checkout-order.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { userSelect } from '@/common/selects/user.select';
 
@@ -102,42 +103,84 @@ export class OrdersService {
     });
   }
 
-  async create(dto: CreateOrderDto, userId: string) {
+  async checkout(dto: CheckoutOrderDto, userId: string) {
     return await this.prisma.$transaction(async (tx) => {
-      const carts = await tx.cart.findMany({
+      const cart = await tx.cart.findUnique({
         where: { userId },
         include: {
-          productVariant: {
+          items: {
             include: {
-              product: true,
+              productVariant: {
+                select: {
+                  id: true,
+                  price: true,
+                  discount: true,
+                  stock: true,
+                  product: {
+                    select: { status: true, warranty: true },
+                  },
+                },
+              },
             },
           },
         },
       });
 
-      if (carts.length === 0) {
-        throw new BadRequestException();
+      if (!cart || cart.items.length === 0) {
+        throw new BadRequestException('Cart is empty');
       }
 
-      const orderItemsData = carts.map((item) => {
+      let total = 0;
+      const orderItemsData: {
+        productVariantId: string;
+        quantity: number;
+        warranty: number | null;
+        price: number;
+      }[] = [];
+
+      for (const item of cart.items) {
         const variant = item.productVariant;
 
         if (!variant || variant.product.status !== ProductStatus.ACTIVE) {
-          throw new BadRequestException({ message: 'Product not available' });
+          throw new BadRequestException('Product variant not available');
+        }
+
+        if (variant.stock < item.quantity) {
+          throw new BadRequestException('Not enough stock for product variant');
         }
 
         const price =
-          variant.discount && +variant.discount > 0
-            ? +variant.discount
-            : +variant.price;
+          variant.discount && variant.discount > 0
+            ? variant.discount
+            : variant.price;
 
-        return {
+        total += price * item.quantity;
+
+        orderItemsData.push({
           productVariantId: variant.id,
           quantity: item.quantity,
           warranty: variant.product.warranty,
-          price, // snapshot
-        };
-      });
+          price,
+        });
+      }
+
+      for (const item of orderItemsData) {
+        const updated = await tx.productVariant.updateMany({
+          where: {
+            id: item.productVariantId,
+            stock: { gte: item.quantity },
+          },
+          data: {
+            stock: { decrement: item.quantity },
+          },
+        });
+
+        if (updated.count === 0) {
+          throw new ConflictException(
+            'Product variant was purchased by someone else, try again',
+          );
+        }
+      }
 
       const order = await tx.order.create({
         data: {
@@ -147,6 +190,7 @@ export class OrdersService {
           comment: dto.comment,
           shopId: dto.shopId,
           addressId: dto.addressId,
+          totalPrice: total,
         },
       });
 
@@ -160,7 +204,7 @@ export class OrdersService {
         })),
       });
 
-      await tx.cart.deleteMany({ where: { userId } });
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
       return order;
     });

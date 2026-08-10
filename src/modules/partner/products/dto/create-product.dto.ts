@@ -12,11 +12,17 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProductVariantDto {
-  @ApiProperty({ example: 10000 })
-  @IsNumber()
+  @ApiProperty({ example: 1600000 })
+  @IsInt()
   @Min(0)
   @Max(999_999_999_999)
   price!: number;
+
+  @ApiProperty({ example: 1000 })
+  @IsInt()
+  @Min(1)
+  @Max(999_999_999_999)
+  stock!: number;
 }
 
 class UpdateProductVariantAttributesDto {

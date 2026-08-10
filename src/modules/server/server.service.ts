@@ -5,7 +5,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 
 @Injectable()
 export class ServerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async info() {
     const dbUrl = new URL(process.env.DATABASE_URL as string);

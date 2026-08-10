@@ -1,7 +1,7 @@
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { OrderType } from '@prisma/client';
 
-export class CreateOrderDto {
+export class CheckoutOrderDto {
   @IsEnum(OrderType)
   type!: OrderType;
 
