@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { PaymentMethodsModule } from '@/modules/payment-methods/payment-methods.module';
-import { NotificationModule } from 'src/modules/notifications/notifications.module';
+import { NotificationModule } from '@/modules/notifications/notifications.module';
 import { StatisticsModule } from '@/modules/statistics/statistics.module';
 import { CategoriesModule } from '@/modules/categories/categories.module';
 import { AttributesModule } from '@/modules/attributes/attributes.module';

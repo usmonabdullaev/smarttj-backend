@@ -9,7 +9,7 @@ import {
   ProductVariant,
 } from '@prisma/client';
 
-import { ProductModerationService } from 'src/bullmq/product-moderation/product-moderation.service';
+import { ProductModerationService } from '@/bullmq/product-moderation/product-moderation.service';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import {
