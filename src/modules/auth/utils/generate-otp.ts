@@ -1,5 +1,5 @@
-export const generateOtp = (length = 4) => {
-  return Math.floor(Math.random() * Math.pow(10, length))
-    .toString()
-    .padStart(length, '0');
+import { generateCode, CodeLength } from 'patcode';
+
+export const generateOtp = (length: CodeLength = 4) => {
+  return generateCode({ length });
 };

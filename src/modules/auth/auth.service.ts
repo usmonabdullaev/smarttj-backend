@@ -23,6 +23,10 @@ import {
 
 @Injectable()
 export class AuthService {
+  private readonly RETRY_DIFFERENCE = 1 * 60 * 1000; // 1 minute
+  private readonly EXPIRES_AT = 5 * 60 * 1000; // 5 minute
+  private readonly ATTEMPTS = 5;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly smsService: SmsService,
@@ -126,7 +130,7 @@ export class AuthService {
     if (lastOtp) {
       const diff = Date.now() - new Date(lastOtp.createdAt).getTime();
 
-      if (diff < 60_000) {
+      if (diff < this.RETRY_DIFFERENCE) {
         throw new HttpException(
           {
             message: 'OTP already sent',
@@ -151,7 +155,7 @@ export class AuthService {
       data: {
         phone: dto.phone,
         code: codeHash,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minute
+        expiresAt: new Date(Date.now() + this.EXPIRES_AT),
       },
     });
 
@@ -187,7 +191,7 @@ export class AuthService {
       });
     }
 
-    if (otp.attempts >= 5) {
+    if (otp.attempts > this.ATTEMPTS) {
       await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
 
       throw new HttpException(

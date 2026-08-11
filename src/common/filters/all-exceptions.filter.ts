@@ -63,15 +63,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error = parsed?.error || parsed;
     }
 
-    this.logger.error('HTTP Exception', {
-      status,
-      message,
-      code,
-      error,
-      path: request.url,
-      method: request.method,
-      stack: exception instanceof Error ? exception.stack : undefined,
-    });
+    if (process.env.NODE_ENV !== 'production' || +status >= 500) {
+      this.logger.error('HTTP Exception', {
+        status,
+        message,
+        code,
+        error,
+        path: request.url,
+        method: request.method,
+        stack: exception instanceof Error ? exception.stack : undefined,
+      });
+    }
 
     response.status(status).json({
       message,
