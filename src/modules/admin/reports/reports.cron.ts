@@ -1,4 +1,4 @@
-import { TransactionPaymentStatus } from '@prisma/client';
+import { TransactionStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
@@ -32,7 +32,7 @@ export class AdminReportCron {
     const revenueAgg = await this.prisma.transaction.aggregate({
       where: {
         createdAt: { gte: from, lt: to },
-        status: TransactionPaymentStatus.SUCCESS,
+        status: TransactionStatus.SUCCESS,
       },
       _sum: { amount: true },
     });

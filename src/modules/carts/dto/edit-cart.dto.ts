@@ -7,6 +7,6 @@ export class EditCartDto {
   })
   @IsInt()
   @Min(1)
-  @Max(1_000_000)
+  @Max(10_000)
   quantity!: number;
 }

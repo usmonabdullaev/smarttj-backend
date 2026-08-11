@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { GetReportsDto } from '@/modules/admin/reports/dto/get-reports.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { ReportTemplate } from '@/pdf/templates/report.template';
+import { ReportTemplate } from '@/pdf/templates';
 import { PdfService } from '@/pdf/pdf.service';
 
 @Injectable()
@@ -49,6 +49,7 @@ export class AdminReportsService {
 
   async exportPdf(id: string) {
     const report = await this.getById(id);
+
     const buffer = await this.pdfService.generate({
       template: new ReportTemplate(),
       data: report,

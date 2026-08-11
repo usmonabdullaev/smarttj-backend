@@ -561,13 +561,12 @@ model Order {
   paymentMethodId String
   totalPrice      Int
   comment         String?
-  shopId          String?
   addressId       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id])
   paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
   address       Address?      @relation(fields: [addressId], references: [id], onDelete: SetNull)
   items         OrderItem[]
@@ -629,7 +628,7 @@ model Notification {
   @@index([userId])
 }
 
-enum TransactionPaymentStatus {
+enum TransactionStatus {
   PENDING // В ожидании оплаты
   SUCCESS // Успешно оплачено
   FAILED // Ошибка оплаты
@@ -638,11 +637,11 @@ enum TransactionPaymentStatus {
 }
 
 model Transaction {
-  id         String                   @id @default(uuid(7))
+  id         String            @id @default(uuid(7))
   userId     String
-  orderId    String                   @unique
+  orderId    String            @unique
   amount     Int
-  status     TransactionPaymentStatus @default(PENDING)
+  status     TransactionStatus @default(PENDING)
   providerId String?
 
   createdAt DateTime @default(now())

@@ -14,17 +14,21 @@ import {
 import { CheckoutOrderDto } from '@/modules/orders/dto/checkout-order.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { userSelect } from '@/common/selects/user.select';
+import { ReceiptTemplate } from '@/pdf/templates';
+import { PdfService } from '@/pdf/pdf.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pdfService: PdfService,
+  ) {}
 
   async getList(userId: string) {
     return await this.prisma.order.findMany({
       where: { userId, uiStatus: OrderUIStatus.SHOW },
       include: {
         paymentMethod: true,
-        shop: true,
         address: true,
         items: {
           include: {
@@ -59,6 +63,21 @@ export class OrdersService {
         },
       },
     });
+  }
+
+  async getOrder(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
   }
 
   async getArchive(userId: string) {
@@ -210,10 +229,10 @@ export class OrdersService {
     });
   }
 
-  async delete(id: string, userId: string) {
+  async delete(orderId: string, userId: string) {
     const order = await this.prisma.order.findFirst({
       where: {
-        id,
+        id: orderId,
         userId,
         uiStatus: {
           not: OrderUIStatus.DELETED,
@@ -232,10 +251,45 @@ export class OrdersService {
     }
 
     return await this.prisma.order.update({
-      where: { id },
+      where: { id: orderId },
       data: {
         uiStatus: OrderUIStatus.DELETED,
       },
     });
+  }
+
+  async exportReceipt(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            productVariant: {
+              include: {
+                product: {
+                  select: {
+                    title: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        paymentMethod: true,
+        address: true,
+        user: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const buffer = await this.pdfService.generate({
+      template: new ReceiptTemplate(),
+      data: order,
+    });
+
+    return { order, buffer };
   }
 }

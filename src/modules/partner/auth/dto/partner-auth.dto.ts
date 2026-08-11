@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  Length,
+  Matches,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PartnerRegisterRequestDto {
@@ -17,7 +23,7 @@ export class PartnerRegisterVerifyDto {
     example: '1234',
   })
   @IsString()
-  @MinLength(4)
+  @Length(4, 8)
   code!: string;
 
   @ApiProperty({
@@ -85,7 +91,7 @@ export class PartnerLoginVerifyDto {
     example: '1234',
   })
   @IsString()
-  @MinLength(4)
+  @Length(4, 8)
   code!: string;
 
   @ApiProperty({

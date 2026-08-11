@@ -1,4 +1,4 @@
-import { TransactionPaymentStatus } from '@prisma/client';
+import { TransactionStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
 import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/requests/analyze.request';
@@ -63,7 +63,7 @@ export class AdminAIService {
     const revenue = await this.prisma.transaction.aggregate({
       where: {
         createdAt: { gte: from, lt: to },
-        status: TransactionPaymentStatus.SUCCESS,
+        status: TransactionStatus.SUCCESS,
       },
       _sum: { amount: true },
     });

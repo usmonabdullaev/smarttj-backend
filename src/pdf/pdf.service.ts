@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 
-import { GenerateRequest } from '@/pdf/dto/requests/generate.request';
+import { GenerateRequest } from './dto';
 
 @Injectable()
 export class PdfService {

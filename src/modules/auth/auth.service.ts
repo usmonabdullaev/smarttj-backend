@@ -149,12 +149,12 @@ export class AuthService {
 
     const code = generateOtp();
 
-    const codeHash = await argon2.hash(code, { type: argon2.argon2id });
+    const hash = await argon2.hash(code, { type: argon2.argon2id });
 
     await this.prisma.authOtp.create({
       data: {
         phone: dto.phone,
-        code: codeHash,
+        code: hash,
         expiresAt: new Date(Date.now() + this.EXPIRES_AT),
       },
     });

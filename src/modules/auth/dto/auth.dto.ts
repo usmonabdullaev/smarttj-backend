@@ -3,8 +3,8 @@ import {
   IsNotEmpty,
   IsPhoneNumber,
   IsString,
+  Length,
   Matches,
-  MinLength,
 } from 'class-validator';
 
 export class RequestOtpDto {
@@ -29,7 +29,7 @@ export class VerifyOtpDto {
     example: '1234',
   })
   @IsString()
-  @MinLength(4)
+  @Length(4, 8)
   code!: string;
 
   @ApiProperty({

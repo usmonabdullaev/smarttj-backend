@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
-import { Response } from 'express';
+import type { Response } from 'express';
 
 import { AdminReportsService } from '@/modules/admin/reports/reports.service';
 import { GetReportsDto } from '@/modules/admin/reports/dto/get-reports.dto';

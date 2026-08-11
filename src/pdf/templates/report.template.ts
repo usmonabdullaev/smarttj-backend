@@ -2,7 +2,7 @@ import { Report } from '@prisma/client';
 import * as PDFDocument from 'pdfkit';
 import * as path from 'path';
 
-import { PdfTemplate } from '@/pdf/dto/templates/pdf.template';
+import { PdfTemplate } from '../dto';
 
 const COLORS = {
   primary: '#2F5CE8',
@@ -39,12 +39,12 @@ const MONTHS_RU = [
 const PAGE_MARGIN = 50;
 
 const formatNumber = (value: number): string =>
-  new Intl.NumberFormat('ru-RU').format(Math.round(value));
+  new Intl.NumberFormat('tj-TJ').format(Math.round(value));
 
 const formatCurrency = (value: number): string =>
-  new Intl.NumberFormat('ru-RU', {
+  new Intl.NumberFormat('tj-TJ', {
     style: 'currency',
-    currency: 'RUB',
+    currency: 'TJS',
     maximumFractionDigits: 0,
   }).format(value);
 
@@ -115,13 +115,16 @@ export class ReportTemplate implements PdfTemplate<Report> {
       },
       {
         label: 'Доход',
-        value: formatCurrency(report.revenue),
+        value: formatCurrency(report.revenue / 100),
         accent: COLORS.positive,
       },
-      { label: 'Средний чек', value: formatCurrency(report.avgOrderValue) },
+      {
+        label: 'Средний чек',
+        value: formatCurrency(report.avgOrderValue / 100),
+      },
       {
         label: 'Сумма возвратов',
-        value: formatCurrency(report.refundedAmount),
+        value: formatCurrency(report.refundedAmount / 100),
         accent: report.refundedAmount > 0 ? COLORS.negative : undefined,
       },
       { label: 'Конверсия в оплату', value: formatPercent(conversion) },

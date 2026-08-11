@@ -72,10 +72,15 @@ export class PartnerProductsController {
   async create(
     @GetUser('sessionId') sessionId: string,
     @Param('categoryId') categoryId: string,
+    @Body() dto: CreateProductDto,
   ) {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
-    return await this.partnerProductsService.create(profile.id, categoryId);
+    return await this.partnerProductsService.create(
+      profile.id,
+      categoryId,
+      dto,
+    );
   }
 
   @Put(':id')

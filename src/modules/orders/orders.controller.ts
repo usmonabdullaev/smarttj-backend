@@ -1,4 +1,5 @@
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import type { Response } from 'express';
 import {
   Body,
   Controller,
@@ -6,6 +7,7 @@ import {
   Get,
   Param,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 
@@ -30,6 +32,23 @@ export class OrdersController {
   @ApiOperation({ summary: 'Get archived orders' })
   async getArchive(@GetUser('userId') userId: string) {
     return await this.ordersService.getArchive(userId);
+  }
+
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Export order receipt in PDF' })
+  async exportPdf(@Param('id') id: string, @Res() res: Response) {
+    const { buffer, order } = await this.ordersService.exportReceipt(id);
+    const createdAt = new Date(order.createdAt);
+    const year = new Date(order.createdAt).getFullYear();
+    const month = (createdAt.getMonth() + 1).toString().padStart(2, '0');
+    const day = createdAt.getDate().toString().padStart(2, '0');
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=order_${year}-${month}-${day}.pdf`,
+    });
+
+    res.send(buffer);
   }
 
   @Post()

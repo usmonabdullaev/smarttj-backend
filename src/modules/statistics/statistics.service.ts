@@ -1,4 +1,4 @@
-import { TransactionPaymentStatus, UserRole } from '@prisma/client';
+import { TransactionStatus, UserRole } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
@@ -27,20 +27,20 @@ export class StatisticsService {
       this.prisma.transaction.aggregate({
         _sum: { amount: true },
         where: {
-          status: TransactionPaymentStatus.SUCCESS,
+          status: TransactionStatus.SUCCESS,
           createdAt: { gte: startCurrent, lt: now },
         },
       }),
       this.prisma.transaction.aggregate({
         _sum: { amount: true },
         where: {
-          status: TransactionPaymentStatus.SUCCESS,
+          status: TransactionStatus.SUCCESS,
           createdAt: { gte: startPrev, lt: endPrev },
         },
       }),
       this.prisma.transaction.aggregate({
         _sum: { amount: true },
-        where: { status: TransactionPaymentStatus.SUCCESS },
+        where: { status: TransactionStatus.SUCCESS },
       }),
     ]);
 

@@ -16,6 +16,7 @@ import {
   CreateProductDto,
   CreateProductVariantDto,
   PublishProductDto,
+  UpdateProductDto,
   UpdateProductVariantDto,
   UploadImageDto,
 } from '@/modules/partner/products/dto/create-product.dto';
@@ -75,7 +76,7 @@ export class PartnerProductsService {
     return product;
   }
 
-  async create(partnerId: string, categoryId: string) {
+  async create(partnerId: string, categoryId: string, dto: CreateProductDto) {
     const category = await this.prisma.category.findUnique({
       where: { id: categoryId },
     });
@@ -85,11 +86,21 @@ export class PartnerProductsService {
     }
 
     return await this.prisma.product.create({
-      data: { partnerId, categoryId },
+      data: {
+        partnerId,
+        warranty: dto.warranty,
+        categoryId,
+        brandId: dto.brandId,
+        modelId: dto.modelId,
+        regionId: dto.regionId,
+        title: dto.title,
+        description: dto.description,
+        slug: dto.slug,
+      },
     });
   }
 
-  async update(id: string, dto: CreateProductDto) {
+  async update(id: string, dto: UpdateProductDto) {
     if (dto.categoryId) {
       const category = await this.prisma.category.findUnique({
         where: { id: dto.categoryId },
@@ -138,6 +149,9 @@ export class PartnerProductsService {
         brandId: dto.brandId,
         modelId: dto.modelId,
         regionId: dto.regionId,
+        title: dto.title,
+        description: dto.description,
+        slug: dto.slug,
       },
     });
   }
