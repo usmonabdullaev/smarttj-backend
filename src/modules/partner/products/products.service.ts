@@ -15,7 +15,6 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 import {
   CreateProductDto,
   CreateProductVariantDto,
-  PublishProductDto,
   UpdateProductDto,
   UpdateProductVariantDto,
   UploadImageDto,
@@ -226,10 +225,9 @@ export class PartnerProductsService {
     });
   }
 
-  async publish(id: string, dto: PublishProductDto) {
-    const product = await this.prisma.product.update({
+  async publish(id: string) {
+    const product = await this.prisma.product.findUnique({
       where: { id },
-      data: { title: dto.title, description: dto.description },
       include: {
         variants: {
           include: {

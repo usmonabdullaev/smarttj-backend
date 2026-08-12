@@ -52,7 +52,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const session = await this.upsertSession(user?.id, {
+    const session = await this.upsertSession(user.id, {
       fingerprint,
       ip,
       userAgent,
@@ -120,6 +120,7 @@ export class AuthService {
   async requestOtp(dto: RequestOtpDto) {
     const user = await this.prisma.user.findUnique({
       where: { phone_role: { phone: dto.phone, role: UserRole.USER } },
+      select: { id: true },
     });
 
     const lastOtp = await this.prisma.authOtp.findFirst({

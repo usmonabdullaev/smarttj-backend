@@ -16,18 +16,19 @@ enum UserRole {
 }
 
 model User {
-  id         String   @id @default(uuid(7))
-  phone      String
-  email      String?
-  password   String?
-  name       String
-  role       UserRole @default(USER)
-  avatar     String?
-  avatarId   String?
-  regionId   String?
-  bonus      Int      @default(0)
-  googleId   String?
-  telegramId String?
+  id            String   @id @default(uuid(7))
+  phone         String
+  email         String?
+  password      String?
+  name          String
+  role          UserRole @default(USER)
+  avatar        String?
+  avatarId      String?
+  regionId      String?
+  bonus         Int      @default(0)
+  emailVerified Boolean  @default(false)
+  googleId      String?
+  telegramId    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -612,12 +613,12 @@ enum NotificationType {
 }
 
 model Notification {
-  id       String  @id @default(uuid(7))
+  id       String           @id @default(uuid(7))
   userId   String
   type     NotificationType @default(DEFAULT)
   title    String
   message  String
-  isRead   Boolean @default(false)
+  isRead   Boolean          @default(false)
   metadata Json?
 
   createdAt DateTime @default(now())

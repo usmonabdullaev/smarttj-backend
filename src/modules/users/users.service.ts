@@ -1,6 +1,7 @@
 import * as argon2 from 'argon2';
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -52,7 +53,13 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto, avatarId?: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        avatarId: true,
+        role: true,
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException({
@@ -72,22 +79,42 @@ export class UsersService {
       }
     }
 
+    if (dto.email) {
+      const existed = await this.prisma.user.findUnique({
+        where: {
+          email_role: {
+            email: dto.email,
+            role: user.role,
+          },
+        },
+        select: { id: true },
+      });
+
+      if (existed) {
+        throw new ConflictException();
+      }
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
-        ...dto,
-        ...(avatarId && { avatarId }),
+        name: dto.name,
+        regionId: dto.regionId,
+        telegramId: dto.telegramId,
+        avatar: dto.avatar,
+        avatarId: avatarId,
       },
+      select: userSelect,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = updatedUser;
-
-    return userWithoutPassword;
+    return updatedUser;
   }
 
   async setPassword(dto: SetPasswordDto, userId: string, sessionId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { password: true },
+    });
 
     if (!user) {
       throw new NotFoundException({ message: 'User not found' });
@@ -109,7 +136,9 @@ export class UsersService {
 
     await this.prisma.user.update({
       where: { id: userId },
-      data: { password: hashed },
+      data: {
+        password: hashed,
+      },
     });
 
     if (dto.terminateOtherSessions) {

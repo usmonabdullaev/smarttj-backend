@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductStatus } from '@prisma/client';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { userSelect } from '@/common/selects/user.select';
+import { publicUserSelect } from '@/common/selects/user.select';
 
 @Injectable()
 export class AdminProductsService {
@@ -16,7 +16,7 @@ export class AdminProductsService {
         partner: {
           include: {
             user: {
-              select: userSelect,
+              select: publicUserSelect,
             },
           },
         },
@@ -50,7 +50,7 @@ export class AdminProductsService {
         partner: {
           include: {
             user: {
-              select: userSelect,
+              select: publicUserSelect,
             },
           },
         },
@@ -80,7 +80,7 @@ export class AdminProductsService {
         partner: {
           include: {
             user: {
-              select: userSelect,
+              select: publicUserSelect,
             },
           },
         },
@@ -101,7 +101,9 @@ export class AdminProductsService {
         },
         reviews: {
           include: {
-            user: true,
+            user: {
+              select: publicUserSelect,
+            },
           },
         },
       },

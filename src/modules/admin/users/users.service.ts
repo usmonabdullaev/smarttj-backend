@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { userSelect } from '@/common/selects/user.select';
+import { publicUserSelect } from '@/common/selects/user.select';
 
 @Injectable()
 export class AdminUsersService {
@@ -9,7 +9,7 @@ export class AdminUsersService {
 
   async getAll() {
     const users = await this.prisma.user.findMany({
-      select: { ...userSelect, sessions: true },
+      select: publicUserSelect,
     });
 
     return users;

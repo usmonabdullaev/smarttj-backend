@@ -1,9 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MinLength,
 } from 'class-validator';
 
@@ -15,6 +17,13 @@ export class UpdateUserDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
+
+  @ApiPropertyOptional({
+    example: 'example@example.com',
+  })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @ApiPropertyOptional({
     type: 'string',
@@ -29,11 +38,11 @@ export class UpdateUserDto {
     description: 'Region ID',
   })
   @IsOptional()
-  @IsString()
+  @IsUUID(7)
   regionId?: string;
 
   @ApiPropertyOptional({
-    example: '1234...',
+    example: '1234',
     description: 'Telegram user ID',
   })
   @IsOptional()

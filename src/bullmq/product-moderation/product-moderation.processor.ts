@@ -1,4 +1,4 @@
-import { AttributeType, NotificationType, ProductStatus } from '@prisma/client';
+import { NotificationType, ProductStatus } from '@prisma/client';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 
@@ -155,19 +155,6 @@ export class ProductModerationProcessor extends WorkerHost {
           category: product.category?.name,
           brand: product.brand?.name,
           model: product.model?.name,
-          attributes: product.variants.map((v) => ({
-            code: v.code,
-            attributes: v.attributes
-              .filter(
-                (a) =>
-                  a.attribute.type === AttributeType.NUMBER ||
-                  a.attribute.type === AttributeType.STRING,
-              )
-              .map((a) => ({
-                type: a.attribute.type,
-                value: a.valueString || a.valueNumber,
-              })),
-          })),
         });
 
         const { text, ok } = await this.ai.ask({

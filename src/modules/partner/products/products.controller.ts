@@ -29,7 +29,6 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import {
   CreateProductDto,
   CreateProductVariantDto,
-  PublishProductDto,
   UpdateProductVariantDto,
 } from '@/modules/partner/products/dto/create-product.dto';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
@@ -147,8 +146,8 @@ export class PartnerProductsController {
 
   @Post(':id/publish')
   @ApiOperation({ summary: 'Publish product (status=IN_MODERATE)' })
-  async publish(@Param('id') id: string, @Body() dto: PublishProductDto) {
-    return await this.partnerProductsService.publish(id, dto);
+  async publish(@Param('id') id: string) {
+    return await this.partnerProductsService.publish(id);
   }
 
   @Delete('image/:id')

@@ -167,16 +167,6 @@ export class UpdateProductDto {
   slug?: string;
 }
 
-export class PublishProductDto {
-  @ApiProperty({ example: 'Product title' })
-  @IsString()
-  title!: string;
-
-  @ApiProperty({ example: 'Product description' })
-  @IsString()
-  description!: string;
-}
-
 export interface UploadImageDto {
   url: string;
   urlId: string;

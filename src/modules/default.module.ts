@@ -8,6 +8,7 @@ import { AttributesModule } from '@/modules/attributes/attributes.module';
 import { SessionsModule } from '@/modules/sessions/sessions.module';
 import { ProductsModule } from '@/modules/products/products.module';
 import { TelegramModule } from '@/modules/telegram/telegram.module';
+import { PaymentsModule } from '@/modules/payments/payments.module';
 import { SupportModule } from '@/modules/support/support.module';
 import { RegionsModule } from '@/modules/regions/regions.module';
 import { PartnerModule } from '@/modules/partner/partner.module';
@@ -43,6 +44,7 @@ import { AuthModule } from '@/modules/auth/auth.module';
     PartnerModule,
     NotificationModule,
     SearchModule,
+    PaymentsModule,
   ],
 })
 export class DefaultModule {}

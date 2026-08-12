@@ -1,5 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductStatus } from '@prisma/client';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { AddToCartDto } from '@/modules/carts/dto/add-to-cart.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
@@ -42,6 +46,9 @@ export class CartsService {
     const productVariant = await this.prisma.productVariant.findFirst({
       where: {
         id: dto.productVariantId,
+        stock: {
+          gte: dto.quantity,
+        },
         product: {
           status: ProductStatus.ACTIVE,
         },
@@ -60,7 +67,20 @@ export class CartsService {
         userId,
       },
       update: {},
+      include: {
+        items: {
+          where: { productVariantId: productVariant.id },
+        },
+      },
     });
+
+    const quantity = cart.items[0]?.quantity;
+
+    if (quantity) {
+      if (quantity + (dto.quantity || 1) > productVariant.stock) {
+        throw new BadRequestException('Not enough stock for product variant');
+      }
+    }
 
     await this.prisma.cartItem.upsert({
       where: {
