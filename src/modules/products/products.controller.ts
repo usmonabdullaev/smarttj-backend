@@ -20,11 +20,11 @@ export class ProductsController {
   @Get('category/:slug')
   @ApiOperation({ summary: 'Category Products' })
   @ApiOkResponse({ type: ProductListResponseDto })
-  async getList(
+  async getCategoryProducts(
     @Param('slug') categorySlug: string,
     @Query() query: GetProductsQueryDto,
   ) {
-    return await this.productsService.getList(categorySlug, query);
+    return await this.productsService.getCategoryProducts(categorySlug, query);
   }
 
   @Get(':id')

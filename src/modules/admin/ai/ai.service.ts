@@ -1,12 +1,11 @@
 import { TransactionStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
-import { AnalyzeRequestDto } from '@/modules/admin/ai/dto/requests/analyze.request';
-import { AskRequestProvider } from '@/ai/dto/requests/ask.request';
-import { AskRequestPurpose } from '@/ai/dto/requests/ask.request';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { ANALYTICS_PROMPT } from '@/ai/prompts/analytics.prompt';
+import { AskRequestProvider, AskRequestPurpose } from '@/ai/dto';
 import { AIService } from '@/ai/ai.service';
+import { AnalyzeRequestDto } from './dto';
 
 @Injectable()
 export class AdminAIService {

@@ -9,11 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { GetAllRequest } from '@/modules/admin/categories/dto/requests/get-all.request';
 import { AdminCategoriesService } from '@/modules/admin/categories/categories.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
+import { GetAllRequest } from './dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.SYSADMIN, UserRole.ADMIN)

@@ -7,11 +7,26 @@ import { publicUserSelect } from '@/common/selects/user.select';
 export class AdminUsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAll() {
-    const users = await this.prisma.user.findMany({
-      select: publicUserSelect,
-    });
+  async getAll(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
 
-    return users;
+    const [users, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        select: publicUserSelect,
+        skip,
+        take: limit,
+      }),
+      this.prisma.user.count(),
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }

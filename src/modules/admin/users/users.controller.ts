@@ -1,4 +1,10 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import {
   ApiBearerAuth,
@@ -22,7 +28,10 @@ export class AdminUsersController {
   @Get()
   @ApiOperation({ summary: 'Users list' })
   @ApiUnauthorizedResponse({ type: ApiErrorDto })
-  async getAll() {
-    return await this.adminUsersService.getAll();
+  async getAll(
+    @Query('page', ParseIntPipe) page: number = 1,
+    @Query('limit', ParseIntPipe) limit: number = 10,
+  ) {
+    return await this.adminUsersService.getAll(page, limit);
   }
 }

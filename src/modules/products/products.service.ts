@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProductStatus } from '@prisma/client';
+import { ProductStatus, Prisma } from '@prisma/client';
 
 import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
@@ -8,7 +8,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getList(categorySlug: string, query: GetProductsQueryDto) {
+  async getCategoryProducts(categorySlug: string, query: GetProductsQueryDto) {
     const category = await this.prisma.category.findFirst({
       where: { slug: categorySlug },
     });
@@ -17,58 +17,68 @@ export class ProductsService {
       throw new NotFoundException();
     }
 
+    const productVariantWhere: Prisma.ProductVariantWhereInput = {
+      product: {
+        title: {
+          contains: query.q,
+          mode: 'insensitive',
+        },
+        status: {
+          in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
+        },
+        categoryId: category.id,
+        ...(query.rating
+          ? {
+              averageRating: { gte: query.rating },
+            }
+          : {}),
+      },
+    };
+
+    const productVariantOrderBy:
+      | Prisma.ProductVariantOrderByWithRelationInput
+      | Prisma.ProductVariantOrderByWithRelationInput[] = {
+      ...(query.sort === 'popular'
+        ? {
+            product: {
+              soldCount: 'desc',
+            },
+          }
+        : {}),
+      ...(query.sort === 'price-asc'
+        ? {
+            price: 'asc',
+          }
+        : {}),
+      ...(query.sort === 'price-desc'
+        ? {
+            price: 'desc',
+          }
+        : {}),
+      ...(query.sort === 'rating'
+        ? {
+            product: {
+              averageRating: 'desc',
+            },
+          }
+        : {}),
+      ...(query.sort === 'new'
+        ? {
+            product: {
+              publishedAt: 'desc',
+            },
+          }
+        : {}),
+    };
+
     const page = query.page || 1;
     const limit = query.limit || 18;
     const skip = (page - 1) * limit;
 
     const [products, total] = await this.prisma.$transaction([
       this.prisma.productVariant.findMany({
-        where: {
-          product: {
-            status: {
-              in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
-            },
-            categoryId: category.id,
-            ...(query.rating
-              ? {
-                  averageRating: { gte: query.rating },
-                }
-              : {}),
-          },
-        },
-        orderBy: {
-          ...(query.sort === 'popular'
-            ? {
-                product: {
-                  soldCount: 'desc',
-                },
-              }
-            : {}),
-          ...(query.sort === 'price-asc'
-            ? {
-                price: 'asc',
-              }
-            : {}),
-          ...(query.sort === 'price-desc'
-            ? {
-                price: 'desc',
-              }
-            : {}),
-          ...(query.sort === 'rating'
-            ? {
-                product: {
-                  averageRating: 'desc',
-                },
-              }
-            : {}),
-          ...(query.sort === 'new'
-            ? {
-                product: {
-                  publishedAt: 'desc',
-                },
-              }
-            : {}),
-        },
+        where: productVariantWhere,
+        orderBy: productVariantOrderBy,
         take: limit,
         skip,
         include: {
@@ -107,19 +117,7 @@ export class ProductsService {
         },
       }),
       this.prisma.productVariant.count({
-        where: {
-          product: {
-            status: {
-              in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
-            },
-            categoryId: category.id,
-            ...(query.rating
-              ? {
-                  averageRating: { gte: query.rating },
-                }
-              : {}),
-          },
-        },
+        where: productVariantWhere,
       }),
     ]);
 

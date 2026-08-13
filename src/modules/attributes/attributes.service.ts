@@ -44,4 +44,19 @@ export class AttributesService {
 
     return category.attributes;
   }
+
+  async findForProduct(categoryId: string) {
+    const categoryAttributes = await this.findByCategory(categoryId);
+
+    const defaultAttributes = await this.prisma.attribute.findMany({
+      where: {
+        categoryId: null,
+      },
+      include: {
+        values: true,
+      },
+    });
+
+    return [...categoryAttributes, ...defaultAttributes];
+  }
 }

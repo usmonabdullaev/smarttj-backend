@@ -79,6 +79,13 @@ export class ModelsController {
     return await this.modelsService.findOne(id);
   }
 
+  @Get('brand/:id')
+  @ApiOperation({ summary: 'Get brand models' })
+  @ApiOkResponse({ type: ModelResponseDto, isArray: true })
+  async findBrandModels(@Param('id') id: string) {
+    return await this.modelsService.findBrandModels(id);
+  }
+
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)

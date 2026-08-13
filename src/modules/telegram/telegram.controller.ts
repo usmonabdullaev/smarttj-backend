@@ -8,7 +8,7 @@ export class TelegramController {
   constructor(private readonly telegramService: TelegramService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get current user sessions' })
+  @ApiOperation({ summary: 'Get profile with telegram' })
   async getProfile(@Headers('X-Telegram-Id') telegramId: string) {
     if (!telegramId) {
       throw new BadRequestException('X-Telegram-Id in header is required');

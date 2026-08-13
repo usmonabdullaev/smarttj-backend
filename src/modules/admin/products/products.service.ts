@@ -9,68 +9,100 @@ export class AdminProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getAll(page: number = 1, limit: number = 10) {
-    return await this.prisma.product.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        partner: {
-          include: {
-            user: {
-              select: publicUserSelect,
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({
+        skip,
+        take: limit,
+        include: {
+          partner: {
+            include: {
+              user: {
+                select: publicUserSelect,
+              },
             },
           },
-        },
-        category: true,
-        brand: true,
-        model: true,
-        region: true,
-        variants: {
-          include: {
-            images: true,
-            attributes: {
-              include: {
-                attribute: true,
-                attributeValue: true,
+          category: true,
+          brand: true,
+          model: true,
+          region: true,
+          variants: {
+            include: {
+              images: true,
+              attributes: {
+                include: {
+                  attribute: true,
+                  attributeValue: true,
+                },
               },
             },
           },
         },
+      }),
+      this.prisma.product.count(),
+    ]);
+
+    return {
+      data: products,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-    });
+    };
   }
 
   async getManualModeration(page: number = 1, limit: number = 10) {
-    return await this.prisma.product.findMany({
-      where: {
-        status: ProductStatus.MANUAL_MODERATION,
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        partner: {
-          include: {
-            user: {
-              select: publicUserSelect,
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({
+        where: {
+          status: ProductStatus.MANUAL_MODERATION,
+        },
+        skip,
+        take: limit,
+        include: {
+          partner: {
+            include: {
+              user: {
+                select: publicUserSelect,
+              },
             },
           },
-        },
-        category: true,
-        brand: true,
-        model: true,
-        region: true,
-        variants: {
-          include: {
-            images: true,
-            attributes: {
-              include: {
-                attribute: true,
-                attributeValue: true,
+          category: true,
+          brand: true,
+          model: true,
+          region: true,
+          variants: {
+            include: {
+              images: true,
+              attributes: {
+                include: {
+                  attribute: true,
+                  attributeValue: true,
+                },
               },
             },
           },
         },
+      }),
+      this.prisma.product.count({
+        where: { status: ProductStatus.MANUAL_MODERATION },
+      }),
+    ]);
+
+    return {
+      data: products,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-    });
+    };
   }
 
   async getById(id: string) {

@@ -167,7 +167,7 @@ export class ReceiptTemplate implements PdfTemplate<OrderReceiptData> {
     ];
 
     // if (data.shop.id) pairs.push(['Магазин', data.shop.title]);
-    if (data.address?.id) pairs.push(['Адрес доставки', data.address.full]);
+    if (data.address?.id) pairs.push(['Адрес доставки', data.address.address]);
 
     const startY = doc.y;
     const cardX = PAGE_MARGIN;

@@ -21,6 +21,7 @@ import { UsersModule } from '@/modules/users/users.module';
 import { AdminModule } from '@/modules/admin/admin.module';
 import { CartsModule } from '@/modules/carts/carts.module';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { AddressesModule } from './addresses/addresses.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AuthModule } from '@/modules/auth/auth.module';
     NotificationModule,
     SearchModule,
     PaymentsModule,
+    AddressesModule,
   ],
 })
 export class DefaultModule {}

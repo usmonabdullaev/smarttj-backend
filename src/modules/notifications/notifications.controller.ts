@@ -8,7 +8,7 @@ import { GetAllResponse, GetOneResponse } from './dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('users')
+@Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 

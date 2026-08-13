@@ -68,6 +68,19 @@ export class ModelsService {
     return model;
   }
 
+  async findBrandModels(brandId: string) {
+    const brand = await this.prisma.brand.findUnique({
+      where: { id: brandId },
+      include: { models: true },
+    });
+
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    return brand.models;
+  }
+
   async update(id: string, updateModelDto: UpdateModelDto, imageId?: string) {
     const model = await this.prisma.model.findUnique({ where: { id } });
 

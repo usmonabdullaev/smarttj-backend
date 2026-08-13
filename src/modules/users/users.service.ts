@@ -58,6 +58,7 @@ export class UsersService {
       select: {
         avatarId: true,
         role: true,
+        email: true,
       },
     });
 
@@ -80,11 +81,12 @@ export class UsersService {
     }
 
     if (dto.email) {
-      const existed = await this.prisma.user.findUnique({
+      const existed = await this.prisma.user.findFirst({
         where: {
-          email_role: {
-            email: dto.email,
-            role: user.role,
+          email: dto.email,
+          role: user.role,
+          id: {
+            not: id,
           },
         },
         select: { id: true },
@@ -99,10 +101,16 @@ export class UsersService {
       where: { id },
       data: {
         name: dto.name,
+        email: dto.email,
         regionId: dto.regionId,
         telegramId: dto.telegramId,
         avatar: dto.avatar,
-        avatarId: avatarId,
+        avatarId,
+        emailVerified: dto.email
+          ? dto.email === user.email
+            ? undefined
+            : false
+          : undefined,
       },
       select: userSelect,
     });

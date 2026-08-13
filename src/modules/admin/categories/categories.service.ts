@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { GetAllRequest } from 'src/modules/admin/categories/dto/requests/get-all.request';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { LoggerService } from '@/logger/logger.service';
+import { GetAllRequest } from './dto';
 
 @Injectable()
 export class AdminCategoriesService {

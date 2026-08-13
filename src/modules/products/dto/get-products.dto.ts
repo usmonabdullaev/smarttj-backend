@@ -1,5 +1,5 @@
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 
 export class GetProductsQueryDto {
   @ApiPropertyOptional({ example: 1 })
@@ -10,11 +10,32 @@ export class GetProductsQueryDto {
   @IsOptional()
   limit?: number;
 
-  @ApiPropertyOptional({ example: 'price-asc' })
+  @ApiPropertyOptional({
+    example: 'price-asc',
+    description: 'Order products',
+    enum: ['popular', 'price-asc', 'price-desc', 'rating', 'new'],
+  })
   @IsOptional()
+  @IsEnum(['popular', 'price-asc', 'price-desc', 'rating', 'new'])
   sort?: 'popular' | 'price-asc' | 'price-desc' | 'rating' | 'new';
 
-  @ApiPropertyOptional({ example: 2 })
+  @ApiPropertyOptional({
+    description: 'Filter by rating',
+    minimum: 1,
+    maximum: 5,
+    type: 'number',
+  })
   @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(5)
   rating?: 1 | 2 | 3 | 4 | 5;
+
+  @ApiPropertyOptional({
+    example: '',
+    description: 'Search input',
+  })
+  @IsOptional()
+  @IsString()
+  q?: string;
 }
