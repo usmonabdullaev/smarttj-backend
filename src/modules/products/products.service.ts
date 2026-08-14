@@ -14,7 +14,7 @@ export class ProductsService {
     });
 
     if (!category) {
-      throw new NotFoundException();
+      throw new NotFoundException('Category not found');
     }
 
     const productVariantWhere: Prisma.ProductVariantWhereInput = {
@@ -75,51 +75,50 @@ export class ProductsService {
     const limit = query.limit || 18;
     const skip = (page - 1) * limit;
 
-    const [products, total] = await this.prisma.$transaction([
-      this.prisma.productVariant.findMany({
-        where: productVariantWhere,
-        orderBy: productVariantOrderBy,
-        take: limit,
-        skip,
-        include: {
-          product: {
-            include: {
-              category: true,
-              brand: true,
-              model: true,
-              region: true,
-              reviews: {
-                take: 10,
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      phone: true,
-                      email: true,
-                      name: true,
-                      role: true,
-                      avatar: true,
-                      createdAt: true,
-                      updatedAt: true,
-                    },
+    const products = await this.prisma.productVariant.findMany({
+      where: productVariantWhere,
+      orderBy: productVariantOrderBy,
+      take: limit,
+      skip,
+      include: {
+        product: {
+          include: {
+            category: true,
+            brand: true,
+            model: true,
+            region: true,
+            reviews: {
+              take: 10,
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    phone: true,
+                    email: true,
+                    name: true,
+                    role: true,
+                    avatar: true,
+                    createdAt: true,
+                    updatedAt: true,
                   },
                 },
               },
             },
           },
-          images: true,
-          attributes: {
-            include: {
-              attribute: true,
-              attributeValue: true,
-            },
+        },
+        images: true,
+        attributes: {
+          include: {
+            attribute: true,
+            attributeValue: true,
           },
         },
-      }),
-      this.prisma.productVariant.count({
-        where: productVariantWhere,
-      }),
-    ]);
+      },
+    });
+
+    const total = await this.prisma.productVariant.count({
+      where: productVariantWhere,
+    });
 
     return {
       data: products,

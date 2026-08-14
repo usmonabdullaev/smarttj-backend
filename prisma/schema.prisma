@@ -33,19 +33,20 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sessions      Session[]
-  orders        Order[]
-  notifications Notification[]
-  transactions  Transaction[]
-  verifications Verification[]
-  reviews       Review[]
-  addresses     Address[]
-  employee      Employee[]
-  supportChats  SupportChat[]
-  operatorChats SupportChat[]  @relation("AssignedOperator")
-  region        Region?        @relation(fields: [regionId], references: [id], onDelete: SetNull)
-  partner       Partner?
-  cart          Cart?
+  sessions        Session[]
+  orders          Order[]
+  notifications   Notification[]
+  transactions    Transaction[]
+  verifications   Verification[]
+  reviews         Review[]
+  addresses       Address[]
+  employee        Employee[]
+  supportChats    SupportChat[]
+  operatorChats   SupportChat[]  @relation("AssignedOperator")
+  paymentAttempts PaymentAttempt[]
+  region          Region?        @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  partner         Partner?
+  cart            Cart?
 
   @@unique([phone, role])
   @@unique([email, role])
@@ -519,6 +520,7 @@ model CartItem {
 enum PaymentMethodType {
   CASH // Наличные
   CARD // Банковская карта
+  WALLET // Кошелек пользователья
 }
 
 model PaymentMethod {
@@ -574,11 +576,12 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user          User          @relation(fields: [userId], references: [id])
-  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
-  address       Address?      @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  items         OrderItem[]
-  transaction   Transaction?
+  user            User             @relation(fields: [userId], references: [id])
+  paymentMethod   PaymentMethod    @relation(fields: [paymentMethodId], references: [id])
+  address         Address?         @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+  transaction     Transaction?
+  paymentAttempts PaymentAttempt[]
 
   @@index([userId])
 }
@@ -636,11 +639,32 @@ model Notification {
   @@index([userId])
 }
 
-enum TransactionStatus {
+enum PaymentAttemptStatus {
   PENDING // В ожидании оплаты
-  SUCCESS // Успешно оплачено
   FAILED // Ошибка оплаты
+  SUCCESS // Успешно оплачено
   CANCELED // Пользователь отменил
+  REFUNDED // Возврат
+}
+
+model PaymentAttempt {
+  id         String @id @default(uuid(7))
+  userId     String
+  orderId    String
+  amount     Int
+  status     PaymentAttemptStatus @default(PENDING)
+  provider   String?
+  providerId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+enum TransactionStatus {
+  SUCCESS // Успешно оплачено
   REFUNDED // Возврат
 }
 
@@ -649,14 +673,15 @@ model Transaction {
   userId     String
   orderId    String            @unique
   amount     Int
-  status     TransactionStatus @default(PENDING)
+  status     TransactionStatus @default(SUCCESS)
+  provider   String?
   providerId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order Order @relation(fields: [orderId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
+  order Order @relation(fields: [orderId], references: [id])
 }
 
 enum SupportChatStatus {

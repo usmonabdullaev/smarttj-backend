@@ -12,12 +12,16 @@ import {
   TransactionStatus,
 } from '@prisma/client';
 
+import { TransactionsService } from '../transactions/transactions.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { OrderRequest } from './dto';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly transaction: TransactionsService,
+  ) {}
 
   async test(dto: OrderRequest, userId: string) {
     // В проде тестовый эндпоинт должен быть недоступен
@@ -27,7 +31,10 @@ export class PaymentsService {
 
     const order = await this.prisma.order.findUnique({
       where: { id: dto.orderId },
-      include: { paymentMethod: true, transaction: true },
+      include: {
+        paymentMethod: { select: { type: true } },
+        transaction: { select: { id: true } },
+      },
     });
 
     if (!order) {
@@ -47,7 +54,10 @@ export class PaymentsService {
 
     // Whitelist разрешённых для оплаты статусов —
     // безопаснее, чем перечислять запрещённые
-    const payableStatuses: OrderPaymentStatus[] = [OrderPaymentStatus.UNPAID];
+    const payableStatuses: OrderPaymentStatus[] = [
+      OrderPaymentStatus.UNPAID,
+      OrderPaymentStatus.FAILED,
+    ];
 
     if (!payableStatuses.includes(order.paymentStatus)) {
       throw new ConflictException(
@@ -68,21 +78,18 @@ export class PaymentsService {
 
     try {
       // Создание транзакции и обновление статуса заказа — атомарно
-      const [transaction] = await this.prisma.$transaction([
-        this.prisma.transaction.create({
-          data: {
-            userId: order.userId,
-            orderId: order.id,
-            amount: order.totalPrice,
-            status: TransactionStatus.SUCCESS,
-            providerId: 'TEST',
-          },
-        }),
-        this.prisma.order.update({
-          where: { id: order.id },
-          data: { paymentStatus: OrderPaymentStatus.PAID },
-        }),
-      ]);
+      const transaction = await this.transaction.create({
+        userId: order.userId,
+        orderId: order.id,
+        amount: order.totalPrice,
+        status: TransactionStatus.SUCCESS,
+        provider: 'TEST',
+      });
+
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: OrderPaymentStatus.PAID },
+      });
 
       return transaction;
     } catch (e) {
