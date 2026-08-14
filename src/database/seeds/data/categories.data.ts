@@ -81,6 +81,18 @@ export const CATEGORIES: CreateCategoriesDto[] = [
         filterable: true,
         order: 6,
       },
+      {
+        name: 'Сеть',
+        type: 'MULTISELECT',
+        required: false,
+        filterable: true,
+        order: 7,
+        values: [
+          { valueString: '3G', label: '3G' },
+          { valueString: '4G LTE', label: '4G LTE' },
+          { valueString: '5G', label: '5G' },
+        ],
+      },
     ],
   },
   {
