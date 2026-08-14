@@ -10,16 +10,17 @@ import {
 } from '@prisma/client';
 
 import { ProductModerationService } from '@/bullmq/product-moderation/product-moderation.service';
+import { SlugifyService } from '@/common/services/slugify/slugify.service';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
+import { LoggerService } from '@/logger/logger.service';
 import {
   CreateProductDto,
   CreateProductVariantDto,
   UpdateProductDto,
   UpdateProductVariantDto,
-  UploadImageDto,
-} from '@/modules/partner/products/dto/create-product.dto';
-import { LoggerService } from '@/logger/logger.service';
+  UploadImagesRequest,
+} from './dto';
 
 @Injectable()
 export class PartnerProductsService {
@@ -28,6 +29,7 @@ export class PartnerProductsService {
     private readonly cloudinary: CloudinaryService,
     private readonly logger: LoggerService,
     private readonly productModeration: ProductModerationService,
+    private readonly slugify: SlugifyService,
   ) {}
 
   async getList(profileId: string) {
@@ -75,26 +77,64 @@ export class PartnerProductsService {
     return product;
   }
 
-  async create(partnerId: string, categoryId: string, dto: CreateProductDto) {
-    const category = await this.prisma.category.findUnique({
-      where: { id: categoryId },
-    });
+  async create(partnerId: string, dto: CreateProductDto) {
+    if (dto.categoryId) {
+      const category = await this.prisma.category.findUnique({
+        where: { id: dto.categoryId },
+        select: { id: true },
+      });
 
-    if (!category) {
-      throw new NotFoundException();
+      if (!category) {
+        throw new NotFoundException('Category not found');
+      }
     }
+
+    if (dto.brandId) {
+      const brand = await this.prisma.brand.findUnique({
+        where: { id: dto.brandId },
+        select: { id: true },
+      });
+
+      if (!brand) {
+        throw new NotFoundException('Brand not found');
+      }
+    }
+
+    if (dto.modelId) {
+      const model = await this.prisma.model.findUnique({
+        where: { id: dto.modelId },
+        select: { id: true },
+      });
+
+      if (!model) {
+        throw new NotFoundException('Model not found');
+      }
+    }
+
+    if (dto.regionId) {
+      const region = await this.prisma.region.findUnique({
+        where: { id: dto.regionId },
+        select: { id: true },
+      });
+
+      if (!region) {
+        throw new NotFoundException('Region not found');
+      }
+    }
+
+    const slug = await this.slugify.product(dto.slug || dto.title);
 
     return await this.prisma.product.create({
       data: {
         partnerId,
         warranty: dto.warranty,
-        categoryId,
+        categoryId: dto.categoryId,
         brandId: dto.brandId,
         modelId: dto.modelId,
         regionId: dto.regionId,
         title: dto.title,
         description: dto.description,
-        slug: dto.slug,
+        slug,
       },
     });
   }
@@ -106,7 +146,7 @@ export class PartnerProductsService {
       });
 
       if (!category) {
-        throw new NotFoundException();
+        throw new NotFoundException('Category not found');
       }
     }
 
@@ -116,7 +156,7 @@ export class PartnerProductsService {
       });
 
       if (!brand) {
-        throw new NotFoundException();
+        throw new NotFoundException('Brand not found');
       }
     }
 
@@ -126,7 +166,7 @@ export class PartnerProductsService {
       });
 
       if (!model) {
-        throw new NotFoundException();
+        throw new NotFoundException('Model not found');
       }
     }
 
@@ -136,9 +176,11 @@ export class PartnerProductsService {
       });
 
       if (!region) {
-        throw new NotFoundException();
+        throw new NotFoundException('Region not found');
       }
     }
+
+    const slug = await this.slugify.product(dto.slug || dto.title, id);
 
     return await this.prisma.product.update({
       where: { id },
@@ -150,7 +192,7 @@ export class PartnerProductsService {
         regionId: dto.regionId,
         title: dto.title,
         description: dto.description,
-        slug: dto.slug,
+        slug,
       },
     });
   }
@@ -206,7 +248,7 @@ export class PartnerProductsService {
     });
   }
 
-  async uploadImages(id: string, images: UploadImageDto[]) {
+  async uploadImages(id: string, images: UploadImagesRequest[]) {
     const productVariant = await this.prisma.productVariant.findUnique({
       where: { id },
     });

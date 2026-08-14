@@ -195,7 +195,7 @@ model Region {
   id       String  @id @default(uuid(7))
   title    String
   order    Int     @default(1)
-  slug     String
+  slug     String  @unique
   parentId String?
   default  Boolean @default(false)
 
@@ -341,7 +341,7 @@ model Category {
   id         String  @id @default(uuid(7))
   name       String
   short_name String
-  slug       String
+  slug       String  @unique
   order      Int     @default(1)
   icon       String?
   iconId     String?
@@ -355,9 +355,6 @@ model Category {
   children   Category[]  @relation("CategoryToSub")
   products   Product[]
   attributes Attribute[]
-
-  @@unique([parentKey, slug])
-  @@index([parentId])
 }
 
 model Brand {
@@ -374,8 +371,6 @@ model Brand {
 
   products Product[]
   models   Model[]
-
-  @@index([slug])
 }
 
 model Model {
@@ -396,8 +391,6 @@ model Model {
   products Product[]
 
   @@unique([name, brandId])
-  @@index([slug])
-  @@index([brandId])
 }
 
 model Image {
@@ -498,8 +491,6 @@ model Cart {
 
   user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items CartItem[]
-
-  @@index([userId])
 }
 
 model CartItem {
@@ -712,10 +703,6 @@ model SupportChat {
   user       User?             @relation(fields: [userId], references: [id])
   assignedTo User?             @relation("AssignedOperator", fields: [assignedToId], references: [id])
   AIContext  SupportAIContext?
-
-  @@index([userId])
-  @@index([status])
-  @@index([assignedToId])
 }
 
 enum SupportMessageRole {
@@ -736,9 +723,6 @@ model SupportMessage {
 
   chat        SupportChat         @relation(fields: [chatId], references: [id], onDelete: Cascade)
   attachments SupportAttachment[]
-
-  @@index([chatId])
-  @@index([role])
 }
 
 model SupportAIContext {
@@ -789,5 +773,4 @@ model Report {
   updatedAt DateTime @updatedAt
 
   @@unique([year, month])
-  @@index([year])
 }

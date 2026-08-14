@@ -26,14 +26,14 @@ import { PartnerAuthService } from '@/modules/partner/auth/auth.service';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { ApiErrorDto } from '@/common/dto/api-error.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
 import {
   CreateProductDto,
   CreateProductVariantDto,
   UpdateProductVariantDto,
-} from '@/modules/partner/products/dto/create-product.dto';
-import { ApiErrorDto } from '@/common/dto/api-error.dto';
-import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
-import { RolesGuard } from '@/auth/guards/roles.guard';
+} from './dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.PARTNER)
@@ -66,20 +66,15 @@ export class PartnerProductsController {
     return await this.partnerProductsService.getById(id, profile.id);
   }
 
-  @Post('create/:categoryId')
+  @Post()
   @ApiOperation({ summary: 'Create product (status=DRAFT)' })
   async create(
     @GetUser('sessionId') sessionId: string,
-    @Param('categoryId') categoryId: string,
     @Body() dto: CreateProductDto,
   ) {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
-    return await this.partnerProductsService.create(
-      profile.id,
-      categoryId,
-      dto,
-    );
+    return await this.partnerProductsService.create(profile.id, dto);
   }
 
   @Put(':id')
