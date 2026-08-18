@@ -12,8 +12,6 @@ import {
   SendMessageDto,
 } from '@/modules/support/dto/create-support.dto';
 
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 @Controller('support')
 export class SupportController {
   constructor(private readonly supportService: SupportService) {}
@@ -33,12 +31,16 @@ export class SupportController {
     return this.supportService.getEvents();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get()
   @ApiOperation({ summary: 'Get chats list' })
   async getChats(@GetUser('userId') userId: string) {
     return await this.supportService.getChats(userId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post()
   @ApiOperation({ summary: 'Send message for USER' })
   async create(
@@ -48,8 +50,9 @@ export class SupportController {
     return await this.supportService.handleUserMessage(dto, userId);
   }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SYSADMIN, UserRole.MODERATOR)
+  @ApiBearerAuth()
   @Post('send')
   @ApiOperation({ summary: 'Send message for OPERATOR' })
   async send(@Body() dto: SendMessageDto) {
