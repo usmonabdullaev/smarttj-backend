@@ -131,7 +131,7 @@ export class SupportService {
     if (chat) return chat;
 
     return await this.prisma.supportChat.create({
-      data: { userId, status: SupportChatStatus.AI },
+      data: { userId, status: SupportChatStatus.HUMAN },
     });
   }
 
