@@ -17,7 +17,7 @@ export class GroqProvider {
 
   async ask(dto: AskRequest) {
     const model =
-      dto.model || process.env.GROQ_DEFAULT_MODEL || 'llama-3.1-8b-instant';
+      dto.model || process.env.GROQ_DEFAULT_MODEL || 'groq/compound';
 
     try {
       const result = await this.client.chat.completions.create({
@@ -35,7 +35,7 @@ export class GroqProvider {
         temperature: dto.temperature ?? 0.3,
       });
 
-      const text = result.choices[0].message.content || '{}';
+      const text = result.choices[0]?.message?.content || '{}';
 
       const parsed = JSON.parse(text);
 

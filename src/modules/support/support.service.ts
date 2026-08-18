@@ -1,22 +1,39 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Subject } from 'rxjs';
 import {
   SupportChatStatus,
   SupportMessage,
   SupportMessageRole,
 } from '@prisma/client';
 
-import { CreateSupportDto } from '@/modules/support/dto/create-support.dto';
-import { AskRequestPurpose } from '@/ai/dto/requests/ask.request';
+import {
+  CreateSupportDto,
+  SendMessageDto,
+} from '@/modules/support/dto/create-support.dto';
+import {
+  AskRequestProvider,
+  AskRequestPurpose,
+} from '@/ai/dto/requests/ask.request';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { SUPPORT_PROMPT } from '@/ai/prompts/support.prompt';
 import { AIService } from '@/ai/ai.service';
 
 @Injectable()
 export class SupportService {
+  private readonly events$ = new Subject<MessageEvent>();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiService: AIService,
   ) {}
+
+  getEvents() {
+    return this.events$.asObservable();
+  }
+
+  emit(event: MessageEvent) {
+    this.events$.next(event);
+  }
 
   async handleUserMessage(dto: CreateSupportDto, userId: string) {
     const chat = await this.getOrCreateActiveChat(userId);
@@ -30,22 +47,24 @@ export class SupportService {
     });
 
     if (chat.status !== SupportChatStatus.AI) {
-      return;
+      return { ok: true };
     }
 
     const history = await this.prisma.supportMessage.findMany({
       where: { chatId: chat.id },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
       take: 10,
     });
 
-    const prompt = this.buildPrompt(history);
+    const prompt = this.buildPrompt(history.reverse());
 
     const aiResponse = await this.aiService.ask({
       purpose: AskRequestPurpose.SUPPORT,
       prompt,
       context: SUPPORT_PROMPT,
       temperature: 0.25,
+      provider: AskRequestProvider.GEMINI,
+      model: 'gemini-3.5-flash-lite',
     });
 
     await this.prisma.supportMessage.create({
@@ -72,6 +91,31 @@ export class SupportService {
         },
       },
     });
+  }
+
+  async sendMessage(dto: SendMessageDto) {
+    const chat = await this.prisma.supportChat.findFirst({
+      where: {
+        id: dto.chatId,
+        status: SupportChatStatus.HUMAN,
+      },
+    });
+
+    if (!chat) {
+      throw new NotFoundException('Chat not found or closed or not for human');
+    }
+
+    const message = await this.prisma.supportMessage.create({
+      data: {
+        chatId: dto.chatId,
+        role: SupportMessageRole.OPERATOR,
+        content: dto.message,
+      },
+    });
+
+    this.emit({ data: message } as any);
+
+    return message;
   }
 
   private async getOrCreateActiveChat(userId: string) {
