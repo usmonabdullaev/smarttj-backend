@@ -2,29 +2,21 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { CreateRequest } from './dto';
+import { AddressesRepository } from './addresses.repository';
 
 @Injectable()
 export class AddressesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly repository: AddressesRepository,
+  ) {}
 
   async getList(userId: string) {
-    const addresses = await this.prisma.address.findMany({
-      where: { userId },
-      orderBy: [
-        {
-          default: 'desc',
-        },
-        {
-          createdAt: 'desc',
-        },
-      ],
-    });
-
-    return addresses;
+    return await this.repository.findUserAddresses(userId);
   }
 
   async getById(id: string) {
-    const address = await this.prisma.address.findUnique({ where: { id } });
+    const address = await this.repository.findById(id);
 
     if (!address) {
       throw new NotFoundException('Address not found');
@@ -46,50 +38,30 @@ export class AddressesService {
     }
 
     if (dto.default) {
-      const region = await this.prisma.address.findFirst({
-        where: { userId, default: true },
-        select: { id: true },
-      });
+      const region = await this.repository.findDefault(userId);
 
       if (region) {
-        await this.prisma.address.updateMany({
-          where: { userId },
-          data: { default: false },
-        });
+        await this.repository.updateMany(userId, { default: false });
       }
     }
 
-    const count = await this.prisma.address.count({
-      where: { userId, default: true },
+    const count = await this.repository.count({
+      userId,
+      default: true,
     });
 
     if (!count) dto.default = true;
 
-    return await this.prisma.address.create({
-      data: {
-        userId,
-        fullname: dto.fullname,
-        label: dto.label,
-        address: dto.address,
-        default: dto.default,
-        phone: dto.phone,
-        regionId: dto.regionId,
-        longitude: dto.longitude,
-        latitude: dto.latitude,
-      },
-    });
+    return await this.repository.create(userId, dto);
   }
 
   async remove(id: string) {
-    const address = await this.prisma.address.findUnique({
-      where: { id },
-      select: { id: true },
-    });
+    const address = await this.repository.findById(id);
 
     if (!address) {
       throw new NotFoundException('Address not found');
     }
 
-    return await this.prisma.address.delete({ where: { id } });
+    return await this.repository.remove(id);
   }
 }
