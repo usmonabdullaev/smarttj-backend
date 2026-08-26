@@ -277,7 +277,9 @@ export class OrdersService {
         },
         paymentMethod: true,
         address: true,
-        user: true,
+        user: {
+          select: userSelect,
+        },
       },
     });
 

@@ -1,25 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Category } from '@prisma/client';
 
-import { CloudinaryService } from '@/cloudinary/cloudinary.service';
-import { PrismaService } from '@/database/prisma/prisma.service';
-import { LoggerService } from '@/logger/logger.service';
-
-type CategoryTreeDto = {
-  children: CategoryTreeDto[];
-  level: number;
-} & Category;
+import { CategoryRepository } from '@/common/repositories/category.repository';
+import { CategoriesTreeResponseDto } from './dto/category-response.dto';
+import { CategoriesRepository } from './categories.repository';
 
 @Injectable()
 export class CategoriesService {
   constructor(
-    private prisma: PrismaService,
-    private readonly cloudinary: CloudinaryService,
-    private readonly logger: LoggerService,
+    private readonly repository: CategoriesRepository,
+    private readonly categoryRepository: CategoryRepository,
   ) {}
 
   async getMain() {
-    return await this.prisma.category.findMany({
+    return await this.categoryRepository.findMany({
       where: {
         parentId: null,
       },
@@ -30,13 +23,10 @@ export class CategoriesService {
   }
 
   async getItems(id: string) {
-    const category = await this.prisma.category.findUnique({
-      where: { id },
-      include: {
-        children: {
-          orderBy: {
-            order: 'asc',
-          },
+    const category = await this.categoryRepository.findById(id, {
+      children: {
+        orderBy: {
+          order: 'asc',
         },
       },
     });
@@ -53,29 +43,11 @@ export class CategoriesService {
   }
 
   async tree() {
-    const getCategoryTree = async (
-      parentId: string | null,
-      level: number,
-    ): Promise<CategoryTreeDto[]> => {
-      const categories = await this.prisma.category.findMany({
-        where: { parentId },
-        orderBy: { order: 'asc' },
-      });
-
-      return Promise.all(
-        categories.map(async (category) => ({
-          ...category,
-          level,
-          children: await getCategoryTree(category.id, level + 1),
-        })),
-      );
-    };
-
-    return await getCategoryTree(null, 1);
+    return await this.getCategoryTree();
   }
 
   async getById(id: string) {
-    const category = await this.prisma.category.findUnique({ where: { id } });
+    const category = await this.categoryRepository.findById(id);
 
     if (!category) {
       throw new NotFoundException({
@@ -89,7 +61,7 @@ export class CategoriesService {
   }
 
   async getBySlug(slug: string) {
-    const category = await this.prisma.category.findFirst({ where: { slug } });
+    const category = await this.repository.findBySlug(slug);
 
     if (!category) {
       throw new NotFoundException({
@@ -100,5 +72,27 @@ export class CategoriesService {
     }
 
     return category;
+  }
+
+  private async getCategoryTree() {
+    const getCategory = async (
+      parentId: string | null,
+      level: number,
+    ): Promise<CategoriesTreeResponseDto[]> => {
+      const categories = await this.categoryRepository.findMany({
+        where: { parentId },
+        orderBy: { order: 'asc' },
+      });
+
+      return Promise.all(
+        categories.map(async (category) => ({
+          ...category,
+          level,
+          children: await getCategory(category.id, level + 1),
+        })),
+      );
+    };
+
+    return await getCategory(null, 1);
   }
 }

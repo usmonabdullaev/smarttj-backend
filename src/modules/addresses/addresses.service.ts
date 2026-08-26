@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { PrismaService } from '@/database/prisma/prisma.service';
-import { CreateRequest } from './dto';
+import { RegionRepository } from '@/common/repositories/region.repository';
 import { AddressesRepository } from './addresses.repository';
+import { CreateRequest } from './dto';
 
 @Injectable()
 export class AddressesService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly repository: AddressesRepository,
+    private readonly regionRepository: RegionRepository,
   ) {}
 
   async getList(userId: string) {
@@ -27,10 +27,7 @@ export class AddressesService {
 
   async create(userId: string, dto: CreateRequest) {
     if (dto.regionId) {
-      const region = await this.prisma.region.findUnique({
-        where: { id: dto.regionId },
-        select: { id: true },
-      });
+      const region = await this.regionRepository.findById(dto.regionId);
 
       if (!region) {
         throw new NotFoundException('Region not found');
@@ -52,7 +49,17 @@ export class AddressesService {
 
     if (!count) dto.default = true;
 
-    return await this.repository.create(userId, dto);
+    return await this.repository.create({
+      fullname: dto.fullname,
+      label: dto.label,
+      address: dto.address,
+      default: dto.default,
+      phone: dto.phone,
+      longitude: dto.longitude,
+      latitude: dto.latitude,
+      region: { connect: { id: dto.regionId } },
+      user: { connect: { id: userId } },
+    });
   }
 
   async remove(id: string) {

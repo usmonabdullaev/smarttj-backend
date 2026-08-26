@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 
 import { AdminCategoriesController } from '@/modules/admin/categories/categories.controller';
 import { AdminCategoriesService } from '@/modules/admin/categories/categories.service';
+import { CategoryRepository } from '@/common/repositories/category.repository';
 
 @Module({
   controllers: [AdminCategoriesController],
-  providers: [AdminCategoriesService],
+  providers: [AdminCategoriesService, CategoryRepository],
 })
 export class AdminCategoriesModule {}

@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { CreateRequest } from './dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AddressesRepository {
@@ -35,25 +34,11 @@ export class AddressesRepository {
   }
 
   async count(where: Prisma.AddressWhereInput) {
-    return await this.prisma.address.count({
-      where,
-    });
+    return await this.prisma.address.count({ where });
   }
 
-  async create(userId: string, dto: CreateRequest) {
-    return await this.prisma.address.create({
-      data: {
-        userId,
-        fullname: dto.fullname,
-        label: dto.label,
-        address: dto.address,
-        default: dto.default,
-        phone: dto.phone,
-        regionId: dto.regionId,
-        longitude: dto.longitude,
-        latitude: dto.latitude,
-      },
-    });
+  async create(data: Prisma.AddressCreateInput) {
+    return await this.prisma.address.create({ data });
   }
 
   async updateMany(

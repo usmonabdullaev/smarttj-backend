@@ -21,28 +21,28 @@ export class CategoryResponseDto {
     example:
       'https://res.cloudinary.com/dqklcu4jy/image/upload/v1762587277/category/mpmezwvtg0drxtllmm7a.png',
   })
-  icon!: string;
+  icon!: string | null;
 
   @ApiProperty({
     nullable: true,
     example: 'category/mpmezwvtg0drxtllmm7a',
   })
-  iconId!: string;
+  iconId!: string | null;
 
   @ApiProperty({
     nullable: true,
     example: '019a6263-6f97-7230-8449-e979b855ada1',
   })
-  parentId!: string;
+  parentId!: string | null;
 
   @ApiProperty({ example: 'ROOT' })
   parentKey!: string;
 
   @ApiProperty({ example: '2025-11-08T07:34:35.160Z' })
-  createdAt!: string;
+  createdAt!: string | Date;
 
   @ApiProperty({ example: '2025-11-08T07:34:35.160Z' })
-  updatedAt!: string;
+  updatedAt!: string | Date;
 }
 
 export class CategoryItemsResponseDto extends CategoryResponseDto {

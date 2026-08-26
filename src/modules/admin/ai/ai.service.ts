@@ -1,7 +1,8 @@
 import { TransactionStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService } from '@/database/prisma/prisma.service';
+import { TransactionRepository } from '@/common/repositories/transaction.repository';
+import { OrderRepository } from '@/common/repositories/order.repository';
 import { ANALYTICS_PROMPT } from '@/ai/prompts/analytics.prompt';
 import { AskRequestProvider, AskRequestPurpose } from '@/ai/dto';
 import { AIService } from '@/ai/ai.service';
@@ -10,8 +11,9 @@ import { AnalyzeRequestDto } from './dto';
 @Injectable()
 export class AdminAIService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly aiService: AIService,
+    private readonly orderRepository: OrderRepository,
+    private readonly transactionRepository: TransactionRepository,
   ) {}
 
   async analyze(dto: AnalyzeRequestDto) {
@@ -53,13 +55,11 @@ export class AdminAIService {
   }
 
   private async getStats(from: Date, to: Date) {
-    const orders = await this.prisma.order.count({
-      where: {
-        createdAt: { gte: from, lt: to },
-      },
+    const orders = await this.orderRepository.count({
+      createdAt: { gte: from, lt: to },
     });
 
-    const revenue = await this.prisma.transaction.aggregate({
+    const revenue = await this.transactionRepository.aggregate({
       where: {
         createdAt: { gte: from, lt: to },
         status: TransactionStatus.SUCCESS,
@@ -69,12 +69,12 @@ export class AdminAIService {
 
     const avgOrder =
       orders > 0
-        ? (revenue._sum.amount ? +revenue._sum.amount : 0) / orders
+        ? (revenue._sum?.amount ? +revenue._sum.amount : 0) / orders
         : 0;
 
     return {
       orders,
-      revenue: revenue._sum.amount ? +revenue._sum.amount : 0,
+      revenue: revenue._sum?.amount ? +revenue._sum.amount : 0,
       avgOrder: Math.round(avgOrder),
     };
   }

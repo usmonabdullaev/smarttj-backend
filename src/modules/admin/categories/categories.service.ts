@@ -4,17 +4,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { CategoryRepository } from '@/common/repositories/category.repository';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
-import { PrismaService } from '@/database/prisma/prisma.service';
 import { LoggerService } from '@/logger/logger.service';
 import { GetAllRequest } from './dto';
 
 @Injectable()
 export class AdminCategoriesService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
     private readonly logger: LoggerService,
+    private readonly categoryRepository: CategoryRepository,
   ) {}
 
   async getAll(query: GetAllRequest) {
@@ -22,7 +22,7 @@ export class AdminCategoriesService {
     const limit = query.limit || 18;
     const skip = (page - 1) * limit;
 
-    return await this.prisma.category.findMany({
+    return await this.categoryRepository.findMany({
       where: {
         parentKey: 'ROOT',
       },
@@ -49,13 +49,10 @@ export class AdminCategoriesService {
   }
 
   async getById(id: string) {
-    const category = await this.prisma.category.findUnique({
-      where: { id },
-      include: {
-        children: {
-          orderBy: {
-            order: 'asc',
-          },
+    const category = await this.categoryRepository.findById(id, {
+      children: {
+        orderBy: {
+          order: 'asc',
         },
       },
     });
@@ -68,14 +65,11 @@ export class AdminCategoriesService {
   }
 
   async delete(id: string) {
-    const category = await this.prisma.category.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            children: true,
-            products: true,
-          },
+    const category = await this.categoryRepository.findById(id, {
+      _count: {
+        select: {
+          children: true,
+          products: true,
         },
       },
     });
@@ -103,6 +97,6 @@ export class AdminCategoriesService {
       }
     }
 
-    return await this.prisma.category.delete({ where: { id } });
+    return await this.categoryRepository.delete(id);
   }
 }
