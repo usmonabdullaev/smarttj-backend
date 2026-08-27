@@ -7,21 +7,28 @@ import { Prisma } from '@prisma/client';
 export class CategoryRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findMany(args: Prisma.CategoryFindManyArgs) {
-    return await this.prisma.category.findMany(args);
+  findMany(args: Prisma.CategoryFindManyArgs) {
+    return this.prisma.category.findMany(args);
   }
 
-  async findById<T extends Prisma.CategoryInclude | undefined = undefined>(
+  findById<T extends Prisma.CategoryInclude | undefined = undefined>(
     id: string,
     include?: T,
   ): Promise<Prisma.CategoryGetPayload<{ include: T }> | null> {
-    return (await this.prisma.category.findUnique({
+    return this.prisma.category.findUnique({
       where: { id },
       include,
-    })) as any;
+    }) as any;
   }
 
-  async delete(id: string) {
-    return await this.prisma.category.delete({ where: { id } });
+  delete(id: string) {
+    return this.prisma.category.delete({ where: { id } });
+  }
+
+  getAttributesWithInclude(id: string) {
+    return this.prisma.category.findUnique({
+      where: { id },
+      include: { attributes: { include: { values: true } } },
+    });
   }
 }

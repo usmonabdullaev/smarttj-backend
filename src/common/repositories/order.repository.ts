@@ -7,7 +7,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 export class OrderRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async count(where: Prisma.OrderWhereInput) {
-    return await this.prisma.order.count({ where });
+  count(where: Prisma.OrderWhereInput) {
+    return this.prisma.order.count({ where });
   }
 }

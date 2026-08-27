@@ -1,10 +1,10 @@
 import { TransactionStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
-import { TransactionRepository } from '@/common/repositories/transaction.repository';
-import { OrderRepository } from '@/common/repositories/order.repository';
 import { ANALYTICS_PROMPT } from '@/ai/prompts/analytics.prompt';
 import { AskRequestProvider, AskRequestPurpose } from '@/ai/dto';
+import { TransactionRepository } from '@/common/repositories';
+import { OrderRepository } from '@/common/repositories';
 import { AIService } from '@/ai/ai.service';
 import { AnalyzeRequestDto } from './dto';
 

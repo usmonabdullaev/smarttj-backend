@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { RegionRepository } from '@/common/repositories/region.repository';
 import { AddressesRepository } from './addresses.repository';
+import { RegionRepository } from '@/common/repositories';
 import { CreateRequest } from './dto';
 
 @Injectable()

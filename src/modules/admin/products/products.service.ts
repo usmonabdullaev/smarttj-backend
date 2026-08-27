@@ -1,46 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductStatus } from '@prisma/client';
 
-import { PrismaService } from '@/database/prisma/prisma.service';
-import { publicUserSelect } from '@/common/selects/user.select';
+import { ProductRepository } from '@/common/repositories';
 
 @Injectable()
 export class AdminProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly productRepository: ProductRepository) {}
 
   async getAll(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
-    const [products, total] = await this.prisma.$transaction([
-      this.prisma.product.findMany({
-        skip,
-        take: limit,
-        include: {
-          partner: {
-            include: {
-              user: {
-                select: publicUserSelect,
-              },
-            },
-          },
-          category: true,
-          brand: true,
-          model: true,
-          region: true,
-          variants: {
-            include: {
-              images: true,
-              attributes: {
-                include: {
-                  attribute: true,
-                  attributeValue: true,
-                },
-              },
-            },
-          },
-        },
-      }),
-      this.prisma.product.count(),
+    const [products, total] = await Promise.all([
+      this.productRepository.getAllWithInclude(skip, limit),
+      this.productRepository.count(),
     ]);
 
     return {
@@ -57,41 +29,11 @@ export class AdminProductsService {
   async getManualModeration(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
-    const [products, total] = await this.prisma.$transaction([
-      this.prisma.product.findMany({
-        where: {
-          status: ProductStatus.MANUAL_MODERATION,
-        },
-        skip,
-        take: limit,
-        include: {
-          partner: {
-            include: {
-              user: {
-                select: publicUserSelect,
-              },
-            },
-          },
-          category: true,
-          brand: true,
-          model: true,
-          region: true,
-          variants: {
-            include: {
-              images: true,
-              attributes: {
-                include: {
-                  attribute: true,
-                  attributeValue: true,
-                },
-              },
-            },
-          },
-        },
+    const [products, total] = await Promise.all([
+      this.productRepository.getAllWithInclude(skip, limit, {
+        status: ProductStatus.MANUAL_MODERATION,
       }),
-      this.prisma.product.count({
-        where: { status: ProductStatus.MANUAL_MODERATION },
-      }),
+      this.productRepository.count({ status: ProductStatus.MANUAL_MODERATION }),
     ]);
 
     return {
@@ -106,40 +48,7 @@ export class AdminProductsService {
   }
 
   async getById(id: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-      include: {
-        partner: {
-          include: {
-            user: {
-              select: publicUserSelect,
-            },
-          },
-        },
-        category: true,
-        brand: true,
-        model: true,
-        region: true,
-        variants: {
-          include: {
-            images: true,
-            attributes: {
-              include: {
-                attribute: true,
-                attributeValue: true,
-              },
-            },
-          },
-        },
-        reviews: {
-          include: {
-            user: {
-              select: publicUserSelect,
-            },
-          },
-        },
-      },
-    });
+    const product = await this.productRepository.getByIdWithInclude(id);
 
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -149,7 +58,7 @@ export class AdminProductsService {
   }
 
   async publish(id: string) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
+    const product = await this.productRepository.getById(id);
 
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -157,12 +66,9 @@ export class AdminProductsService {
 
     // TODO: add moderations
 
-    return await this.prisma.product.update({
-      where: { id },
-      data: {
-        status: ProductStatus.ACTIVE,
-        publishedAt: new Date(),
-      },
+    return await this.productRepository.update(id, {
+      status: ProductStatus.ACTIVE,
+      publishedAt: new Date(),
     });
   }
 }

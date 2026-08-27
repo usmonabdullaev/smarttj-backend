@@ -13,7 +13,6 @@ import { ProductModerationService } from '@/bullmq/product-moderation/product-mo
 import { SlugifyService } from '@/common/services/slugify/slugify.service';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { LoggerService } from '@/logger/logger.service';
 import {
   CreateProductDto,
   CreateProductVariantDto,
@@ -27,7 +26,6 @@ export class PartnerProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
-    private readonly logger: LoggerService,
     private readonly productModeration: ProductModerationService,
     private readonly slugify: SlugifyService,
   ) {}
@@ -323,16 +321,7 @@ export class PartnerProductsService {
       throw new NotFoundException();
     }
 
-    try {
-      await this.cloudinary.deleteFile(image.urlId);
-    } catch (error) {
-      this.logger.error(
-        'Ошибка при удалении изображения [delete/variant-image]',
-        {
-          error,
-        },
-      );
-    }
+    await this.cloudinary.deleteFile(image.urlId);
 
     return await this.prisma.image.delete({ where: { id } });
   }
@@ -350,13 +339,7 @@ export class PartnerProductsService {
     }
 
     if (variant.images.length) {
-      try {
-        await this.cloudinary.deleteFiles(variant.images.map((i) => i.urlId));
-      } catch (error) {
-        this.logger.error('Ошибка при удалении изображении [delete/variant]', {
-          error,
-        });
-      }
+      await this.cloudinary.deleteFiles(variant.images.map((i) => i.urlId));
     }
 
     return await this.prisma.productVariant.delete({ where: { id } });

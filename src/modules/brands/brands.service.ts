@@ -8,14 +8,12 @@ import { CreateBrandDto } from '@/modules/brands/dto/create-brand.dto';
 import { UpdateBrandDto } from '@/modules/brands/dto/update-brand.dto';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class BrandsService {
   constructor(
     private prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
-    private readonly logger: LoggerService,
   ) {}
 
   async create(createBrandDto: CreateBrandDto, logoId?: string) {
@@ -95,13 +93,7 @@ export class BrandsService {
     }
 
     if (logoId && brand.logoId && brand.logoId !== logoId) {
-      try {
-        await this.cloudinary.deleteFile(brand.logoId);
-      } catch (error) {
-        this.logger.error('Ошибка при удалении изображения [update/brands]', {
-          error,
-        });
-      }
+      await this.cloudinary.deleteFile(brand.logoId);
     }
 
     return await this.prisma.brand.update({
@@ -144,13 +136,7 @@ export class BrandsService {
     }
 
     if (brand.logoId) {
-      try {
-        await this.cloudinary.deleteFile(brand.logoId);
-      } catch (error) {
-        this.logger.error('Ошибка при удалении изображения [delete/brands]', {
-          error,
-        });
-      }
+      await this.cloudinary.deleteFile(brand.logoId);
     }
 
     return await this.prisma.brand.delete({ where: { id } });

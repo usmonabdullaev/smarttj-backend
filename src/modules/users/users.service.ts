@@ -10,7 +10,6 @@ import {
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { userSelect } from '@/common/selects/user.select';
-import { LoggerService } from '@/logger/logger.service';
 import {
   SetPasswordDto,
   UpdateUserDto,
@@ -21,7 +20,6 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
-    private readonly logger: LoggerService,
   ) {}
 
   async getMe(sessionId: string) {
@@ -71,13 +69,7 @@ export class UsersService {
     }
 
     if (avatarId && user.avatarId && user.avatarId !== avatarId) {
-      try {
-        await this.cloudinary.deleteFile(user.avatarId);
-      } catch (error) {
-        this.logger.error('Ошибка при удалении изображения [update/avatar]', {
-          error,
-        });
-      }
+      await this.cloudinary.deleteFile(user.avatarId);
     }
 
     if (dto.email) {

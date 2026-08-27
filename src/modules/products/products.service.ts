@@ -3,6 +3,7 @@ import { ProductStatus, Prisma } from '@prisma/client';
 
 import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
+import { publicUserSelect } from '@/common/selects/user.select';
 
 @Injectable()
 export class ProductsService {
@@ -91,16 +92,7 @@ export class ProductsService {
               take: 10,
               include: {
                 user: {
-                  select: {
-                    id: true,
-                    phone: true,
-                    email: true,
-                    name: true,
-                    role: true,
-                    avatar: true,
-                    createdAt: true,
-                    updatedAt: true,
-                  },
+                  select: publicUserSelect,
                 },
               },
             },
@@ -157,18 +149,12 @@ export class ProductsService {
         },
         reviews: {
           take: 10,
+          orderBy: {
+            createdAt: 'desc',
+          },
           include: {
             user: {
-              select: {
-                id: true,
-                phone: true,
-                email: true,
-                name: true,
-                role: true,
-                avatar: true,
-                createdAt: true,
-                updatedAt: true,
-              },
+              select: publicUserSelect,
             },
           },
         },

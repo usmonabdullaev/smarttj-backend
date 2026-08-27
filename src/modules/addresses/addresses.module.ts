@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 
-import { RegionRepository } from '@/common/repositories/region.repository';
 import { AddressesController } from './addresses.controller';
 import { AddressesRepository } from './addresses.repository';
+import { RegionRepository } from '@/common/repositories';
 import { AddressesService } from './addresses.service';
 
 @Module({

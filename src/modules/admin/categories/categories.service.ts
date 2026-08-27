@@ -4,16 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { CategoryRepository } from '@/common/repositories/category.repository';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
-import { LoggerService } from '@/logger/logger.service';
+import { CategoryRepository } from '@/common/repositories';
 import { GetAllRequest } from './dto';
 
 @Injectable()
 export class AdminCategoriesService {
   constructor(
     private readonly cloudinary: CloudinaryService,
-    private readonly logger: LoggerService,
     private readonly categoryRepository: CategoryRepository,
   ) {}
 
@@ -87,14 +85,7 @@ export class AdminCategoriesService {
     }
 
     if (category.iconId) {
-      try {
-        await this.cloudinary.deleteFile(category.iconId);
-      } catch (error) {
-        this.logger.error(
-          'Ошибка при удалении изображения [delete/category-icon]',
-          error,
-        );
-      }
+      await this.cloudinary.deleteFile(category.iconId);
     }
 
     return await this.categoryRepository.delete(id);

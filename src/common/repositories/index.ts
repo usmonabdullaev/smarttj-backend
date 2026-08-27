@@ -1,0 +1,6 @@
+export * from './category.repository';
+export * from './order.repository';
+export * from './product.repository';
+export * from './region.repository';
+export * from './transaction.repository';
+export * from './user.repository';

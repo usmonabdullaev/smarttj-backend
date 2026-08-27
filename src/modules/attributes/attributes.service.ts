@@ -1,45 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { PrismaService } from '@/database/prisma/prisma.service';
+import { AttributesRepository } from './attributes.repository';
+import { CategoryRepository } from '@/common/repositories';
 
 @Injectable()
 export class AttributesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly repository: AttributesRepository,
+    private readonly categoryRepository: CategoryRepository,
+  ) {}
 
   async findAll() {
-    return await this.prisma.attribute.findMany({
-      include: { values: true, group: true },
-      orderBy: { order: 'asc' },
-    });
+    return await this.repository.getAll();
   }
 
   async findOne(id: string) {
-    const attribute = await this.prisma.attribute.findUnique({
-      where: { id },
-      include: { values: true, group: true },
-    });
+    const attribute = await this.repository.getById(id);
 
     if (!attribute) {
-      throw new NotFoundException();
+      throw new NotFoundException('Attribute not found');
     }
 
     return attribute;
   }
 
   async findByCategory(categoryId: string) {
-    const category = await this.prisma.category.findUnique({
-      where: { id: categoryId },
-      include: {
-        attributes: {
-          include: {
-            values: true,
-          },
-        },
-      },
-    });
+    const category =
+      await this.categoryRepository.getAttributesWithInclude(categoryId);
 
     if (!category) {
-      throw new NotFoundException();
+      throw new NotFoundException('Category not found');
     }
 
     return category.attributes;
@@ -48,14 +38,7 @@ export class AttributesService {
   async findForProduct(categoryId: string) {
     const categoryAttributes = await this.findByCategory(categoryId);
 
-    const defaultAttributes = await this.prisma.attribute.findMany({
-      where: {
-        categoryId: null,
-      },
-      include: {
-        values: true,
-      },
-    });
+    const defaultAttributes = await this.repository.defaults();
 
     return [...categoryAttributes, ...defaultAttributes];
   }

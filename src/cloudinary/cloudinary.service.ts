@@ -4,6 +4,7 @@ import * as streamifier from 'streamifier';
 
 import { UploadFilesRequest } from '@/cloudinary/dto/requests/upload-files.request';
 import { UploadFileRequest } from '@/cloudinary/dto/requests/upload-file.request';
+import { LoggerService } from '@/logger/logger.service';
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -14,7 +15,7 @@ const ALLOWED_MIME_TYPES = [
 
 @Injectable()
 export class CloudinaryService {
-  constructor() {
+  constructor(private readonly logger: LoggerService) {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
@@ -23,7 +24,9 @@ export class CloudinaryService {
     });
   }
 
-  async uploadFile(dto: UploadFileRequest): Promise<UploadApiResponse> {
+  async uploadFile(
+    dto: UploadFileRequest,
+  ): Promise<UploadApiResponse | undefined> {
     if (!dto.file) {
       throw new BadRequestException({
         message: 'File not found',
@@ -40,20 +43,24 @@ export class CloudinaryService {
       });
     }
 
-    return new Promise((resolve, reject) => {
-      const upload = cloudinary.uploader.upload_stream(
-        {
-          folder: dto.folder,
-          resource_type: 'image',
-        },
-        (error, result) => {
-          if (error || !result) return reject(error);
-          resolve(result);
-        },
-      );
+    try {
+      return new Promise((resolve, reject) => {
+        const upload = cloudinary.uploader.upload_stream(
+          {
+            folder: dto.folder,
+            resource_type: 'image',
+          },
+          (error, result) => {
+            if (error || !result) return reject(error);
+            resolve(result);
+          },
+        );
 
-      streamifier.createReadStream(dto.file.buffer).pipe(upload);
-    });
+        streamifier.createReadStream(dto.file.buffer).pipe(upload);
+      });
+    } catch (error) {
+      this.logger.error('Cloudinary upload error', error);
+    }
   }
 
   async uploadFiles(dto: UploadFilesRequest): Promise<UploadApiResponse[]> {
@@ -81,21 +88,21 @@ export class CloudinaryService {
           file,
           folder: dto.folder,
         }),
-      ),
+      ) as any,
     );
   }
 
   async deleteFile(publicId: string) {
+    if (!publicId) {
+      throw new BadRequestException('Public ID is empty');
+    }
+
     try {
       const result = await cloudinary.uploader.destroy(publicId);
 
       return result;
-    } catch {
-      throw new BadRequestException({
-        message: 'Error while deleting',
-        code: 'DELETE_ERROR',
-        error: publicId,
-      });
+    } catch (error) {
+      this.logger.error('Cloudinary delete error', error);
     }
   }
 

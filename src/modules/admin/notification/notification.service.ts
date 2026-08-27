@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { SendNotificationDto } from '@/modules/admin/notification/dto/send-notification.dto';
 import { NotificationService } from '@/bullmq/notification/notification.service';
-import { UserRepository } from '@/common/repositories/user.repository';
-import { userSelect } from '@/common/selects/user.select';
+import { UserRepository } from '@/common/repositories';
 
 @Injectable()
 export class AdminNotificationService {
@@ -13,7 +12,7 @@ export class AdminNotificationService {
   ) {}
 
   async sendNotification(dto: SendNotificationDto) {
-    const user = await this.userRepository.findById(dto.userId, userSelect);
+    const user = await this.userRepository.findById(dto.userId);
 
     if (!user) {
       throw new NotFoundException('User not found');

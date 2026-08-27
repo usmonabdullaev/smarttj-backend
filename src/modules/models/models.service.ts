@@ -8,14 +8,12 @@ import { CreateModelDto } from '@/modules/models/dto/create-model.dto';
 import { UpdateModelDto } from '@/modules/models/dto/update-model.dto';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class ModelsService {
   constructor(
     private prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
-    private readonly logger: LoggerService,
   ) {}
 
   async create(createModelDto: CreateModelDto, imageId?: string) {
@@ -110,13 +108,7 @@ export class ModelsService {
     }
 
     if (imageId && model.imageId && model.imageId !== imageId) {
-      try {
-        await this.cloudinary.deleteFile(model.imageId);
-      } catch (error) {
-        this.logger.error('Ошибка при удалении изображения [update/models]', {
-          error,
-        });
-      }
+      await this.cloudinary.deleteFile(model.imageId);
     }
 
     return await this.prisma.model.update({
@@ -151,13 +143,7 @@ export class ModelsService {
     }
 
     if (model.imageId) {
-      try {
-        await this.cloudinary.deleteFile(model.imageId);
-      } catch (error) {
-        this.logger.error('Ошибка при удалении изображения [delete/models]', {
-          error,
-        });
-      }
+      await this.cloudinary.deleteFile(model.imageId);
     }
 
     return await this.prisma.model.delete({ where: { id } });

@@ -7,7 +7,7 @@ import { Prisma } from '@prisma/client';
 export class TransactionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async aggregate(args: Prisma.TransactionAggregateArgs) {
-    return await this.prisma.transaction.aggregate(args);
+  aggregate(args: Prisma.TransactionAggregateArgs) {
+    return this.prisma.transaction.aggregate(args);
   }
 }

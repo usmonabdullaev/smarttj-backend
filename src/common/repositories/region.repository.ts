@@ -6,7 +6,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 export class RegionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findById(id: string) {
-    return await this.prisma.region.findUnique({ where: { id } });
+  findById(id: string) {
+    return this.prisma.region.findUnique({ where: { id } });
   }
 }
