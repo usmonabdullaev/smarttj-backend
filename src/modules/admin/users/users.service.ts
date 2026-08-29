@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService } from '@/database/prisma/prisma.service';
-import { UserRepository } from '@/common/repositories';
+import { BaseRepository, UserRepository } from '@/common/repositories';
 
 @Injectable()
 export class AdminUsersService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly userRepository: UserRepository,
+    private readonly baseRepository: BaseRepository,
   ) {}
 
   async getAll(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
-    const [users, total] = await this.prisma.$transaction([
+    const [users, total] = await this.baseRepository.transaction([
       this.userRepository.findMany(skip, limit),
       this.userRepository.count(),
     ]);

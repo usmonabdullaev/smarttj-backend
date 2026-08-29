@@ -12,7 +12,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 @Injectable()
 export class ModelsService {
   constructor(
-    private prisma: PrismaService,
+    private readonly prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
   ) {}
 

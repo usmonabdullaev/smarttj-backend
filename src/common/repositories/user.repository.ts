@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { publicUserSelect } from '../selects/user.select';
+import { publicUserSelect, userSelect } from '../selects/user.select';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -11,6 +12,40 @@ export class UserRepository {
     return this.prisma.user.findUnique({
       where: { id },
       select: publicUserSelect,
+    });
+  }
+
+  findByGoogleId(googleId: string) {
+    return this.prisma.user.findFirst({
+      where: { googleId },
+      select: userSelect,
+    });
+  }
+
+  findByIdentifier(identifier: string) {
+    return this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: identifier }, { phone: identifier }],
+      },
+    });
+  }
+
+  findByPhoneRole(phone: string, role: UserRole) {
+    return this.prisma.user.findUnique({
+      where: { phone_role: { phone, role } },
+      select: { id: true },
+    });
+  }
+
+  upsert(phone: string, role: UserRole, name: string) {
+    return this.prisma.user.upsert({
+      where: { phone_role: { phone, role } },
+      create: {
+        name,
+        phone,
+      },
+      update: {},
+      select: userSelect,
     });
   }
 

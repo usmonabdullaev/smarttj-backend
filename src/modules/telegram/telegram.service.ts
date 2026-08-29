@@ -5,7 +5,7 @@ import { userSelect } from '@/common/selects/user.select';
 
 @Injectable()
 export class TelegramService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getProfile(telegramId: string) {
     const user = await this.prisma.user.findFirst({

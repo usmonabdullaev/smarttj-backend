@@ -4,7 +4,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 
 @Injectable()
 export class SessionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll(userId: string, sessionId: string) {
     const session = await this.prisma.session.findFirst({

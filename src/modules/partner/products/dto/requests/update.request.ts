@@ -58,7 +58,7 @@ export class UpdateProductVariantDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  @Max(999_999_999_999)
+  @Max(Number.MAX_SAFE_INTEGER)
   price?: number;
 
   @ApiPropertyOptional({
@@ -76,7 +76,7 @@ export class UpdateProductDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  @Max(120)
+  @Max(720)
   warranty?: number;
 
   @ApiPropertyOptional({ example: 'ID' })

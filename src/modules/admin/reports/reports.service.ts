@@ -1,25 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { GetReportsDto } from '@/modules/admin/reports/dto/get-reports.dto';
-import { PrismaService } from '@/database/prisma/prisma.service';
 import { AdminReportsRepository } from './reports.repository';
+import { BaseRepository } from '@/common/repositories';
 import { ReportTemplate } from '@/pdf/templates';
 import { PdfService } from '@/pdf/pdf.service';
 
 @Injectable()
 export class AdminReportsService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly pdfService: PdfService,
     private readonly repository: AdminReportsRepository,
+    private readonly baseRepository: BaseRepository,
   ) {}
 
   async getList(dto: GetReportsDto) {
-    const page = dto.page ?? 1;
-    const limit = dto.limit ?? 12;
+    const page = dto.page || 1;
+    const limit = dto.limit || 12;
     const skip = (page - 1) * limit;
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total] = await this.baseRepository.transaction([
       this.repository.findMany(skip, limit),
       this.repository.count(),
     ]);

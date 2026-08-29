@@ -1,4 +1,3 @@
-import { ProductStatus } from '@prisma/client';
 import {
   BadRequestException,
   Injectable,
@@ -6,73 +5,30 @@ import {
 } from '@nestjs/common';
 
 import { AddToCartDto } from '@/modules/carts/dto/add-to-cart.dto';
-import { PrismaService } from '@/database/prisma/prisma.service';
 import { EditCartDto } from '@/modules/carts/dto/edit-cart.dto';
+import { CartsRepository } from './carts.repository';
 
 @Injectable()
 export class CartsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly repository: CartsRepository) {}
 
   async getCart(userId: string) {
-    return await this.prisma.cart.findUnique({
-      where: { userId },
-      include: {
-        items: {
-          include: {
-            productVariant: {
-              include: {
-                product: {
-                  include: {
-                    brand: true,
-                    model: true,
-                  },
-                },
-                images: true,
-                attributes: {
-                  include: {
-                    attribute: true,
-                    attributeValue: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    return await this.repository.getUserCartInfo(userId);
   }
 
   async addToCart(dto: AddToCartDto, userId: string) {
-    const productVariant = await this.prisma.productVariant.findFirst({
-      where: {
-        id: dto.productVariantId,
-        stock: {
-          gte: dto.quantity,
-        },
-        product: {
-          status: ProductStatus.ACTIVE,
-        },
-      },
-    });
+    const productVariant = await this.repository.getProductVariant(
+      dto.productVariantId,
+      dto.quantity,
+    );
 
     if (!productVariant) {
-      throw new NotFoundException();
+      throw new NotFoundException(
+        'Product not found or not available for sale',
+      );
     }
 
-    const cart = await this.prisma.cart.upsert({
-      where: {
-        userId,
-      },
-      create: {
-        userId,
-      },
-      update: {},
-      include: {
-        items: {
-          where: { productVariantId: productVariant.id },
-        },
-      },
-    });
+    const cart = await this.repository.findForAdd(userId, productVariant.id);
 
     const quantity = cart.items[0]?.quantity;
 
@@ -82,66 +38,44 @@ export class CartsService {
       }
     }
 
-    await this.prisma.cartItem.upsert({
-      where: {
-        cartId_productVariantId: {
-          cartId: cart.id,
-          productVariantId: dto.productVariantId,
-        },
-      },
-      create: {
-        cartId: cart.id,
-        productVariantId: dto.productVariantId,
-        quantity: dto.quantity,
-      },
-      update: {
-        quantity: {
-          increment: dto.quantity,
-        },
-      },
-    });
+    await this.repository.addToCart(
+      cart.id,
+      dto.productVariantId,
+      dto.quantity,
+    );
 
     return { success: true, message: 'Product added to cart' };
   }
 
   async edit(dto: EditCartDto, id: string) {
-    const cartItem = await this.prisma.cartItem.findUnique({
-      where: { id },
-    });
+    const cartItem = await this.repository.getItem(id);
 
     if (!cartItem) {
       throw new NotFoundException();
     }
 
-    return await this.prisma.cartItem.update({
-      where: { id },
-      data: {
-        quantity: dto.quantity,
-      },
-    });
+    return await this.repository.updateItemQuantity(id, dto.quantity);
   }
 
   async deleteItem(id: string) {
-    const cartItem = await this.prisma.cartItem.findUnique({
-      where: { id },
-    });
+    const cartItem = await this.repository.getItem(id);
 
     if (!cartItem) {
       throw new NotFoundException();
     }
 
-    return await this.prisma.cartItem.delete({ where: { id } });
+    return await this.repository.deleteItem(id);
   }
 
   async clear(userId: string) {
-    const cart = await this.prisma.cart.findUnique({ where: { userId } });
+    const cart = await this.repository.getUserCart(userId);
 
     if (!cart) {
-      return { message: 'Cart cleared', success: true };
+      return { message: 'Cart already clear', success: true };
     }
 
-    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    await this.repository.deleteItems(cart.id);
 
-    return { message: 'Cart cleared', success: true };
+    return { message: 'Cart successfully cleared', success: true };
   }
 }

@@ -9,11 +9,9 @@ import { LoggerService } from '@/logger/logger.service';
 @Injectable()
 export class SmsService {
   private provider = new SmsgateProvider();
+  private readonly logger = new LoggerService(SmsService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly logger: LoggerService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async send(dto: SendRequest) {
     try {

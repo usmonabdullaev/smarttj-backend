@@ -13,13 +13,13 @@ export class CreateProductVariantDto {
   @ApiProperty({ example: 1600000 })
   @IsInt()
   @Min(0)
-  @Max(999_999_999_999)
+  @Max(Number.MAX_SAFE_INTEGER)
   price!: number;
 
   @ApiProperty({ example: 1000 })
   @IsInt()
   @Min(1)
-  @Max(999_999_999_999)
+  @Max(Number.MAX_SAFE_INTEGER)
   stock!: number;
 }
 
@@ -33,7 +33,7 @@ export class CreateProductDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  @Max(120)
+  @Max(720)
   warranty?: number;
 
   @ApiPropertyOptional({ example: 'ID' })

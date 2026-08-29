@@ -8,8 +8,9 @@ import { LoggerService } from '@/logger/logger.service';
 @Injectable()
 export class GroqProvider {
   private readonly client: Groq;
+  private readonly logger = new LoggerService(GroqProvider.name);
 
-  constructor(private readonly logger: LoggerService) {
+  constructor() {
     this.client = new Groq({
       apiKey: process.env.GROQ_API_KEY,
     });

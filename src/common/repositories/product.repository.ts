@@ -90,6 +90,13 @@ export class ProductRepository {
     return this.prisma.product.findUnique({ where: { id } });
   }
 
+  getIdBySlug(slug: string) {
+    return this.prisma.product.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+  }
+
   update(id: string, data: Prisma.ProductUpdateInput) {
     return this.prisma.product.update({ where: { id }, data });
   }

@@ -9,4 +9,11 @@ export class RegionRepository {
   findById(id: string) {
     return this.prisma.region.findUnique({ where: { id } });
   }
+
+  getIdBySlug(slug: string) {
+    return this.prisma.region.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+  }
 }

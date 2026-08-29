@@ -15,7 +15,9 @@ const ALLOWED_MIME_TYPES = [
 
 @Injectable()
 export class CloudinaryService {
-  constructor(private readonly logger: LoggerService) {
+  private readonly logger = new LoggerService(CloudinaryService.name);
+
+  constructor() {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,

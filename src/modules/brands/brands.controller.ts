@@ -1,138 +1,38 @@
-import { FileInterceptor } from '@nestjs/platform-express';
-import { UserRole } from '@prisma/client';
-import { Express } from 'express';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import {
-  ApiConsumes,
   ApiOperation,
-  ApiBearerAuth,
   ApiOkResponse,
-  ApiCreatedResponse,
-  ApiUnauthorizedResponse,
-  ApiForbiddenResponse,
-  ApiConflictResponse,
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  UploadedFile,
-  UseInterceptors,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
 
-import { BrandResponseDto } from '@/modules/brands/dto/brand-response.dto';
-import { CreateBrandDto } from '@/modules/brands/dto/create-brand.dto';
-import { UpdateBrandDto } from '@/modules/brands/dto/update-brand.dto';
-import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { BrandsService } from '@/modules/brands/brands.service';
-import { Roles } from '@/common/decorators/roles.decorator';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
-import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
-import { RolesGuard } from '@/auth/guards/roles.guard';
+import { BrandResponseDto, FindQuery } from './dto';
 
 @Controller('brands')
 export class BrandsController {
-  constructor(
-    private readonly brandsService: BrandsService,
-    private readonly cloudinary: CloudinaryService,
-  ) {}
-
-  @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create brand' })
-  @ApiCreatedResponse({ type: BrandResponseDto })
-  @ApiUnauthorizedResponse({ type: ApiErrorDto })
-  @ApiForbiddenResponse({ type: ApiErrorDto })
-  @ApiConflictResponse({ type: ApiErrorDto })
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('logo'))
-  async create(
-    @Body() dto: CreateBrandDto,
-    @UploadedFile() logo: Express.Multer.File,
-  ) {
-    const upload = logo
-      ? await this.cloudinary.uploadFile({
-          file: logo,
-          folder: 'brand',
-        })
-      : null;
-
-    return await this.brandsService.create(
-      {
-        ...dto,
-        logo: upload?.secure_url,
-      },
-      upload?.public_id,
-    );
-  }
+  constructor(private readonly brandsService: BrandsService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get brands list' })
   @ApiOkResponse({ type: BrandResponseDto, isArray: true })
-  async findAll() {
-    return await this.brandsService.findAll();
+  async findAll(@Query() query: FindQuery) {
+    return await this.brandsService.findAll(query);
   }
 
-  @Get(':id')
+  @Get('/:slug')
   @ApiOperation({ summary: 'Get brand' })
   @ApiOkResponse({ type: BrandResponseDto })
   @ApiNotFoundResponse({ type: ApiErrorDto })
-  async findOne(@Param('id') id: string) {
-    return await this.brandsService.findOne(id);
+  async findBySlug(@Param('slug') slug: string) {
+    return await this.brandsService.findBySlug(slug);
   }
 
-  @Put(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update brand' })
-  @ApiConsumes('multipart/form-data')
-  @ApiOkResponse({ type: BrandResponseDto })
-  @ApiUnauthorizedResponse({ type: ApiErrorDto })
-  @ApiForbiddenResponse({ type: ApiErrorDto })
-  @ApiNotFoundResponse({ type: ApiErrorDto })
-  @ApiConflictResponse({ type: ApiErrorDto })
-  @UseInterceptors(FileInterceptor('logo'))
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateBrandDto,
-    @UploadedFile() logo: Express.Multer.File,
-  ) {
-    const upload = logo
-      ? await this.cloudinary.uploadFile({
-          file: logo,
-          folder: 'brand',
-        })
-      : null;
-
-    return this.brandsService.update(
-      id,
-      {
-        ...dto,
-        logo: upload?.secure_url,
-      },
-      upload?.public_id,
-    );
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete brand' })
+  @Get('/id/:id')
+  @ApiOperation({ summary: 'Get brand' })
   @ApiOkResponse({ type: BrandResponseDto })
   @ApiNotFoundResponse({ type: ApiErrorDto })
-  @ApiUnauthorizedResponse({ type: ApiErrorDto })
-  @ApiForbiddenResponse({ type: ApiErrorDto })
-  @ApiConflictResponse({ type: ApiErrorDto })
-  async remove(@Param('id') id: string) {
-    return await this.brandsService.remove(id);
+  async findById(@Param('id') id: string) {
+    return await this.brandsService.findById(id);
   }
 }

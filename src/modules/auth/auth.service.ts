@@ -1,5 +1,4 @@
 import { SmsLogPurpose, UserRole } from '@prisma/client';
-import * as argon2 from 'argon2';
 import {
   BadRequestException,
   Injectable,
@@ -10,27 +9,32 @@ import {
 } from '@nestjs/common';
 
 import { GetProfileResponse } from '@/auth/google/dto/responses/get-profile.response';
+import { PasswordService } from '@/common/services/password/password.service';
 import { RequestOtpDto, VerifyOtpDto } from '@/modules/auth/dto/auth.dto';
-import { PrismaService } from '@/database/prisma/prisma.service';
-import { generateOtp } from '@/modules/auth/utils/generate-otp';
+import { OtpService } from '@/common/services/otp/otp.service';
 import { JwtAuthService } from '@/auth/jwt/jwt-auth.service';
-import { userSelect } from '@/common/selects/user.select';
 import { SmsService } from '@/sms/sms.service';
+import { AuthSettings } from '@/common/enums';
 import {
   LoginMetaDto,
   LoginWithPasswordDto,
 } from '@/modules/auth/dto/login-auth.dto';
+import {
+  AuthOtpRepository,
+  SessionRepository,
+  UserRepository,
+} from '@/common/repositories';
 
 @Injectable()
 export class AuthService {
-  private readonly RETRY_DIFFERENCE = 1 * 60 * 1000; // 1 minute
-  private readonly EXPIRES_AT = 5 * 60 * 1000; // 5 minute
-  private readonly ATTEMPTS = 5;
-
   constructor(
-    private readonly prisma: PrismaService,
     private readonly smsService: SmsService,
     private readonly jwtService: JwtAuthService,
+    private readonly userRepository: UserRepository,
+    private readonly authOtpRepository: AuthOtpRepository,
+    private readonly sessionRepository: SessionRepository,
+    private readonly otpService: OtpService,
+    private readonly passwordService: PasswordService,
   ) {}
 
   async googleLogin(
@@ -41,12 +45,7 @@ export class AuthService {
   ) {
     const { id } = googleProfile;
 
-    const user = await this.prisma.user.findFirst({
-      where: {
-        googleId: id,
-      },
-      select: userSelect,
-    });
+    const user = await this.userRepository.findByGoogleId(id);
 
     if (!user) {
       throw new UnauthorizedException();
@@ -72,11 +71,7 @@ export class AuthService {
     ip: string,
     userAgent?: string,
   ) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email: dto.login }, { phone: dto.login }],
-      },
-    });
+    const user = await this.userRepository.findByIdentifier(dto.login);
 
     if (!user || !user.password) {
       throw new UnauthorizedException({
@@ -86,7 +81,10 @@ export class AuthService {
       });
     }
 
-    const isValid = await argon2.verify(user.password, dto.password);
+    const isValid = await this.passwordService.verify(
+      user.password,
+      dto.password,
+    );
 
     if (!isValid) {
       throw new UnauthorizedException({
@@ -118,20 +116,17 @@ export class AuthService {
   }
 
   async requestOtp(dto: RequestOtpDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { phone_role: { phone: dto.phone, role: UserRole.USER } },
-      select: { id: true },
-    });
+    const user = await this.userRepository.findByPhoneRole(
+      dto.phone,
+      UserRole.USER,
+    );
 
-    const lastOtp = await this.prisma.authOtp.findFirst({
-      where: { phone: dto.phone },
-      orderBy: { createdAt: 'desc' },
-    });
+    const lastOtp = await this.authOtpRepository.findByPhone(dto.phone);
 
     if (lastOtp) {
       const diff = Date.now() - new Date(lastOtp.createdAt).getTime();
 
-      if (diff < this.RETRY_DIFFERENCE) {
+      if (diff < AuthSettings.AUTH_OTP_RETRY_DIFFERENCE) {
         throw new HttpException(
           {
             message: 'OTP already sent',
@@ -146,19 +141,17 @@ export class AuthService {
       }
     }
 
-    await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
+    await this.authOtpRepository.deletePhones(dto.phone);
 
-    const code = generateOtp();
+    const code = this.otpService.generateOtp();
 
-    const hash = await argon2.hash(code, { type: argon2.argon2id });
+    const hash = await this.otpService.hash(code);
 
-    await this.prisma.authOtp.create({
-      data: {
-        phone: dto.phone,
-        code: hash,
-        expiresAt: new Date(Date.now() + this.EXPIRES_AT),
-      },
-    });
+    await this.authOtpRepository.create(
+      dto.phone,
+      hash,
+      new Date(Date.now() + AuthSettings.AUTH_OTP_EXPIRES_AT),
+    );
 
     await this.smsService.send({
       phone: dto.phone,
@@ -173,17 +166,14 @@ export class AuthService {
   }
 
   async verifyOtp(dto: VerifyOtpDto, ip: string, userAgent?: string) {
-    const otp = await this.prisma.authOtp.findFirst({
-      where: { phone: dto.phone },
-      orderBy: { createdAt: 'desc' },
-    });
+    const otp = await this.authOtpRepository.findByPhone(dto.phone);
 
     if (!otp) {
       throw new BadRequestException();
     }
 
     if (otp.expiresAt < new Date()) {
-      await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
+      await this.authOtpRepository.deletePhones(dto.phone);
 
       throw new BadRequestException({
         message: 'OTP expired',
@@ -192,8 +182,8 @@ export class AuthService {
       });
     }
 
-    if (otp.attempts > this.ATTEMPTS) {
-      await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
+    if (otp.attempts > AuthSettings.AUTH_OTP_ATTEMPTS) {
+      await this.authOtpRepository.deletePhones(dto.phone);
 
       throw new HttpException(
         {
@@ -205,13 +195,10 @@ export class AuthService {
       );
     }
 
-    const isValid = await argon2.verify(otp.code, dto.code);
+    const isValid = await this.otpService.verify(otp.code, dto.code);
 
     if (!isValid) {
-      await this.prisma.authOtp.update({
-        where: { id: otp.id },
-        data: { attempts: { increment: 1 } },
-      });
+      await this.authOtpRepository.increment(otp.id);
 
       throw new BadRequestException({
         message: 'Invalid OTP',
@@ -220,19 +207,13 @@ export class AuthService {
       });
     }
 
-    const user = await this.prisma.user.upsert({
-      where: { phone_role: { phone: dto.phone, role: UserRole.USER } },
-      create: {
-        name: 'Гость',
-        phone: dto.phone,
-      },
-      update: {},
-      select: userSelect,
-    });
+    const user = await this.userRepository.upsert(
+      dto.phone,
+      UserRole.USER,
+      'Гость',
+    );
 
-    await this.prisma.authOtp.deleteMany({
-      where: { phone: dto.phone },
-    });
+    await this.authOtpRepository.deletePhones(dto.phone);
 
     const session = await this.upsertSession(user?.id, {
       fingerprint: dto.fingerprint,
@@ -250,9 +231,7 @@ export class AuthService {
   }
 
   async logout(sessionId: string) {
-    const session = await this.prisma.session.findUnique({
-      where: { id: sessionId },
-    });
+    const session = await this.sessionRepository.findById(sessionId);
 
     if (!session) {
       throw new NotFoundException({
@@ -261,36 +240,35 @@ export class AuthService {
       });
     }
 
-    return await this.prisma.session.update({
-      where: { id: sessionId },
-      data: { isActive: false },
-    });
+    await this.sessionRepository.inactivate(sessionId);
+
+    return { success: true, message: 'Successfully logout' };
   }
 
   async upsertSession(userId: string, meta: LoginMetaDto) {
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + AuthSettings.SESSION_EXPIRES_AT);
 
-    return await this.prisma.session.upsert({
-      where: {
+    return await this.sessionRepository.upsert(
+      {
         userId_fingerprint: {
           userId,
           fingerprint: meta.fingerprint,
         },
       },
-      create: {
-        userId,
+      {
         fingerprint: meta.fingerprint,
         userAgent: meta.userAgent,
         ip: meta.ip,
         expiresAt,
+        user: { connect: { id: userId } },
       },
-      update: {
+      {
         userAgent: meta.userAgent,
         ip: meta.ip,
         lastActiveAt: new Date(),
         expiresAt,
         isActive: true,
       },
-    });
+    );
   }
 }

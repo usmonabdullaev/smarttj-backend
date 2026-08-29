@@ -1,57 +1,22 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { CreateBrandDto } from '@/modules/brands/dto/create-brand.dto';
-import { UpdateBrandDto } from '@/modules/brands/dto/update-brand.dto';
-import { CloudinaryService } from '@/cloudinary/cloudinary.service';
-import { PrismaService } from '@/database/prisma/prisma.service';
+import { BrandsRepository } from './brands.repository';
+import { FindQuery } from './dto';
 
 @Injectable()
 export class BrandsService {
-  constructor(
-    private prisma: PrismaService,
-    private readonly cloudinary: CloudinaryService,
-  ) {}
+  constructor(private readonly repository: BrandsRepository) {}
 
-  async create(createBrandDto: CreateBrandDto, logoId?: string) {
-    const brand = await this.prisma.brand.findUnique({
-      where: { slug: createBrandDto.slug },
-    });
+  async findAll(query: FindQuery) {
+    const page = query.page || 1;
+    const limit = query.limit || 12;
+    const skip = (page - 1) * limit;
 
-    if (brand) {
-      throw new ConflictException({
-        message: 'Slug conflict',
-        code: 'CONFLICT',
-        error: {
-          slug: createBrandDto.slug,
-          existingId: brand.id,
-        },
-      });
-    }
-
-    return await this.prisma.brand.create({
-      data: {
-        name: createBrandDto.name,
-        slug: createBrandDto.slug,
-        order: createBrandDto.order,
-        popular: createBrandDto.popular,
-        logo: createBrandDto.logo,
-        logoId,
-      },
-    });
+    return await this.repository.findMany(limit, skip, query.popular, query.q);
   }
 
-  async findAll() {
-    return await this.prisma.brand.findMany({
-      orderBy: [{ order: 'asc' }, { name: 'asc' }],
-    });
-  }
-
-  async findOne(id: string) {
-    const brand = await this.prisma.brand.findUnique({ where: { id } });
+  async findById(id: string) {
+    const brand = await this.repository.findById(id);
 
     if (!brand) {
       throw new NotFoundException({
@@ -64,81 +29,17 @@ export class BrandsService {
     return brand;
   }
 
-  async update(id: string, updateBrandDto: UpdateBrandDto, logoId?: string) {
-    const brand = await this.prisma.brand.findUnique({ where: { id } });
+  async findBySlug(slug: string) {
+    const brand = await this.repository.findBySlug(slug);
 
     if (!brand) {
       throw new NotFoundException({
         message: 'Brand not found',
         code: 'BRAND_NOT_FOUND',
-        error: id,
+        error: slug,
       });
     }
 
-    if (updateBrandDto.slug && brand.slug !== updateBrandDto.slug) {
-      const existing = await this.prisma.brand.findUnique({
-        where: { slug: updateBrandDto.slug },
-      });
-
-      if (existing) {
-        throw new ConflictException({
-          message: `Slug conflict`,
-          code: 'CONFLICT',
-          error: {
-            slug: updateBrandDto.slug,
-            existingId: existing.id,
-          },
-        });
-      }
-    }
-
-    if (logoId && brand.logoId && brand.logoId !== logoId) {
-      await this.cloudinary.deleteFile(brand.logoId);
-    }
-
-    return await this.prisma.brand.update({
-      where: { id },
-      data: {
-        ...updateBrandDto,
-        ...(logoId && { logoId }),
-      },
-    });
-  }
-
-  async remove(id: string) {
-    const brand = await this.prisma.brand.findUnique({
-      where: { id },
-      include: { _count: { select: { models: true, products: true } } },
-    });
-
-    if (!brand) {
-      throw new NotFoundException({
-        message: 'Brand not found',
-        code: 'BRAND_NOT_FOUND',
-        error: id,
-      });
-    }
-
-    if (brand._count.products) {
-      throw new ConflictException({
-        message: 'Brand cannot be deleted, because it has related products',
-        code: 'BRAND_HAS_PRODUCTS',
-        error: { id, products: brand._count.products },
-      });
-    }
-
-    if (brand._count.models) {
-      throw new ConflictException({
-        message: 'Brand cannot be deleted, because it has related models',
-        code: 'BRAND_HAS_MODELS',
-        error: { id, models: brand._count.models },
-      });
-    }
-
-    if (brand.logoId) {
-      await this.cloudinary.deleteFile(brand.logoId);
-    }
-
-    return await this.prisma.brand.delete({ where: { id } });
+    return brand;
   }
 }

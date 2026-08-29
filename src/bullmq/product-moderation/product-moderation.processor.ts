@@ -12,9 +12,10 @@ import { AIService } from '@/ai/ai.service';
 
 @Processor('product-moderation')
 export class ProductModerationProcessor extends WorkerHost {
+  private readonly logger = new LoggerService(ProductModerationProcessor.name);
+
   constructor(
     private readonly prisma: PrismaService,
-    private readonly logger: LoggerService,
     private readonly notification: NotificationService,
     private readonly ai: AIService,
   ) {

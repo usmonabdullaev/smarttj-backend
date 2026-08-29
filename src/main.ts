@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { NestFactory } from '@nestjs/core';
 
+import { LoggerService } from './logger/logger.service';
 import { AppModule } from '@/app.module';
 
 const PORT = process.env.PORT || 3001;
@@ -11,6 +12,8 @@ const PREFIX = 'api';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const logger = new LoggerService('Main');
 
   app.setGlobalPrefix(PREFIX);
 
@@ -79,6 +82,15 @@ async function bootstrap() {
     },
   );
 
-  await app.listen(PORT, HOST);
+  await app.listen(PORT, HOST, () =>
+    logger.log(
+      `Server successfully startted in: http://${HOST}:${PORT}, docs: /${PREFIX}`,
+      null,
+      {
+        save: false,
+      },
+    ),
+  );
 }
+
 void bootstrap();

@@ -1,17 +1,17 @@
-import { PrismaService } from '@/database/prisma/prisma.service';
+import { ProductRepository, RegionRepository } from '@/common/repositories';
 
 export class SlugifyGenerator {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly productRepository: ProductRepository,
+    private readonly regionRepository: RegionRepository,
+  ) {}
 
   async product(slug: string, excludeId?: string) {
     let unique = slug;
     let counter = 2;
 
     while (true) {
-      const existing = await this.prisma.product.findUnique({
-        where: { slug: unique },
-        select: { id: true },
-      });
+      const existing = await this.productRepository.getIdBySlug(unique);
 
       if (!existing || existing.id === excludeId) {
         return unique;
@@ -27,10 +27,7 @@ export class SlugifyGenerator {
     let counter = 2;
 
     while (true) {
-      const existing = await this.prisma.region.findUnique({
-        where: { slug: unique },
-        select: { id: true },
-      });
+      const existing = await this.regionRepository.getIdBySlug(unique);
 
       if (!existing || existing.id === excludeId) {
         return unique;

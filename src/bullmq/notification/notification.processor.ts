@@ -8,10 +8,9 @@ import { LoggerService } from '@/logger/logger.service';
 
 @Processor('notification')
 export class NotificationProcessor extends WorkerHost {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly logger: LoggerService,
-  ) {
+  private readonly logger = new LoggerService(NotificationProcessor.name);
+
+  constructor(private readonly prisma: PrismaService) {
     super();
   }
 

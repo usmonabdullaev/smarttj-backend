@@ -4,11 +4,17 @@ import { AdminReportsController } from '@/modules/admin/reports/reports.controll
 import { AdminReportsService } from '@/modules/admin/reports/reports.service';
 import { AdminReportCron } from '@/modules/admin/reports/reports.cron';
 import { AdminReportsRepository } from './reports.repository';
+import { BaseRepository } from '@/common/repositories';
 import { PdfModule } from '@/pdf/pdf.module';
 
 @Module({
   imports: [PdfModule],
   controllers: [AdminReportsController],
-  providers: [AdminReportsService, AdminReportCron, AdminReportsRepository],
+  providers: [
+    AdminReportsService,
+    AdminReportCron,
+    AdminReportsRepository,
+    BaseRepository,
+  ],
 })
 export class AdminReportsModule {}

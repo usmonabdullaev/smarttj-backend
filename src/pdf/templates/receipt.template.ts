@@ -71,11 +71,6 @@ const PAYMENT_STATUS_COLOR: Record<OrderPaymentStatus, string> = {
   REFUNDED: COLORS.neutral,
 };
 
-/**
- * PICKUP // Самовывоз
-  DELIVERY // Доставка
- */
-
 const TYPE_LABEL: Record<OrderType, string> = {
   PICKUP: 'Самовывоз',
   DELIVERY: 'Доставка',

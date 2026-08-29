@@ -5,7 +5,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 
 @Injectable()
 export class StatisticsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async cards() {
     // Income

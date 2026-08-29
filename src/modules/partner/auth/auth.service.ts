@@ -1,5 +1,4 @@
 import { SmsLogPurpose, UserRole } from '@prisma/client';
-import * as argon2 from 'argon2';
 import {
   BadRequestException,
   ConflictException,
@@ -10,7 +9,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { generateOtp } from '@/modules/auth/utils/generate-otp';
+import { OtpService } from '@/common/services/otp/otp.service';
 import { JwtAuthService } from '@/auth/jwt/jwt-auth.service';
 import { UsersService } from '@/modules/users/users.service';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -31,6 +30,7 @@ export class PartnerAuthService {
     private readonly jwtService: JwtAuthService,
     private readonly authService: AuthService,
     private readonly userService: UsersService,
+    private readonly otpService: OtpService,
   ) {}
 
   async getProfile(sessionId: string) {
@@ -86,9 +86,9 @@ export class PartnerAuthService {
 
     await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
 
-    const code = generateOtp();
+    const code = this.otpService.generateOtp();
 
-    const hash = await argon2.hash(code, { type: argon2.argon2id });
+    const hash = await this.otpService.hash(code);
 
     await this.prisma.authOtp.create({
       data: {
@@ -151,7 +151,7 @@ export class PartnerAuthService {
       );
     }
 
-    const isValid = await argon2.verify(otp.code, dto.code);
+    const isValid = await this.otpService.verify(otp.code, dto.code);
 
     if (!isValid) {
       await this.prisma.authOtp.update({
@@ -239,9 +239,9 @@ export class PartnerAuthService {
 
     await this.prisma.authOtp.deleteMany({ where: { phone: dto.phone } });
 
-    const code = generateOtp();
+    const code = this.otpService.generateOtp();
 
-    const hash = await argon2.hash(code, { type: argon2.argon2id });
+    const hash = await this.otpService.hash(code);
 
     await this.prisma.authOtp.create({
       data: {
@@ -304,7 +304,7 @@ export class PartnerAuthService {
       );
     }
 
-    const isValid = await argon2.verify(otp.code, dto.code);
+    const isValid = await this.otpService.verify(otp.code, dto.code);
 
     if (!isValid) {
       await this.prisma.authOtp.update({

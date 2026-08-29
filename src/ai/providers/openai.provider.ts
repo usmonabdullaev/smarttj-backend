@@ -8,8 +8,9 @@ import { LoggerService } from '@/logger/logger.service';
 @Injectable()
 export class OpenAIProvider {
   private readonly client: OpenAI;
+  private readonly logger = new LoggerService(OpenAIProvider.name);
 
-  constructor(private readonly logger: LoggerService) {
+  constructor() {
     this.client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });

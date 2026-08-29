@@ -8,8 +8,9 @@ import { LoggerService } from '@/logger/logger.service';
 @Injectable()
 export class GeminiProvider {
   private readonly client: GoogleGenAI;
+  private readonly logger = new LoggerService(GeminiProvider.name);
 
-  constructor(private readonly logger: LoggerService) {
+  constructor() {
     this.client = new GoogleGenAI({
       apiKey: process.env.GEMINI_API_KEY,
     });

@@ -8,7 +8,7 @@ export class GetAllRequest {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(999_999_999)
+  @Max(Number.MAX_SAFE_INTEGER)
   page?: number = 1;
 
   @ApiPropertyOptional({ example: 10 })
@@ -16,6 +16,6 @@ export class GetAllRequest {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(500)
+  @Max(1_000)
   limit?: number = 10;
 }
