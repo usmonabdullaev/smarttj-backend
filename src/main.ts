@@ -87,7 +87,7 @@ async function bootstrap() {
       `Server successfully startted in: http://${HOST}:${PORT}, docs: /${PREFIX}`,
       null,
       {
-        save: false,
+        save: true,
       },
     ),
   );
