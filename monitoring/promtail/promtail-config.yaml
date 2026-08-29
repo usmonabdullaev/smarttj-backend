@@ -16,7 +16,7 @@ scrape_configs:
         labels:
           job: nest-app
           log_type: combined
-          path: /var/log/smarttj/combined-*.log
+          __path__: /var/log/smarttj/combined-*.log
 
     pipeline_stages:
       - json:
@@ -40,7 +40,7 @@ scrape_configs:
         labels:
           job: nest-app
           log_type: error
-          path: /var/log/smarttj/error-*.log
+          __path__: /var/log/smarttj/error-*.log
 
     pipeline_stages:
       - json:
