@@ -6,9 +6,6 @@ services:
 
     restart: unless-stopped
 
-    ports:
-      - '3001'
-
     env_file:
       - .env
 
@@ -67,93 +64,9 @@ services:
     networks:
       - smarttj-network
 
-  loki:
-    image: grafana/loki:latest
-    container_name: smarttj-loki
-    restart: unless-stopped
-    user: '10001:10001'
-    command: -config.file=/etc/loki/loki-config.yaml
-
-    ports:
-      - "3100:3100"
-
-    volumes:
-      - ./monitoring/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
-      - loki-data:/loki
-
-    networks:
-      - smarttj-network
-
-    logging:
-      driver: json-file
-      options:
-        max-size: '10m'
-        max-file: '3'
-
-  promtail:
-    image: grafana/promtail:latest
-    container_name: smarttj-promtail
-    restart: unless-stopped
-
-    command: -config.file=/etc/promtail/promtail-config.yaml
-
-    volumes:
-      - ./monitoring/promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml:ro
-      - ./logs:/var/log/smarttj:ro
-      - promtail-positions:/tmp
-
-    networks:
-      - smarttj-network
-
-    depends_on:
-      loki:
-        condition: service_started
-
-    logging:
-      driver: json-file
-      options:
-        max-size: '10m'
-        max-file: '3'
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: smarttj-grafana
-    restart: unless-stopped
-
-    environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
-      GF_USERS_ALLOW_SIGN_UP: 'false'
-      GF_USERS_ALLOW_ORG_CREATE: 'false'
-      GF_AUTH_ANONYMOUS_ENABLED: 'false'
-      GF_AUTH_DISABLE_LOGIN_FORM: 'false'
-      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL}
-      GF_ANALYTICS_REPORTING_ENABLED: 'false'
-      GF_ANALYTICS_CHECK_FOR_UPDATES: 'false'
-
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
-
-    networks:
-      - smarttj-network
-
-    depends_on:
-      loki:
-        condition: service_started
-
-    logging:
-      driver: json-file
-      options:
-        max-size: '10m'
-        max-file: '3'
-
 volumes:
   postgres_data:
   redis-data:
-  loki-data:
-  promtail-positions:
-  grafana-data:
 
 networks:
   smarttj-network:

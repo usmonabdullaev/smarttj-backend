@@ -6,7 +6,7 @@ import { NestFactory } from '@nestjs/core';
 import { LoggerService } from './logger/logger.service';
 import { AppModule } from '@/app.module';
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 const PREFIX = 'api';
 
@@ -87,7 +87,7 @@ async function bootstrap() {
       `Server successfully startted in: http://${HOST}:${PORT}, docs: /${PREFIX}`,
       null,
       {
-        save: true,
+        save: false,
       },
     ),
   );

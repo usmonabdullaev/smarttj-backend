@@ -2,9 +2,12 @@ import { Injectable } from '@nestjs/common';
 import * as os from 'os';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
+import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class ServerService {
+  private readonly logger = new LoggerService(ServerService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async info() {
@@ -42,6 +45,7 @@ export class ServerService {
   }
 
   async status() {
+    this.logger.log('GET Server Status');
     const dbVersion: [
       {
         version: string;

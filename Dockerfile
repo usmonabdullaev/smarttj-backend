@@ -2,7 +2,7 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 RUN npm ci
 
@@ -26,8 +26,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/fonts ./fonts
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder /app/monitoring ./monitoring
 
-EXPOSE 3001
+EXPOSE 3000
 
 CMD ["node", "dist/main.js"]
