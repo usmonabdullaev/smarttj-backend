@@ -41,7 +41,7 @@
     "@nestjs/swagger": "^11.4.6",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
-    "@smarttj/core": "^1.0.1",
+    "@smarttj/core": "^1.1.0",
     "argon2": "^0.45.1",
     "bullmq": "^6.0.11",
     "class-transformer": "^0.5.1",
@@ -95,7 +95,8 @@
   },
   "overrides": {
     "js-yaml": "^5.2.3",
-    "deepmerge-ts": "^8.0.1"
+    "deepmerge-ts": "^8.0.1",
+    "mysql2": "^3.24.3"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -116,13 +117,13 @@
   },
   "allowScripts": {
     "@google/genai@2.16.0": true,
-    "@prisma/engines@7.9.1": true,
     "@swc/core@1.15.47": true,
     "argon2@0.45.1": true,
-    "prisma@7.9.1": true,
     "@scarf/scarf": false,
     "msgpackr-extract": false,
     "protobufjs": false,
-    "unrs-resolver": false
+    "unrs-resolver": false,
+    "@prisma/engines@7.10.0": true,
+    "prisma@7.10.0": true
   }
 }
