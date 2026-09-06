@@ -1,5 +1,6 @@
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { APP_FILTER } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
@@ -8,7 +9,6 @@ import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
 import { PrismaModule } from '@/database/prisma/prisma.module';
 import { DefaultModule } from '@/modules/default.module';
 import { LoggerModule } from '@/logger/logger.module';
-import { BullmqModule } from '@/bullmq/bullmq.module';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 
@@ -16,7 +16,12 @@ import { AppService } from '@/app.service';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] }),
     ScheduleModule.forRoot(),
-    BullmqModule,
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT),
+      },
+    }),
     LoggerModule,
     PrismaModule,
     CloudinaryModule,

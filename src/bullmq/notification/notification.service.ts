@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 
-import { SendRequest } from '@/bullmq/notification/dto/requests/send.request';
+import { SendRequest } from '@/bullmq/notification/dto';
 
 @Injectable()
 export class NotificationService {
@@ -19,7 +19,7 @@ export class NotificationService {
         delay: 5000,
       },
       removeOnComplete: 1000,
-      removeOnFail: 500,
+      removeOnFail: 1000,
     });
   }
 }

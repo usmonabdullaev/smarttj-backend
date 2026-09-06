@@ -22,8 +22,8 @@ export class NotificationsController {
   @Get(':id')
   @ApiOperation({ summary: 'Gen notification detail' })
   @ApiOkResponse({ type: GetOneResponse })
-  async getById(@Param('id') id: string, @GetUser('userId') userId: string) {
-    return await this.notificationsService.getById(id, userId);
+  async getById(@Param('id') id: string) {
+    return await this.notificationsService.getById(id);
   }
 
   @Patch()

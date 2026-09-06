@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import { BrandRepository } from '@/common/repositories';
 import { BrandsRepository } from './brands.repository';
 import { FindQuery } from './dto';
 
 @Injectable()
 export class BrandsService {
-  constructor(private readonly repository: BrandsRepository) {}
+  constructor(
+    private readonly repository: BrandsRepository,
+    private readonly brandRepository: BrandRepository,
+  ) {}
 
   async findAll(query: FindQuery) {
     const page = query.page || 1;
@@ -16,7 +20,7 @@ export class BrandsService {
   }
 
   async findById(id: string) {
-    const brand = await this.repository.findById(id);
+    const brand = await this.brandRepository.findById(id);
 
     if (!brand) {
       throw new NotFoundException({

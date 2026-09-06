@@ -1,3 +1,4 @@
+import { AskRequestProvider, AskRequestPurpose } from '@smarttj/core/ai';
 import { Injectable } from '@nestjs/common';
 import {
   SupportChatStatus,
@@ -9,10 +10,6 @@ import { CreateSupportDto } from '@/modules/support/dto/create-support.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { SUPPORT_PROMPT } from '@/ai/prompts/support.prompt';
 import { AIService } from '@/ai/ai.service';
-import {
-  AskRequestProvider,
-  AskRequestPurpose,
-} from '@/ai/dto/requests/ask.request';
 
 @Injectable()
 export class SupportService {

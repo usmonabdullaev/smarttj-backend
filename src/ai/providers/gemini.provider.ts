@@ -1,8 +1,9 @@
+import { ConfigService } from '@nestjs/config';
+import { AskRequest } from '@smarttj/core/ai';
 import { Injectable } from '@nestjs/common';
 import { GoogleGenAI } from '@google/genai';
 import 'dotenv/config';
 
-import { AskRequest } from '@/ai/dto/requests/ask.request';
 import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
@@ -10,15 +11,17 @@ export class GeminiProvider {
   private readonly client: GoogleGenAI;
   private readonly logger = new LoggerService(GeminiProvider.name);
 
-  constructor() {
+  constructor(private readonly config: ConfigService) {
     this.client = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey: this.config.get('GEMINI_API_KEY'),
     });
   }
 
   async ask(dto: AskRequest) {
     const model =
-      dto.model || process.env.GEMINI_DEFAULT_MODEL || 'gemini-3-flash-preview';
+      dto.model ||
+      this.config.get('GEMINI_DEFAULT_MODEL') ||
+      'gemini-3-flash-preview';
 
     try {
       const result = await this.client.models.generateContent({

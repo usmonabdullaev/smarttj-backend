@@ -1,9 +1,9 @@
+import { AskRequest, AskRequestProvider } from '@smarttj/core/ai';
 import { Injectable } from '@nestjs/common';
 
 import { GeminiProvider } from '@/ai/providers/gemini.provider';
 import { OpenAIProvider } from '@/ai/providers/openai.provider';
 import { GroqProvider } from '@/ai/providers/groq.provider';
-import { AskRequest, AskRequestProvider } from './dto';
 
 @Injectable()
 export class AIService {

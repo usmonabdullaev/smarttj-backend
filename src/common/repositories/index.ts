@@ -7,3 +7,4 @@ export * from './transaction.repository';
 export * from './user.repository';
 export * from './auth-otp.repository';
 export * from './session.repository';
+export * from './brand.repository';

@@ -40,14 +40,6 @@ export class OrdersService {
                     brand: true,
                     model: true,
                     region: true,
-                    reviews: {
-                      take: 10,
-                      include: {
-                        user: {
-                          select: userSelect,
-                        },
-                      },
-                    },
                   },
                 },
                 images: true,
@@ -69,7 +61,31 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        items: true,
+        paymentMethod: true,
+        address: true,
+        items: {
+          include: {
+            productVariant: {
+              include: {
+                product: {
+                  include: {
+                    category: true,
+                    brand: true,
+                    model: true,
+                    region: true,
+                  },
+                },
+                images: true,
+                attributes: {
+                  include: {
+                    attribute: true,
+                    attributeValue: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
@@ -97,14 +113,6 @@ export class OrdersService {
                     brand: true,
                     model: true,
                     region: true,
-                    reviews: {
-                      take: 10,
-                      include: {
-                        user: {
-                          select: userSelect,
-                        },
-                      },
-                    },
                   },
                 },
                 images: true,

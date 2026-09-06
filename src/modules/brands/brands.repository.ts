@@ -18,10 +18,6 @@ export class BrandsRepository {
     });
   }
 
-  findById(id: string) {
-    return this.prisma.brand.findUnique({ where: { id } });
-  }
-
   findBySlug(slug: string) {
     return this.prisma.brand.findUnique({ where: { slug } });
   }

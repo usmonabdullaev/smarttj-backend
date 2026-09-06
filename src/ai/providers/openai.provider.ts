@@ -1,8 +1,9 @@
+import { ConfigService } from '@nestjs/config';
+import { AskRequest } from '@smarttj/core/ai';
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import 'dotenv/config';
 
-import { AskRequest } from '@/ai/dto/requests/ask.request';
 import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
@@ -10,14 +11,15 @@ export class OpenAIProvider {
   private readonly client: OpenAI;
   private readonly logger = new LoggerService(OpenAIProvider.name);
 
-  constructor() {
+  constructor(private readonly config: ConfigService) {
     this.client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: this.config.get('OPENAI_API_KEY'),
     });
   }
 
   async ask(dto: AskRequest) {
-    const model = dto.model || process.env.OPENAI_DEFAULT_MODEL || 'gpt-5.1';
+    const model =
+      dto.model || this.config.get('OPENAI_DEFAULT_MODEL') || 'gpt-5.1';
 
     try {
       const result = await this.client.responses.create({
