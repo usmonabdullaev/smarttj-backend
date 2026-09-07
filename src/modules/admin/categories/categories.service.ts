@@ -1,10 +1,13 @@
+import { Express } from 'express';
 import {
   ConflictException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
+import { AdminCategoriesRepository } from './categories.repository';
 import { CategoryRepository } from '@/common/repositories';
 import { GetAllRequest } from './dto';
 
@@ -13,6 +16,7 @@ export class AdminCategoriesService {
   constructor(
     private readonly cloudinary: CloudinaryService,
     private readonly categoryRepository: CategoryRepository,
+    private readonly repository: AdminCategoriesRepository,
   ) {}
 
   async getAll(query: GetAllRequest) {
@@ -60,6 +64,47 @@ export class AdminCategoriesService {
     }
 
     return category;
+  }
+
+  async uploadIcon(id: string, icon: Express.Multer.File) {
+    const category = await this.categoryRepository.findById(id);
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    const upload = await this.cloudinary.uploadFile({
+      file: icon,
+      folder: 'category',
+    });
+
+    if (!upload) {
+      throw new ServiceUnavailableException('Failed to upload icon');
+    }
+
+    if (category.iconId) {
+      await this.cloudinary.deleteFile(category.iconId);
+    }
+
+    return await this.repository.uploadIcon(
+      id,
+      upload.secure_url,
+      upload.public_id,
+    );
+  }
+
+  async deleteIcon(id: string) {
+    const category = await this.categoryRepository.findById(id);
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    if (category.iconId) {
+      await this.cloudinary.deleteFile(category.iconId);
+    }
+
+    return await this.repository.deleteIcon(id);
   }
 
   async delete(id: string) {
