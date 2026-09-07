@@ -5,6 +5,7 @@ import { NotificationModule } from '@/modules/notifications/notifications.module
 import { StatisticsModule } from '@/modules/statistics/statistics.module';
 import { CategoriesModule } from '@/modules/categories/categories.module';
 import { AttributesModule } from '@/modules/attributes/attributes.module';
+import { ApplicationsModule } from './applications/applications.module';
 import { SessionsModule } from '@/modules/sessions/sessions.module';
 import { ProductsModule } from '@/modules/products/products.module';
 import { TelegramModule } from '@/modules/telegram/telegram.module';
@@ -12,6 +13,7 @@ import { PaymentsModule } from '@/modules/payments/payments.module';
 import { SupportModule } from '@/modules/support/support.module';
 import { RegionsModule } from '@/modules/regions/regions.module';
 import { PartnerModule } from '@/modules/partner/partner.module';
+import { AddressesModule } from './addresses/addresses.module';
 import { BrandsModule } from '@/modules/brands/brands.module';
 import { ModelsModule } from '@/modules/models/models.module';
 import { OrdersModule } from '@/modules/orders/orders.module';
@@ -21,7 +23,6 @@ import { UsersModule } from '@/modules/users/users.module';
 import { AdminModule } from '@/modules/admin/admin.module';
 import { CartsModule } from '@/modules/carts/carts.module';
 import { AuthModule } from '@/modules/auth/auth.module';
-import { AddressesModule } from './addresses/addresses.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { AddressesModule } from './addresses/addresses.module';
     SearchModule,
     PaymentsModule,
     AddressesModule,
+    ApplicationsModule,
   ],
 })
 export class DefaultModule {}
