@@ -1,5 +1,8 @@
+import { Injectable } from '@nestjs/common';
+
 import { ProductRepository, RegionRepository } from '@/common/repositories';
 
+@Injectable()
 export class SlugifyGenerator {
   constructor(
     private readonly productRepository: ProductRepository,
