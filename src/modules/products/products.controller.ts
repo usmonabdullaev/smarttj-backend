@@ -27,11 +27,11 @@ export class ProductsController {
     return await this.productsService.getCategoryProducts(categorySlug, query);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get product' })
+  @Get(':slug')
+  @ApiOperation({ summary: 'Get product by slug' })
   @ApiOkResponse({ type: ProductResponseDto })
   @ApiNotFoundResponse({ type: ApiErrorDto })
-  async getById(@Param('id') id: string) {
-    return await this.productsService.getById(id);
+  async getBySlug(@Param('slug') slug: string) {
+    return await this.productsService.getBySlug(slug);
   }
 }

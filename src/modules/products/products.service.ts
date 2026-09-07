@@ -123,10 +123,10 @@ export class ProductsService {
     };
   }
 
-  async getById(id: string) {
+  async getBySlug(slug: string) {
     const product = await this.prisma.product.findFirst({
       where: {
-        id,
+        slug,
         status: {
           in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
         },
@@ -165,7 +165,7 @@ export class ProductsService {
       throw new NotFoundException({
         message: 'Product not found',
         code: 'PRODUCT_NOT_FOUND',
-        error: id,
+        error: slug,
       });
     }
 
