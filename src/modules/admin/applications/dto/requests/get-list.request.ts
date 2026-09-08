@@ -1,0 +1,27 @@
+import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApplicationStatus } from '@prisma/client';
+import { Type } from 'class-transformer';
+
+export class GetListRequest {
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(Number.MAX_SAFE_INTEGER)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(1_000)
+  limit?: number;
+
+  @ApiPropertyOptional({ enum: ApplicationStatus, example: 'NEW' })
+  @IsOptional()
+  @IsEnum(ApplicationStatus)
+  status?: ApplicationStatus;
+}

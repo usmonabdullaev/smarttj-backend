@@ -22,13 +22,14 @@ import { SearchModule } from '@/modules/search/search.module';
 import { UsersModule } from '@/modules/users/users.module';
 import { AdminModule } from '@/modules/admin/admin.module';
 import { CartsModule } from '@/modules/carts/carts.module';
+import { BannersModule } from './banners/banners.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 
 @Module({
   imports: [
-    BrandsModule,
-    UsersModule,
     AuthModule,
+    UsersModule,
+    BrandsModule,
     ModelsModule,
     StatisticsModule,
     PaymentMethodsModule,
@@ -42,13 +43,14 @@ import { AuthModule } from '@/modules/auth/auth.module';
     CartsModule,
     ServerModule,
     TelegramModule,
-    AdminModule,
-    PartnerModule,
     NotificationModule,
     SearchModule,
     PaymentsModule,
     AddressesModule,
     ApplicationsModule,
+    BannersModule,
+    PartnerModule,
+    AdminModule,
   ],
 })
 export class DefaultModule {}

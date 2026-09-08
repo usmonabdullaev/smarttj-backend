@@ -4,7 +4,7 @@ module.exports = {
       name: 'smarttj-backend',
 
       script: 'dist/main.js',
-      instances: 1,
+      instances: 2,
       exec_mode: 'cluster',
 
       autorestart: true,

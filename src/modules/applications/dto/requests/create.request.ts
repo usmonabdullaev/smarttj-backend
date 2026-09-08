@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsOptional,
@@ -7,6 +7,7 @@ import {
   Length,
 } from 'class-validator';
 
+@ApiSchema({ name: 'ApplicationCreateRequest' })
 export class CreateRequest {
   @ApiProperty({ example: 'John Doe' })
   @IsString()

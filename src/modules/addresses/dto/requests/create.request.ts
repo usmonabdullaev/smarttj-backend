@@ -1,6 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
 
+@ApiSchema({ name: 'AddressCreateRequest' })
 export class CreateRequest {
   @ApiProperty({ example: 'John Doe', description: 'Full name' })
   @IsString()
