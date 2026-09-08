@@ -1,19 +1,20 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
   IsInt,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   IsUUID,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 class UpdateProductVariantAttributesDto {
-  @ApiProperty({ example: 'ID' })
+  @ApiPropertyOptional({ example: 'ID' })
   @IsUUID(7)
   attributeId!: string;
 
@@ -61,6 +62,13 @@ export class UpdateProductVariantDto {
   @Max(Number.MAX_SAFE_INTEGER)
   price?: number;
 
+  @ApiPropertyOptional({ example: 50 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(Number.MAX_SAFE_INTEGER)
+  stock?: number;
+
   @ApiPropertyOptional({
     isArray: true,
     nullable: true,
@@ -68,6 +76,8 @@ export class UpdateProductVariantDto {
   })
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateProductVariantAttributesDto)
   attributes?: UpdateProductVariantAttributesDto[];
 }
 
@@ -99,10 +109,10 @@ export class UpdateProductDto {
   @IsUUID(7)
   regionId?: string;
 
-  @ApiProperty({ example: 'Product title' })
+  @ApiPropertyOptional({ example: 'Product title' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  title!: string;
+  title?: string;
 
   @ApiPropertyOptional({ example: 'Product description' })
   @IsOptional()

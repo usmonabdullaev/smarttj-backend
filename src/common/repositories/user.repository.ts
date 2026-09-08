@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { publicUserSelect, userSelect } from '../selects/user.select';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -54,6 +54,14 @@ export class UserRepository {
       select: publicUserSelect,
       skip,
       take,
+    });
+  }
+
+  update(id: string, data: Prisma.UserUpdateInput) {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      select: userSelect,
     });
   }
 

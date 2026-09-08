@@ -32,6 +32,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import {
   CreateProductDto,
   CreateProductVariantDto,
+  UpdateProductDto,
   UpdateProductVariantDto,
 } from './dto';
 
@@ -47,7 +48,7 @@ export class PartnerProductsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get list' })
+  @ApiOperation({ summary: 'Get list of partner products' })
   async getList(@GetUser('sessionId') sessionId: string) {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
@@ -55,7 +56,7 @@ export class PartnerProductsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get product' })
+  @ApiOperation({ summary: 'Get product by id' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async getById(
     @Param('id') id: string,
@@ -79,26 +80,41 @@ export class PartnerProductsController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Update product' })
-  async update(@Param('id') id: string, @Body() dto: CreateProductDto) {
-    return await this.partnerProductsService.update(id, dto);
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async update(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+    @Body() dto: UpdateProductDto,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.update(id, profile.id, dto);
   }
 
   @Post(':id/variant')
-  @ApiOperation({ summary: 'Create variant' })
+  @ApiOperation({ summary: 'Create variant (with optional attributes)' })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
   async createVariant(
     @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
     @Body() dto: CreateProductVariantDto,
   ) {
-    return await this.partnerProductsService.createVariant(id, dto);
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.createVariant(id, profile.id, dto);
   }
 
   @Put('variant/:id')
-  @ApiOperation({ summary: 'Update variant' })
+  @ApiOperation({ summary: 'Update variant (price, stock, attributes)' })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
   async updateVariant(
     @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
     @Body() dto: UpdateProductVariantDto,
   ) {
-    return await this.partnerProductsService.updateVariant(id, dto);
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.updateVariant(id, profile.id, dto);
   }
 
   @Post(':id/images')
@@ -109,21 +125,21 @@ export class PartnerProductsController {
       properties: {
         images: {
           type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
+          items: { type: 'string', format: 'binary' },
         },
       },
       required: ['images'],
     },
   })
   @UseInterceptors(FilesInterceptor('images'))
-  @ApiOperation({ summary: 'Upload images' })
+  @ApiOperation({ summary: 'Upload images for variant' })
   async uploadImages(
     @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
     @UploadedFiles() images: Express.Multer.File[],
   ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
     const uploads = await this.cloudinary.uploadFiles({
       files: images,
       folder: 'images',
@@ -131,6 +147,7 @@ export class PartnerProductsController {
 
     return await this.partnerProductsService.uploadImages(
       id,
+      profile.id,
       uploads.map((upload, index) => ({
         url: upload.secure_url,
         urlId: upload.public_id,
@@ -140,32 +157,62 @@ export class PartnerProductsController {
   }
 
   @Post(':id/publish')
-  @ApiOperation({ summary: 'Publish product (status=IN_MODERATE)' })
-  async publish(@Param('id') id: string) {
-    return await this.partnerProductsService.publish(id);
+  @ApiOperation({ summary: 'Publish product (status=AUTO_MODERATION)' })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async publish(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.publish(id, profile.id);
   }
 
   @Delete('image/:id')
   @ApiOperation({ summary: 'Delete image' })
-  async deleteImage(@Param('id') id: string) {
-    return await this.partnerProductsService.deleteImage(id);
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async deleteImage(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.deleteImage(id, profile.id);
   }
 
   @Delete('variant/:id')
   @ApiOperation({ summary: 'Delete variant' })
-  async deleteVariant(@Param('id') id: string) {
-    return await this.partnerProductsService.deleteVariant(id);
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async deleteVariant(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.deleteVariant(id, profile.id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Inactive product (status=INACTIVE)' })
-  async inactive(@Param('id') id: string) {
-    return await this.partnerProductsService.inactive(id);
+  @ApiOperation({ summary: 'Set product inactive (status=INACTIVE)' })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async inactive(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.inactive(id, profile.id);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete product (status=DELETED)' })
-  async delete(@Param('id') id: string) {
-    return await this.partnerProductsService.delete(id);
+  @ApiOperation({ summary: 'Delete product (status=DELETED, soft delete)' })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async delete(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.delete(id, profile.id);
   }
 }

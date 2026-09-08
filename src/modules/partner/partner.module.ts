@@ -1,10 +1,19 @@
 import { RouterModule } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
+import { PartnerStatisticsModule } from '@/modules/partner/statistics/statistics.module';
+import { PartnerProfileModule } from '@/modules/partner/profile/profile.module';
 import { PartnerProductsModule } from '@/modules/partner/products/products.module';
+import { PartnerOrdersModule } from '@/modules/partner/orders/orders.module';
 import { PartnerAuthModule } from '@/modules/partner/auth/auth.module';
 
-const PARTNER_MODULES = [PartnerAuthModule, PartnerProductsModule];
+const PARTNER_MODULES = [
+  PartnerAuthModule,
+  PartnerProductsModule,
+  PartnerOrdersModule,
+  PartnerStatisticsModule,
+  PartnerProfileModule,
+];
 
 @Module({
   imports: [

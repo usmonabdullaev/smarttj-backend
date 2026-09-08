@@ -21,6 +21,33 @@ import {
   UploadImagesRequest,
 } from './dto';
 
+/** Статусы товара, видимые партнёру (DELETED = полное удаление, исключается) */
+const VISIBLE_STATUSES = Object.values(ProductStatus).filter(
+  (s) => s !== ProductStatus.DELETED,
+);
+
+/** Общий include для вариантов */
+const VARIANT_INCLUDE = {
+  images: true,
+  attributes: {
+    include: {
+      attribute: true,
+      attributeValue: true,
+    },
+  },
+} as const;
+
+/** Общий include для продукта */
+const PRODUCT_INCLUDE = {
+  category: true,
+  brand: true,
+  model: true,
+  region: true,
+  variants: {
+    include: VARIANT_INCLUDE,
+  },
+} as const;
+
 @Injectable()
 export class PartnerProductsService {
   constructor(
@@ -34,34 +61,22 @@ export class PartnerProductsService {
     const products = await this.prisma.product.findMany({
       where: {
         partnerId: profileId,
+        status: { in: VISIBLE_STATUSES },
       },
-      include: {
-        category: true,
-        brand: true,
-        model: true,
-        region: true,
-        variants: {
-          include: {
-            images: true,
-            attributes: {
-              include: {
-                attribute: true,
-                attributeValue: true,
-              },
-            },
-          },
-        },
-      },
+      include: PRODUCT_INCLUDE,
     });
 
-    return {
-      data: products,
-    };
+    return { data: products };
   }
 
   async getById(id: string, profileId: string) {
     const product = await this.prisma.product.findFirst({
-      where: { id, partnerId: profileId },
+      where: {
+        id,
+        partnerId: profileId,
+        status: { in: VISIBLE_STATUSES },
+      },
+      include: PRODUCT_INCLUDE,
     });
 
     if (!product) {
@@ -134,13 +149,29 @@ export class PartnerProductsService {
         description: dto.description,
         slug,
       },
+      include: PRODUCT_INCLUDE,
     });
   }
 
-  async update(id: string, dto: UpdateProductDto) {
+  async update(id: string, partnerId: string, dto: UpdateProductDto) {
+    // Убеждаемся что продукт принадлежит партнёру и не удалён
+    const existing = await this.prisma.product.findFirst({
+      where: { id, partnerId, status: { in: VISIBLE_STATUSES } },
+      select: { id: true, slug: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException({
+        message: 'Product not found',
+        code: 'PRODUCT_NOT_FOUND',
+        error: id,
+      });
+    }
+
     if (dto.categoryId) {
       const category = await this.prisma.category.findUnique({
         where: { id: dto.categoryId },
+        select: { id: true },
       });
 
       if (!category) {
@@ -151,6 +182,7 @@ export class PartnerProductsService {
     if (dto.brandId) {
       const brand = await this.prisma.brand.findUnique({
         where: { id: dto.brandId },
+        select: { id: true },
       });
 
       if (!brand) {
@@ -161,6 +193,7 @@ export class PartnerProductsService {
     if (dto.modelId) {
       const model = await this.prisma.model.findUnique({
         where: { id: dto.modelId },
+        select: { id: true },
       });
 
       if (!model) {
@@ -171,6 +204,7 @@ export class PartnerProductsService {
     if (dto.regionId) {
       const region = await this.prisma.region.findUnique({
         where: { id: dto.regionId },
+        select: { id: true },
       });
 
       if (!region) {
@@ -178,7 +212,11 @@ export class PartnerProductsService {
       }
     }
 
-    const slug = await this.slugify.product(dto.slug || dto.title, id);
+    // Пересчитываем slug только если передан новый title или slug
+    const slugSource = dto.slug || dto.title;
+    const slug = slugSource
+      ? await this.slugify.product(slugSource, id)
+      : existing.slug;
 
     return await this.prisma.product.update({
       where: { id },
@@ -192,16 +230,29 @@ export class PartnerProductsService {
         description: dto.description,
         slug,
       },
+      include: PRODUCT_INCLUDE,
     });
   }
 
-  async createVariant(productId: string, dto: CreateProductVariantDto) {
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
+  async createVariant(
+    productId: string,
+    partnerId: string,
+    dto: CreateProductVariantDto,
+  ) {
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id: productId,
+        partnerId,
+        status: { in: VISIBLE_STATUSES },
+      },
     });
 
     if (!product) {
-      throw new NotFoundException();
+      throw new NotFoundException({
+        message: 'Product not found',
+        code: 'PRODUCT_NOT_FOUND',
+        error: productId,
+      });
     }
 
     return this.prisma.productVariant.create({
@@ -209,55 +260,106 @@ export class PartnerProductsService {
         productId,
         price: dto.price,
         stock: dto.stock,
+        attributes: dto.attributes?.length
+          ? {
+              createMany: {
+                data: dto.attributes.map((attr) => ({
+                  attributeId: attr.attributeId,
+                  attributeValueId: attr.attributeValueId,
+                  valueString: attr.valueString,
+                  valueNumber: attr.valueNumber,
+                  valueBoolean: attr.valueBoolean,
+                  label: attr.label,
+                })),
+              },
+            }
+          : undefined,
       },
+      include: VARIANT_INCLUDE,
     });
   }
 
-  async updateVariant(id: string, dto: UpdateProductVariantDto) {
-    const variant = await this.prisma.productVariant.findUnique({
-      where: { id },
+  async updateVariant(
+    id: string,
+    partnerId: string,
+    dto: UpdateProductVariantDto,
+  ) {
+    // Проверяем что вариант принадлежит продукту этого партнёра
+    const variant = await this.prisma.productVariant.findFirst({
+      where: {
+        id,
+        product: {
+          partnerId,
+          status: { in: VISIBLE_STATUSES },
+        },
+      },
     });
 
     if (!variant) {
-      throw new NotFoundException();
+      throw new NotFoundException({
+        message: 'Variant not found',
+        code: 'VARIANT_NOT_FOUND',
+        error: id,
+      });
     }
 
-    await this.prisma.productAttribute.deleteMany({
-      where: { productVariantId: id },
-    });
+    // Удаляем старые атрибуты только если переданы новые
+    if (dto.attributes !== undefined) {
+      await this.prisma.productAttribute.deleteMany({
+        where: { productVariantId: id },
+      });
+    }
 
     return await this.prisma.productVariant.update({
       where: { id },
       data: {
         price: dto.price,
-        attributes: {
-          createMany: {
-            data: (dto.attributes || [])?.map((i) => ({
-              attributeId: i.attributeId,
-              attributeValueId: i.attributeValueId,
-              valueString: i.valueString,
-              valueNumber: i.valueNumber,
-              valueBoolean: i.valueBoolean,
-              label: i.label,
-            })),
+        stock: dto.stock,
+        ...(dto.attributes !== undefined && {
+          attributes: {
+            createMany: {
+              data: dto.attributes.map((attr) => ({
+                attributeId: attr.attributeId,
+                attributeValueId: attr.attributeValueId,
+                valueString: attr.valueString,
+                valueNumber: attr.valueNumber,
+                valueBoolean: attr.valueBoolean,
+                label: attr.label,
+              })),
+            },
           },
-        },
+        }),
       },
+      include: VARIANT_INCLUDE,
     });
   }
 
-  async uploadImages(id: string, images: UploadImagesRequest[]) {
-    const productVariant = await this.prisma.productVariant.findUnique({
-      where: { id },
+  async uploadImages(
+    variantId: string,
+    partnerId: string,
+    images: UploadImagesRequest[],
+  ) {
+    const productVariant = await this.prisma.productVariant.findFirst({
+      where: {
+        id: variantId,
+        product: {
+          partnerId,
+          status: { in: VISIBLE_STATUSES },
+        },
+      },
     });
 
     if (!productVariant) {
-      throw new NotFoundException();
+      throw new NotFoundException({
+        message: 'Variant not found',
+        code: 'VARIANT_NOT_FOUND',
+        error: variantId,
+      });
     }
 
     return await this.prisma.image.createMany({
       data: images.map((image) => ({
-        productVariantId: id,
+        productVariantId: variantId,
         url: image.url,
         urlId: image.urlId,
         order: image.order,
@@ -265,15 +367,17 @@ export class PartnerProductsService {
     });
   }
 
-  async publish(id: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
+  async publish(id: string, partnerId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id,
+        partnerId,
+        status: { in: VISIBLE_STATUSES },
+      },
       include: {
         variants: {
           include: {
-            _count: {
-              select: { images: true },
-            },
+            _count: { select: { images: true } },
             attributes: true,
           },
         },
@@ -281,19 +385,39 @@ export class PartnerProductsService {
     });
 
     if (!product) {
-      throw new NotFoundException();
+      throw new NotFoundException({
+        message: 'Product not found',
+        code: 'PRODUCT_NOT_FOUND',
+        error: id,
+      });
     }
 
     if (!product.categoryId) {
-      throw new BadRequestException();
+      throw new BadRequestException({
+        message: 'Category is required to publish',
+        code: 'CATEGORY_REQUIRED',
+      });
     }
 
     if (!product.brandId) {
-      throw new BadRequestException();
+      throw new BadRequestException({
+        message: 'Brand is required to publish',
+        code: 'BRAND_REQUIRED',
+      });
     }
 
     if (!product.regionId) {
-      throw new BadRequestException();
+      throw new BadRequestException({
+        message: 'Region is required to publish',
+        code: 'REGION_REQUIRED',
+      });
+    }
+
+    if (product.variants.length === 0) {
+      throw new BadRequestException({
+        message: 'At least one variant is required to publish',
+        code: 'VARIANTS_REQUIRED',
+      });
     }
 
     const requiredAttributes = await this.prisma.attribute.findMany({
@@ -301,8 +425,7 @@ export class PartnerProductsService {
       select: { id: true },
     });
 
-    for (let i = 0; i < product.variants.length; i++) {
-      const variant = product.variants[i];
+    for (const variant of product.variants) {
       this.checkVariant(variant, requiredAttributes);
     }
 
@@ -314,11 +437,22 @@ export class PartnerProductsService {
     });
   }
 
-  async deleteImage(id: string) {
-    const image = await this.prisma.image.findUnique({ where: { id } });
+  async deleteImage(id: string, partnerId: string) {
+    const image = await this.prisma.image.findFirst({
+      where: {
+        id,
+        productVariant: {
+          product: { partnerId },
+        },
+      },
+    });
 
     if (!image) {
-      throw new NotFoundException();
+      throw new NotFoundException({
+        message: 'Image not found',
+        code: 'IMAGE_NOT_FOUND',
+        error: id,
+      });
     }
 
     await this.cloudinary.deleteFile(image.urlId);
@@ -326,16 +460,21 @@ export class PartnerProductsService {
     return await this.prisma.image.delete({ where: { id } });
   }
 
-  async deleteVariant(id: string) {
-    const variant = await this.prisma.productVariant.findUnique({
-      where: { id },
-      include: {
-        images: true,
+  async deleteVariant(id: string, partnerId: string) {
+    const variant = await this.prisma.productVariant.findFirst({
+      where: {
+        id,
+        product: { partnerId },
       },
+      include: { images: true },
     });
 
     if (!variant) {
-      throw new NotFoundException();
+      throw new NotFoundException({
+        message: 'Variant not found',
+        code: 'VARIANT_NOT_FOUND',
+        error: id,
+      });
     }
 
     if (variant.images.length) {
@@ -345,18 +484,46 @@ export class PartnerProductsService {
     return await this.prisma.productVariant.delete({ where: { id } });
   }
 
-  async inactive(id: string) {
+  async inactive(id: string, partnerId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id,
+        partnerId,
+        status: { in: VISIBLE_STATUSES },
+      },
+      select: { id: true },
+    });
+
+    if (!product) {
+      throw new NotFoundException({
+        message: 'Product not found',
+        code: 'PRODUCT_NOT_FOUND',
+        error: id,
+      });
+    }
+
     return await this.prisma.product.update({
       where: { id },
       data: { status: ProductStatus.INACTIVE },
     });
   }
 
-  async delete(id: string) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
+  async delete(id: string, partnerId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id,
+        partnerId,
+        status: { in: VISIBLE_STATUSES },
+      },
+      select: { id: true },
+    });
 
     if (!product) {
-      throw new NotFoundException();
+      throw new NotFoundException({
+        message: 'Product not found',
+        code: 'PRODUCT_NOT_FOUND',
+        error: id,
+      });
     }
 
     return await this.prisma.product.update({
@@ -373,7 +540,11 @@ export class PartnerProductsService {
     requiredAttributes: { id: string }[],
   ) {
     if (variant._count.images === 0) {
-      throw new BadRequestException('Images not found for variant');
+      throw new BadRequestException({
+        message: 'Images not found for variant',
+        code: 'IMAGES_REQUIRED',
+        error: variant.id,
+      });
     }
 
     const providedIds = new Set(
@@ -385,7 +556,11 @@ export class PartnerProductsService {
     );
 
     if (missing.length > 0) {
-      throw new BadRequestException('Required attributes are missing');
+      throw new BadRequestException({
+        message: 'Required attributes are missing',
+        code: 'ATTRIBUTES_REQUIRED',
+        error: { variantId: variant.id, missing: missing.map((a) => a.id) },
+      });
     }
 
     return variant;
