@@ -1,6 +1,7 @@
 import { RouterModule } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
+import { PartnerTelegramModule } from '@/modules/partner/telegram/partner-telegram.module';
 import { PartnerStatisticsModule } from '@/modules/partner/statistics/statistics.module';
 import { PartnerProfileModule } from '@/modules/partner/profile/profile.module';
 import { PartnerProductsModule } from '@/modules/partner/products/products.module';
@@ -13,6 +14,7 @@ const PARTNER_MODULES = [
   PartnerOrdersModule,
   PartnerStatisticsModule,
   PartnerProfileModule,
+  PartnerTelegramModule,
 ];
 
 @Module({

@@ -14,6 +14,7 @@ import {
 import { CheckoutOrderDto } from '@/modules/orders/dto/checkout-order.dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { userSelect } from '@/common/selects/user.select';
+import { TelegramService } from '@/modules/telegram/telegram.service';
 import { ReceiptTemplate } from '@/pdf/templates';
 import { PdfService } from '@/pdf/pdf.service';
 
@@ -22,6 +23,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pdfService: PdfService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   async getList(userId: string) {
@@ -131,7 +133,7 @@ export class OrdersService {
   }
 
   async checkout(dto: CheckoutOrderDto, userId: string) {
-    return await this.prisma.$transaction(async (tx) => {
+    const order = await this.prisma.$transaction(async (tx) => {
       const cart = await tx.cart.findUnique({
         where: { userId },
         include: {
@@ -235,6 +237,11 @@ export class OrdersService {
 
       return order;
     });
+
+    // Отправляем уведомления партнёрам в Telegram (асинхронно)
+    void this.telegramService.notifyPartnersAboutNewOrder(order.id);
+
+    return order;
   }
 
   async delete(orderId: string, userId: string) {

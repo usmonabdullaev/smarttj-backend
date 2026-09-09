@@ -162,7 +162,7 @@ export class ProductModerationProcessor extends WorkerHost {
           prompt,
           purpose: AskRequestPurpose.PRODUCT_MODERATE,
           temperature: 0.2,
-          provider: AskRequestProvider.GROQ,
+          provider: AskRequestProvider.GEMINI,
         });
 
         if (ok === undefined || !text) {

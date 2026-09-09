@@ -47,7 +47,11 @@ jobs:
             git fetch origin 
             git reset --hard origin/main
 
-            docker compose build --no-cache
+            docker network inspect smarttj-network >/dev/null 2>&1 || docker network create smarttj-network
+
+            docker compose build
             docker compose up -d --scale backend=2
 
             docker compose exec -T backend npm run prisma:deploy
+
+            docker image prune -f
