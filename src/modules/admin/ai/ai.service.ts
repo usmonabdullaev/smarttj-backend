@@ -48,7 +48,7 @@ export class AdminAIService {
       purpose: AskRequestPurpose.ANALYTICS,
       prompt,
       temperature: 0.2,
-      provider: AskRequestProvider.GROQ,
+      provider: AskRequestProvider.GEMINI,
     });
 
     return { text: aiResult.text };
