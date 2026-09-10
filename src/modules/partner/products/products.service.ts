@@ -135,7 +135,7 @@ export class PartnerProductsService {
       }
     }
 
-    const slug = await this.slugify.product(dto.slug || dto.title);
+    const slug = await this.slugify.product({ slug: dto.slug || dto.title });
 
     return await this.prisma.product.create({
       data: {
@@ -214,8 +214,12 @@ export class PartnerProductsService {
 
     // Пересчитываем slug только если передан новый title или slug
     const slugSource = dto.slug || dto.title;
+
     const slug = slugSource
-      ? await this.slugify.product(slugSource, id)
+      ? await this.slugify.product({
+          slug: slugSource,
+          excludeId: id,
+        })
       : existing.slug;
 
     return await this.prisma.product.update({

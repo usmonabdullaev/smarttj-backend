@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
 
-import { ProductRepository, RegionRepository } from '@/common/repositories';
 import { SlugifyGenerator } from './slugify.generator';
 import { SlugifyService } from './slugify.service';
+import {
+  BlogRepository,
+  ProductRepository,
+  RegionRepository,
+} from '@/common/repositories';
 
 @Module({
   providers: [
@@ -10,6 +14,7 @@ import { SlugifyService } from './slugify.service';
     SlugifyGenerator,
     ProductRepository,
     RegionRepository,
+    BlogRepository,
   ],
   exports: [SlugifyService],
 })

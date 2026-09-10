@@ -1,5 +1,5 @@
 import { PassportModule } from '@nestjs/passport';
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
 import { PasswordModule } from '@/common/services/password/password.module';
@@ -16,6 +16,7 @@ import {
   UserRepository,
 } from '@/common/repositories';
 
+@Global()
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),

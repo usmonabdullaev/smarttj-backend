@@ -1,39 +1,29 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProductStatus } from '@prisma/client';
+import { Prisma, ProductStatus } from '@prisma/client';
 
 import { ProductRepository } from '@/common/repositories';
+import { GetAllRequest } from './dto';
 
 @Injectable()
 export class AdminProductsService {
   constructor(private readonly productRepository: ProductRepository) {}
 
-  async getAll(page: number = 1, limit: number = 10) {
+  async getAll(query: GetAllRequest) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
     const skip = (page - 1) * limit;
 
-    const [products, total] = await Promise.all([
-      this.productRepository.getAllWithInclude(skip, limit),
-      this.productRepository.count(),
-    ]);
-
-    return {
-      data: products,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+    const where: Prisma.ProductWhereInput = {
+      title: {
+        contains: query.q,
+        mode: 'insensitive',
       },
+      status: query.status,
     };
-  }
-
-  async getManualModeration(page: number = 1, limit: number = 10) {
-    const skip = (page - 1) * limit;
 
     const [products, total] = await Promise.all([
-      this.productRepository.getAllWithInclude(skip, limit, {
-        status: ProductStatus.MANUAL_MODERATION,
-      }),
-      this.productRepository.count({ status: ProductStatus.MANUAL_MODERATION }),
+      this.productRepository.getAllWithInclude(skip, limit, where),
+      this.productRepository.count(where),
     ]);
 
     return {

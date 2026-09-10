@@ -1,3 +1,5 @@
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 import { Module } from '@nestjs/common';
 
 import { PartnerAuthController } from '@/modules/partner/auth/auth.controller';
@@ -9,9 +11,21 @@ import { AuthModule } from '@/modules/auth/auth.module';
 import { SmsModule } from '@/sms/sms.module';
 
 @Module({
-  imports: [AuthModule, SmsModule, JwtAuthModule, OtpModule, UsersModule],
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '30d' },
+    }),
+    AuthModule,
+    SmsModule,
+    JwtAuthModule,
+    OtpModule,
+    UsersModule,
+  ],
   controllers: [PartnerAuthController],
   providers: [PartnerAuthService],
-  exports: [PartnerAuthService],
+  exports: [PartnerAuthService, PassportModule],
 })
 export class PartnerAuthModule {}

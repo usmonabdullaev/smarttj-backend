@@ -4,7 +4,6 @@ import {
   Controller,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Query,
   UseGuards,
@@ -14,6 +13,7 @@ import { AdminProductsService } from '@/modules/admin/products/products.service'
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
+import { GetAllRequest } from './dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.SYSADMIN, UserRole.ADMIN)
@@ -24,24 +24,12 @@ export class AdminProductsController {
 
   @Get()
   @ApiOperation({ summary: 'Get products' })
-  async getAll(
-    @Query('page', ParseIntPipe) page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-  ) {
-    return await this.adminProductsService.getAll(page, limit);
+  async getAll(@Query() query: GetAllRequest) {
+    return await this.adminProductsService.getAll(query);
   }
 
-  @Get('moderation/manual')
-  @ApiOperation({ summary: 'Get in manual moderation products' })
-  async getManualModeration(
-    @Query('page', ParseIntPipe) page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-  ) {
-    return await this.adminProductsService.getManualModeration(page, limit);
-  }
-
-  @Get('single/:id')
-  @ApiOperation({ summary: 'Get single product' })
+  @Get(':id')
+  @ApiOperation({ summary: 'Get product by ID' })
   async getById(@Param('id') id: string) {
     return await this.adminProductsService.getById(id);
   }

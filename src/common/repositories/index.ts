@@ -11,3 +11,4 @@ export * from './session.repository';
 export * from './brand.repository';
 export * from './banner.repository';
 export * from './partner.repository';
+export * from './blog.repository';

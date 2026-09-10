@@ -9,6 +9,7 @@ import { AdminReportsModule } from '@/modules/admin/reports/reports.module';
 import { AdminUsersModule } from '@/modules/admin/users/users.module';
 import { AdminBannersModule } from './banners/banners.module';
 import { AdminAIModule } from '@/modules/admin/ai/ai.module';
+import { AdminBlogsModule } from './blogs/blogs.module';
 
 const ADMIN_MODULES = [
   AdminAIModule,
@@ -19,6 +20,7 @@ const ADMIN_MODULES = [
   AdminCategoriesModule,
   AdminApplicationsModule,
   AdminBannersModule,
+  AdminBlogsModule,
 ];
 
 @Module({

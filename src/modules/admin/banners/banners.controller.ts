@@ -1,5 +1,6 @@
-import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UserRole } from '@prisma/client';
 import {
   Body,
   Controller,
@@ -10,12 +11,19 @@ import {
   Put,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 
 import { CreateRequest, GetListRequest, UpdateRequest } from './dto';
+import { Roles } from '@/common/decorators/roles.decorator';
 import { AdminBannersService } from './banners.service';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@ApiBearerAuth()
 @Controller('banners')
 export class AdminBannersController {
   constructor(private readonly service: AdminBannersService) {}
