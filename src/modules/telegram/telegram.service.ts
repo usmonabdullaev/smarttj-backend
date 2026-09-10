@@ -9,10 +9,11 @@ import {
   Prisma,
 } from '@prisma/client';
 
-import { PrismaService } from '@/database/prisma/prisma.service';
-import { LoggerService } from '@/logger/logger.service';
-import { TelegramCodeStore } from './telegram-code.store';
+import { NotificationTelegramService } from '@/bullmq/notification-telegram/notification-telegram.service';
 import { ConnectTelegramDto, UpdateTelegramOrderStatusDto } from './dto';
+import { PrismaService } from '@/database/prisma/prisma.service';
+import { TelegramCodeStore } from './telegram-code.store';
+import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class TelegramService {
@@ -21,6 +22,7 @@ export class TelegramService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly codeStore: TelegramCodeStore,
+    private readonly notificationTelegram: NotificationTelegramService,
   ) {}
 
   /**
@@ -384,29 +386,25 @@ export class TelegramService {
   /**
    * Отправить уведомление партнёрам в Telegram о новом заказе
    */
-  async notifyPartnersAboutNewOrder(orderId: string): Promise<void> {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-
-    try {
-      const order = await this.prisma.order.findUnique({
-        where: { id: orderId },
-        include: {
-          user: {
-            select: { name: true, phone: true },
-          },
-          address: true,
-          paymentMethod: true,
-          items: {
-            include: {
-              productVariant: {
-                include: {
-                  product: {
-                    include: {
-                      partner: {
-                        include: {
-                          user: {
-                            select: { id: true, telegramId: true },
-                          },
+  async notifyPartnersAboutNewOrder(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        user: {
+          select: { name: true, phone: true },
+        },
+        address: true,
+        paymentMethod: true,
+        items: {
+          include: {
+            productVariant: {
+              include: {
+                product: {
+                  include: {
+                    partner: {
+                      include: {
+                        user: {
+                          select: { id: true, telegramId: true },
                         },
                       },
                     },
@@ -416,139 +414,86 @@ export class TelegramService {
             },
           },
         },
-      });
+      },
+    });
 
-      if (!order || !order.items.length) {
-        return;
+    if (!order || !order.items.length) {
+      return;
+    }
+
+    // Группируем позиции заказа по партнёрам
+    const partnerGroups = new Map<
+      string,
+      {
+        partnerTitle: string;
+        telegramId?: string;
+        items: Array<{ title: string; quantity: number; price: number }>;
       }
+    >();
 
-      // Группируем позиции заказа по партнёрам
-      const partnerGroups = new Map<
-        string,
-        {
-          partnerTitle: string;
-          telegramId?: string;
-          items: Array<{ title: string; quantity: number; price: number }>;
-        }
-      >();
+    for (const item of order.items) {
+      const partner = item.productVariant?.product?.partner;
+      if (!partner) continue;
 
-      for (const item of order.items) {
-        const partner = item.productVariant?.product?.partner;
-        if (!partner) continue;
-
-        const partnerId = partner.id;
-        if (!partnerGroups.has(partnerId)) {
-          partnerGroups.set(partnerId, {
-            partnerTitle: partner.title,
-            telegramId: partner.user?.telegramId || undefined,
-            items: [],
-          });
-        }
-
-        partnerGroups.get(partnerId)!.items.push({
-          title: item.productVariant?.product?.title || 'Товар',
-          quantity: item.quantity,
-          price: item.price,
+      const partnerId = partner.id;
+      if (!partnerGroups.has(partnerId)) {
+        partnerGroups.set(partnerId, {
+          partnerTitle: partner.title,
+          telegramId: partner.user?.telegramId || undefined,
+          items: [],
         });
       }
 
-      // Отправляем каждому партнёру, у которого подключен Telegram
-      for (const [partnerId, group] of partnerGroups.entries()) {
-        if (!group.telegramId) {
-          continue;
-        }
-
-        const partnerTotal = group.items.reduce(
-          (sum, i) => sum + i.price * i.quantity,
-          0,
-        );
-
-        const shortOrderId = order.id.slice(0, 8);
-        const orderTypeLabel =
-          order.type === 'DELIVERY' ? '🚚 Доставка' : '🏬 Самовывоз';
-        const addressText = order.address?.address || 'Не указан';
-        const customerName = order.user?.name || 'Покупатель';
-        const customerPhone = order.user?.phone || 'Не указан';
-
-        const itemsList = group.items
-          .map(
-            (i, idx) =>
-              `${idx + 1}. <b>${this.escapeHtml(i.title)}</b> — ${i.quantity} шт. × ${i.price} TJS`,
-          )
-          .join('\n');
-
-        const messageText =
-          `🛒 <b>Новый заказ #${shortOrderId}</b>\n\n` +
-          `Товары вашего магазина (<b>${this.escapeHtml(group.partnerTitle)}</b>):\n` +
-          `${itemsList}\n\n` +
-          `💰 <b>Итого к оплате:</b> ${partnerTotal} TJS\n` +
-          `Способ оплаты: <i>${this.escapeHtml(order.paymentMethod?.name || 'Стандартный')}</i>\n` +
-          `${orderTypeLabel}: <code>${this.escapeHtml(addressText)}</code>\n` +
-          `👤 Клиент: ${this.escapeHtml(customerName)} (<code>${this.escapeHtml(customerPhone)}</code>)\n` +
-          (order.comment
-            ? `📝 Примечание: <i>${this.escapeHtml(order.comment)}</i>\n`
-            : '') +
-          `\n⏱ <i>Заказ ожидает обработки!</i>`;
-
-        if (botToken) {
-          await this.sendTelegramApiMessage(group.telegramId, messageText, {
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: '📦 Открыть заказ',
-                    callback_data: `order_${order.id}`,
-                  },
-                ],
-              ],
-            },
-          });
-        } else {
-          this.logger.log(
-            `TELEGRAM_BOT_TOKEN not set. Notification for partner ${partnerId} (chat ${group.telegramId}) simulated:\n${messageText}`,
-          );
-        }
-      }
-    } catch (error: any) {
-      this.logger.error(
-        `Failed to send Telegram order notification for order ${orderId}: ${error?.message}`,
-        error?.stack,
-      );
+      partnerGroups.get(partnerId)!.items.push({
+        title: item.productVariant?.product?.title || 'Товар',
+        quantity: item.quantity,
+        price: item.price,
+      });
     }
-  }
 
-  /**
-   * Отправка сообщения через Telegram Bot API
-   */
-  private async sendTelegramApiMessage(
-    chatId: string,
-    text: string,
-    extra: Record<string, any> = {},
-  ): Promise<void> {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    if (!token) return;
+    // Отправляем каждому партнёру, у которого подключен Telegram
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [_, group] of partnerGroups.entries()) {
+      if (!group.telegramId) {
+        continue;
+      }
 
-    try {
-      const response = await fetch(
-        `https://api.telegram.org/bot${token}/sendMessage`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text,
-            parse_mode: 'HTML',
-            ...extra,
-          }),
-        },
+      const partnerTotal = group.items.reduce(
+        (sum, i) => sum + i.price * i.quantity,
+        0,
       );
 
-      if (!response.ok) {
-        const data = await response.text();
-        this.logger.warn(`Telegram Bot API sendMessage failed: ${data}`);
-      }
-    } catch (e: any) {
-      this.logger.error(`Error sending message to Telegram: ${e.message}`);
+      const shortOrderId = order.id.slice(0, 8);
+      const orderTypeLabel =
+        order.type === 'DELIVERY' ? '🚚 Доставка' : '🏬 Самовывоз';
+      const addressText = order.address?.address || 'Не указан';
+      const customerName = order.user?.name || 'Покупатель';
+      const customerPhone = order.user?.phone || 'Не указан';
+
+      const itemsList = group.items
+        .map(
+          (i, idx) =>
+            `${idx + 1}. <b>${this.escapeHtml(i.title)}</b> — ${i.quantity} шт. × ${i.price} TJS`,
+        )
+        .join('\n');
+
+      const messageText =
+        `🛒 <b>Новый заказ #${shortOrderId}</b>\n\n` +
+        `Товары вашего магазина (<b>${this.escapeHtml(group.partnerTitle)}</b>):\n` +
+        `${itemsList}\n\n` +
+        `💰 <b>Итого к оплате:</b> ${partnerTotal} TJS\n` +
+        `Способ оплаты: <i>${this.escapeHtml(order.paymentMethod?.name || 'Стандартный')}</i>\n` +
+        `${orderTypeLabel}: <code>${this.escapeHtml(addressText)}</code>\n` +
+        `👤 Клиент: ${this.escapeHtml(customerName)} (<code>${this.escapeHtml(customerPhone)}</code>)\n` +
+        (order.comment
+          ? `📝 Примечание: <i>${this.escapeHtml(order.comment)}</i>\n`
+          : '') +
+        `\n⏱ <i>Заказ ожидает обработки!</i>`;
+
+      await this.notificationTelegram.send({
+        telegramId: group.telegramId,
+        message: messageText,
+      });
     }
   }
 

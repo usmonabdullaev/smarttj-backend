@@ -228,7 +228,7 @@ Redis используется как бэкенд для очередей.
 | Google Gemini | AI                          | `GEMINI_API_KEY`, `GEMINI_DEFAULT_MODEL`                               |
 | OpenAI        | AI                          | `OPENAI_API_KEY`, `OPENAI_DEFAULT_MODEL`                               |
 | Groq          | AI                          | `GROQ_API_KEY`, `GROQ_DEFAULT_MODEL`                                   |
-| Telegram Bot  | Уведомления и бот заказов   | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_SECRET`   |
+| Telegram Bot  | Уведомления и бот заказов   | `TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_SECRET`   |
 
 ---
 
