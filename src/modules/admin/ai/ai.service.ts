@@ -1,20 +1,29 @@
 import { AskRequestProvider, AskRequestPurpose } from '@smarttj/core/ai';
 import { TransactionStatus } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
-import { ANALYTICS_PROMPT } from '@/ai/prompts/analytics.prompt';
+import { HttpClientService } from '@/infra/http-client/http-client.service';
 import { TransactionRepository } from '@/common/repositories';
 import { OrderRepository } from '@/common/repositories';
-import { AIService } from '@/ai/ai.service';
 import { AnalyzeRequestDto } from './dto';
+import {
+  ANALYTICS_PROMPT,
+  analyticsParser,
+} from '@/ai/prompts/analytics.prompt';
 
 @Injectable()
 export class AdminAIService {
+  private readonly aiServiceUrl: string;
+
   constructor(
-    private readonly aiService: AIService,
     private readonly orderRepository: OrderRepository,
     private readonly transactionRepository: TransactionRepository,
-  ) {}
+    private readonly httpClient: HttpClientService,
+    private readonly config: ConfigService,
+  ) {
+    this.aiServiceUrl = this.config.getOrThrow('AI_SERVICE_URL');
+  }
 
   async analyze(dto: AnalyzeRequestDto) {
     const days = dto.periodDays ?? 30;
@@ -43,15 +52,24 @@ export class AdminAIService {
 Сделай краткий бизнес-анализ.
 `;
 
-    const aiResult = await this.aiService.ask({
-      context: ANALYTICS_PROMPT,
-      purpose: AskRequestPurpose.ANALYTICS,
-      prompt,
-      temperature: 0.2,
-      provider: AskRequestProvider.GEMINI,
-    });
+    const response = await this.httpClient.post<{ data: string }>(
+      'ai-service',
+      `${this.aiServiceUrl}/ask`,
+      {
+        context: ANALYTICS_PROMPT,
+        purpose: AskRequestPurpose.ANALYTICS,
+        prompt,
+        temperature: 0.2,
+        provider: AskRequestProvider.GEMINI,
+      },
+      {
+        timeout: 20000,
+      },
+    );
 
-    return { text: aiResult.text };
+    const result = analyticsParser(response.data);
+
+    return result;
   }
 
   private async getStats(from: Date, to: Date) {

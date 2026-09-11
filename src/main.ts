@@ -84,7 +84,7 @@ async function bootstrap() {
 
   await app.listen(PORT, HOST, () =>
     logger.log(
-      `Server successfully startted in: http://${HOST}:${PORT}, docs: /${PREFIX}`,
+      `Server successfully started in: http://${HOST}:${PORT}, docs: /${PREFIX}`,
       null,
       {
         save: false,

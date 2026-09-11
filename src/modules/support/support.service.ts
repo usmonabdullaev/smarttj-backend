@@ -1,4 +1,5 @@
 import { AskRequestProvider, AskRequestPurpose } from '@smarttj/core/ai';
+import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import {
   SupportChatStatus,
@@ -6,17 +7,22 @@ import {
   SupportMessageRole,
 } from '@prisma/client';
 
+import { HttpClientService } from '@/infra/http-client/http-client.service';
 import { CreateSupportDto } from '@/modules/support/dto/create-support.dto';
+import { SUPPORT_PROMPT, supportParser } from '@/ai/prompts/support.prompt';
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { SUPPORT_PROMPT } from '@/ai/prompts/support.prompt';
-import { AIService } from '@/ai/ai.service';
 
 @Injectable()
 export class SupportService {
+  private readonly aiServiceUrl?: string;
+
   constructor(
     private readonly prisma: PrismaService,
-    private readonly aiService: AIService,
-  ) {}
+    private readonly httpClient: HttpClientService,
+    private readonly config: ConfigService,
+  ) {
+    this.aiServiceUrl = this.config.get('AI_SERVICE_URL');
+  }
 
   async handleUserMessage(dto: CreateSupportDto, userId: string) {
     const chat = await this.getOrCreateActiveChat(userId);
@@ -33,6 +39,12 @@ export class SupportService {
       return { ok: true };
     }
 
+    if (!this.aiServiceUrl) {
+      await this.transferToHuman(chat.id);
+
+      return { ok: true };
+    }
+
     const history = await this.prisma.supportMessage.findMany({
       where: { chatId: chat.id },
       orderBy: { createdAt: 'desc' },
@@ -41,28 +53,36 @@ export class SupportService {
 
     const prompt = this.buildPrompt(history.reverse());
 
-    const aiResponse = await this.aiService.ask({
-      purpose: AskRequestPurpose.SUPPORT,
-      prompt,
-      context: SUPPORT_PROMPT,
-      temperature: 0.25,
-      provider: AskRequestProvider.GEMINI,
-      model: 'gemini-3.5-flash-lite',
-    });
+    const { data } = await this.httpClient.post<{ data: string }>(
+      'ai-service',
+      `${this.aiServiceUrl}/ask`,
+      {
+        purpose: AskRequestPurpose.SUPPORT,
+        prompt,
+        context: SUPPORT_PROMPT,
+        temperature: 0.25,
+        provider: AskRequestProvider.GEMINI,
+      },
+      {
+        timeout: 15000,
+      },
+    );
+
+    const result = supportParser(data);
 
     await this.prisma.supportMessage.create({
       data: {
         chatId: chat.id,
         role: SupportMessageRole.AI,
-        content: aiResponse.text,
+        content: result.text,
       },
     });
 
-    if (aiResponse.confidence !== undefined && aiResponse.confidence <= 0.6) {
+    if (result.confidence !== undefined && result.confidence <= 0.6) {
       await this.transferToHuman(chat.id);
     }
 
-    return { text: aiResponse.text };
+    return { text: result.text };
   }
 
   async getChats(userId: string) {

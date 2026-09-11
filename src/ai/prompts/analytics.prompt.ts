@@ -8,3 +8,6 @@ export const ANALYTICS_PROMPT = `
 Формат ответа: Строго в JSON без лишних символов или текстов
 Пример: { "text": "..." }
 `;
+
+export const analyticsParser = (jsonText: string) =>
+  JSON.parse(jsonText) as { text: string };

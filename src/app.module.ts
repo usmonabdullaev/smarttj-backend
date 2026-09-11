@@ -5,6 +5,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
 import { AllExceptionsFilter } from '@/common/filters/all-exceptions.filter';
+import { HttpClientModule } from './infra/http-client/http-client.module';
 import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
 import { PrismaModule } from '@/database/prisma/prisma.module';
 import { DefaultModule } from '@/modules/default.module';
@@ -23,6 +24,10 @@ import { AppService } from '@/app.service';
       },
     }),
     LoggerModule,
+    HttpClientModule.forRoot({
+      serviceName: 'smarttj-backend',
+      secret: process.env.HTTP_SERVICE_SECRET || 'secret123',
+    }),
     PrismaModule,
     CloudinaryModule,
     DefaultModule,

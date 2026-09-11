@@ -9,3 +9,6 @@ export const SUPPORT_PROMPT = `
 Формат: Строго в JSON без лишних символов или текстов
 Пример: { "text": "...", "confidence": 0...1 }
 `;
+
+export const supportParser = (jsonText: string) =>
+  JSON.parse(jsonText) as { text: string; confidence: number };

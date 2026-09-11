@@ -205,18 +205,6 @@ Redis используется как бэкенд для очередей.
 
 ---
 
-## 🤖 AI-интеграция
-
-Три провайдера:
-
-1. **Google Gemini** — SDK `@google/genai`, ключ `GEMINI_API_KEY`
-2. **OpenAI** — SDK `openai`, ключ `OPENAI_API_KEY`
-3. **Groq** — SDK `groq-sdk`, ключ `GROQ_API_KEY`
-
-`AiModule` используется в `AdminAIModule`. Провайдер легко переключается.
-
----
-
 ## 🌐 Внешние сервисы
 
 | Сервис         | Назначение                  | Переменные окружения                                                                                  |
