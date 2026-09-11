@@ -1,11 +1,10 @@
 import { AskRequestProvider, AskRequestPurpose } from '@smarttj/core/ai';
 import { TransactionStatus } from '@prisma/client';
-import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
-import { HttpClientService } from '@/infra/http-client/http-client.service';
 import { TransactionRepository } from '@/common/repositories';
 import { OrderRepository } from '@/common/repositories';
+import { AIService } from '@/ai/ai.service';
 import { AnalyzeRequestDto } from './dto';
 import {
   ANALYTICS_PROMPT,
@@ -14,16 +13,11 @@ import {
 
 @Injectable()
 export class AdminAIService {
-  private readonly aiServiceUrl: string;
-
   constructor(
     private readonly orderRepository: OrderRepository,
     private readonly transactionRepository: TransactionRepository,
-    private readonly httpClient: HttpClientService,
-    private readonly config: ConfigService,
-  ) {
-    this.aiServiceUrl = this.config.getOrThrow('AI_SERVICE_URL');
-  }
+    private readonly aiService: AIService,
+  ) {}
 
   async analyze(dto: AnalyzeRequestDto) {
     const days = dto.periodDays ?? 30;
@@ -52,9 +46,7 @@ export class AdminAIService {
 Сделай краткий бизнес-анализ.
 `;
 
-    const response = await this.httpClient.post<{ data: string }>(
-      'ai-service',
-      `${this.aiServiceUrl}/ask`,
+    const { data } = await this.aiService.ask(
       {
         context: ANALYTICS_PROMPT,
         purpose: AskRequestPurpose.ANALYTICS,
@@ -67,7 +59,7 @@ export class AdminAIService {
       },
     );
 
-    const result = analyticsParser(response.data);
+    const result = analyticsParser(data);
 
     return result;
   }

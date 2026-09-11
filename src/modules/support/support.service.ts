@@ -1,5 +1,4 @@
 import { AskRequestProvider, AskRequestPurpose } from '@smarttj/core/ai';
-import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import {
   SupportChatStatus,
@@ -7,22 +6,17 @@ import {
   SupportMessageRole,
 } from '@prisma/client';
 
-import { HttpClientService } from '@/infra/http-client/http-client.service';
 import { CreateSupportDto } from '@/modules/support/dto/create-support.dto';
 import { SUPPORT_PROMPT, supportParser } from '@/ai/prompts/support.prompt';
 import { PrismaService } from '@/database/prisma/prisma.service';
+import { AIService } from '@/ai/ai.service';
 
 @Injectable()
 export class SupportService {
-  private readonly aiServiceUrl?: string;
-
   constructor(
     private readonly prisma: PrismaService,
-    private readonly httpClient: HttpClientService,
-    private readonly config: ConfigService,
-  ) {
-    this.aiServiceUrl = this.config.get('AI_SERVICE_URL');
-  }
+    private readonly aiService: AIService,
+  ) {}
 
   async handleUserMessage(dto: CreateSupportDto, userId: string) {
     const chat = await this.getOrCreateActiveChat(userId);
@@ -39,12 +33,6 @@ export class SupportService {
       return { ok: true };
     }
 
-    if (!this.aiServiceUrl) {
-      await this.transferToHuman(chat.id);
-
-      return { ok: true };
-    }
-
     const history = await this.prisma.supportMessage.findMany({
       where: { chatId: chat.id },
       orderBy: { createdAt: 'desc' },
@@ -53,9 +41,7 @@ export class SupportService {
 
     const prompt = this.buildPrompt(history.reverse());
 
-    const { data } = await this.httpClient.post<{ data: string }>(
-      'ai-service',
-      `${this.aiServiceUrl}/ask`,
+    const response = await this.aiService.ask(
       {
         purpose: AskRequestPurpose.SUPPORT,
         prompt,
@@ -68,7 +54,13 @@ export class SupportService {
       },
     );
 
-    const result = supportParser(data);
+    if (!response) {
+      await this.transferToHuman(chat.id);
+
+      return { ok: true };
+    }
+
+    const result = supportParser(response.data);
 
     await this.prisma.supportMessage.create({
       data: {

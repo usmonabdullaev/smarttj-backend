@@ -52,6 +52,7 @@ export class HttpClientService {
 
     try {
       const response = await firstValueFrom(this.http.request<T>(mergedConfig));
+
       return response.data;
     } catch (error) {
       this.handleAxiosError(error as AxiosError, targetService, config.url);
