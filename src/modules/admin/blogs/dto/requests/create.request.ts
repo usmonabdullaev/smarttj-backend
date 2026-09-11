@@ -33,5 +33,6 @@ export class CreateRequest {
     format: 'binary',
     description: 'Blog banner',
   })
+  @IsOptional()
   banner!: Express.Multer.File;
 }
