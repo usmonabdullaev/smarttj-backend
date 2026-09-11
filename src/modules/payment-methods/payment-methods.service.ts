@@ -15,15 +15,21 @@ export class PaymentMethodsService {
   async create(dto: CreatePaymentMethodDto) {
     return await this.prisma.paymentMethod.create({
       data: {
+        code: dto.code,
         name: dto.name,
+        provider: dto.provider,
+        icon: dto.icon,
         type: dto.type,
         isActive: dto.isActive,
       },
     });
   }
 
-  async findAll() {
-    return await this.prisma.paymentMethod.findMany();
+  async findAll(activeOnly = true) {
+    return await this.prisma.paymentMethod.findMany({
+      where: activeOnly ? { isActive: true } : undefined,
+      orderBy: { createdAt: 'asc' },
+    });
   }
 
   async findOne(id: string) {
@@ -58,9 +64,12 @@ export class PaymentMethodsService {
     return await this.prisma.paymentMethod.update({
       where: { id },
       data: {
-        name: dto.name,
-        type: dto.type,
-        isActive: dto.isActive,
+        ...(dto.code !== undefined && { code: dto.code }),
+        ...(dto.name !== undefined && { name: dto.name }),
+        ...(dto.provider !== undefined && { provider: dto.provider }),
+        ...(dto.icon !== undefined && { icon: dto.icon }),
+        ...(dto.type !== undefined && { type: dto.type }),
+        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });
   }

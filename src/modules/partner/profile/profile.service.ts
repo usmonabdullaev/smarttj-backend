@@ -48,6 +48,13 @@ export class PartnerProfileService {
       ...(dto.address1 !== undefined && { address1: dto.address1 }),
       ...(dto.address2 !== undefined && { address2: dto.address2 }),
       ...(dto.inn !== undefined && { inn: dto.inn }),
+      ...(dto.alifTerminalId !== undefined && {
+        alifTerminalId: dto.alifTerminalId,
+      }),
+      ...(dto.bankName !== undefined && { bankName: dto.bankName }),
+      ...(dto.bankAccount !== undefined && { bankAccount: dto.bankAccount }),
+      ...(dto.bik !== undefined && { bik: dto.bik }),
+      ...(dto.cardAccount !== undefined && { cardAccount: dto.cardAccount }),
     });
   }
 

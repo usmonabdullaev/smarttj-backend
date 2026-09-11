@@ -2,10 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { TelegramCodeStore } from '@/modules/telegram/telegram-code.store';
-import {
-  TelegramLinkCodeResponseDto,
-  TelegramStatusResponseDto,
-} from './dto';
+import { TelegramLinkCodeResponseDto, TelegramStatusResponseDto } from './dto';
 
 @Injectable()
 export class PartnerTelegramService {

@@ -48,4 +48,32 @@ export class UpdatePartnerProfileDto {
   @IsOptional()
   @IsString()
   inn?: string;
+
+  @ApiPropertyOptional({
+    example: '123456',
+    description: 'ID терминала партнера в Alif (Alif Marketplace)',
+  })
+  @IsOptional()
+  @IsString()
+  alifTerminalId?: string;
+
+  @ApiPropertyOptional({ example: 'Alif Bank' })
+  @IsOptional()
+  @IsString()
+  bankName?: string;
+
+  @ApiPropertyOptional({ example: 'TJ12ALIF0000000012345678' })
+  @IsOptional()
+  @IsString()
+  bankAccount?: string;
+
+  @ApiPropertyOptional({ example: '350101123' })
+  @IsOptional()
+  @IsString()
+  bik?: string;
+
+  @ApiPropertyOptional({ example: '992000000000' })
+  @IsOptional()
+  @IsString()
+  cardAccount?: string;
 }

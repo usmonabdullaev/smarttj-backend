@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -57,6 +58,179 @@ export class OrdersService {
         },
       },
     });
+  }
+
+  /**
+   * Получить детальную информацию по конкретному заказу пользователя
+   */
+  async getById(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        paymentMethod: true,
+        address: true,
+        transaction: true,
+        paymentAttempts: {
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        },
+        items: {
+          include: {
+            productVariant: {
+              include: {
+                product: {
+                  include: {
+                    category: true,
+                    brand: true,
+                    model: true,
+                    region: true,
+                  },
+                },
+                images: true,
+                attributes: {
+                  include: {
+                    attribute: true,
+                    attributeValue: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Заказ не найден');
+    }
+
+    if (order.userId !== userId) {
+      throw new ForbiddenException('У вас нет доступа к этому заказу');
+    }
+
+    return order;
+  }
+
+  /**
+   * Сменить способ оплаты для неоплаченного заказа
+   */
+  async updatePaymentMethod(
+    orderId: string,
+    paymentMethodId: string,
+    userId: string,
+  ) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Заказ не найден');
+    }
+
+    if (order.userId !== userId) {
+      throw new ForbiddenException('У вас нет прав на изменение этого заказа');
+    }
+
+    if (order.paymentStatus === OrderPaymentStatus.PAID) {
+      throw new ConflictException('Оплаченный заказ нельзя изменить');
+    }
+
+    const paymentMethod = await this.prisma.paymentMethod.findUnique({
+      where: { id: paymentMethodId, isActive: true },
+    });
+
+    if (!paymentMethod) {
+      throw new NotFoundException(
+        'Выбранный способ оплаты не найден или неактивен',
+      );
+    }
+
+    return await this.prisma.order.update({
+      where: { id: orderId },
+      data: { paymentMethodId },
+      include: {
+        paymentMethod: true,
+      },
+    });
+  }
+
+  /**
+   * Получить электронный чек в формате JSON для UI
+   */
+  async getReceiptJson(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        paymentMethod: true,
+        address: true,
+        transaction: true,
+        user: { select: userSelect },
+        items: {
+          include: {
+            productVariant: {
+              include: {
+                product: { select: { title: true } },
+                images: { take: 1, select: { url: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Заказ не найден');
+    }
+
+    if (order.userId !== userId) {
+      throw new ForbiddenException('У вас нет доступа к этому чеку');
+    }
+
+    return {
+      orderId: order.id,
+      receiptNumber:
+        order.transaction?.providerId || order.id.slice(0, 8).toUpperCase(),
+      createdAt: order.createdAt,
+      paidAt: order.paidAt,
+      paymentStatus: order.paymentStatus,
+      deliveryStatus: order.deliveryStatus,
+      paymentMethod: {
+        id: order.paymentMethod.id,
+        name: order.paymentMethod.name,
+        code: order.paymentMethod.code,
+        type: order.paymentMethod.type,
+        provider: order.paymentMethod.provider,
+        icon: order.paymentMethod.icon,
+      },
+      transaction: order.transaction
+        ? {
+            id: order.transaction.id,
+            provider: order.transaction.provider,
+            providerId: order.transaction.providerId,
+            payerAccount: order.transaction.payerAccount,
+            payerPhone: order.transaction.payerPhone,
+            paymentGate: order.transaction.paymentGate,
+          }
+        : null,
+      items: order.items.map((item) => ({
+        id: item.id,
+        title:
+          item.productTitle || item.productVariant?.product.title || 'Товар',
+        image: item.productImage || item.productVariant?.images[0]?.url || null,
+        sku: item.productSku || null,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+        warranty: item.warranty,
+      })),
+      totalPrice: order.totalPrice,
+      customer: {
+        name: order.user?.name,
+        phone: order.user?.phone,
+        email: order.user?.email,
+      },
+      address: order.address,
+    };
   }
 
   async getOrder(orderId: string) {
@@ -142,11 +316,23 @@ export class OrdersService {
               productVariant: {
                 select: {
                   id: true,
+                  code: true,
+                  label: true,
                   price: true,
                   discount: true,
                   stock: true,
+                  images: {
+                    take: 1,
+                    select: { url: true },
+                    orderBy: { order: 'asc' },
+                  },
                   product: {
-                    select: { status: true, warranty: true },
+                    select: {
+                      title: true,
+                      status: true,
+                      warranty: true,
+                      partnerId: true,
+                    },
                   },
                 },
               },
@@ -162,6 +348,10 @@ export class OrdersService {
       let total = 0;
       const orderItemsData: {
         productVariantId: string;
+        partnerId: string | null;
+        productTitle: string | null;
+        productImage: string | null;
+        productSku: string | null;
         quantity: number;
         warranty: number | null;
         price: number;
@@ -187,6 +377,10 @@ export class OrdersService {
 
         orderItemsData.push({
           productVariantId: variant.id,
+          partnerId: variant.product.partnerId || null,
+          productTitle: variant.product.title || null,
+          productImage: variant.images[0]?.url || null,
+          productSku: variant.label || String(variant.code),
           quantity: item.quantity,
           warranty: variant.product.warranty,
           price,
@@ -227,6 +421,10 @@ export class OrdersService {
         data: orderItemsData.map((item) => ({
           orderId: order.id,
           productVariantId: item.productVariantId,
+          partnerId: item.partnerId,
+          productTitle: item.productTitle,
+          productImage: item.productImage,
+          productSku: item.productSku,
           quantity: item.quantity,
           price: item.price,
           warranty: item.warranty,

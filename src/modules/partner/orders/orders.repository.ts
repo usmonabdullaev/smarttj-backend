@@ -39,9 +39,7 @@ export class PartnerOrdersRepository {
         address: true,
         items: {
           where: {
-            productVariant: {
-              product: { partnerId },
-            },
+            OR: [{ partnerId }, { productVariant: { product: { partnerId } } }],
           },
           include: {
             productVariant: {
@@ -85,9 +83,7 @@ export class PartnerOrdersRepository {
         id: orderId,
         items: {
           some: {
-            productVariant: {
-              product: { partnerId },
-            },
+            OR: [{ partnerId }, { productVariant: { product: { partnerId } } }],
           },
         },
       },
@@ -105,9 +101,7 @@ export class PartnerOrdersRepository {
         address: true,
         items: {
           where: {
-            productVariant: {
-              product: { partnerId },
-            },
+            OR: [{ partnerId }, { productVariant: { product: { partnerId } } }],
           },
           include: {
             productVariant: {
@@ -142,9 +136,7 @@ export class PartnerOrdersRepository {
     return this.prisma.orderItem.findFirst({
       where: {
         id: orderItemId,
-        productVariant: {
-          product: { partnerId },
-        },
+        OR: [{ partnerId }, { productVariant: { product: { partnerId } } }],
       },
       include: {
         order: true,
@@ -181,9 +173,7 @@ export class PartnerOrdersRepository {
     return this.prisma.orderItem.updateMany({
       where: {
         orderId,
-        productVariant: {
-          product: { partnerId },
-        },
+        OR: [{ partnerId }, { productVariant: { product: { partnerId } } }],
       },
       data: {
         deliveryStatus: status,

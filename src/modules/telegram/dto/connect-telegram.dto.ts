@@ -4,7 +4,8 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class ConnectTelegramDto {
   @ApiProperty({
     example: 'A8X2K9',
-    description: 'Одноразовый код связывания (полученный из веб-кабинета партнёра)',
+    description:
+      'Одноразовый код связывания (полученный из веб-кабинета партнёра)',
   })
   @IsString()
   @IsNotEmpty()

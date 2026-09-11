@@ -219,16 +219,17 @@ Redis используется как бэкенд для очередей.
 
 ## 🌐 Внешние сервисы
 
-| Сервис        | Назначение                  | Переменные окружения                                                   |
-| ------------- | --------------------------- | ---------------------------------------------------------------------- |
-| Cloudinary    | Загрузка изображений/файлов | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
-| SMSGate       | Отправка SMS                | `SMSGATE_API_KEY`, `SMSGATE_SENDER_ADDRESS`, `SMSGATE_API_URL`         |
-| Resend        | Отправка email              | `RESEND_API_KEY`                                                       |
-| Google OAuth  | Вход через Google           | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`      |
-| Google Gemini | AI                          | `GEMINI_API_KEY`, `GEMINI_DEFAULT_MODEL`                               |
-| OpenAI        | AI                          | `OPENAI_API_KEY`, `OPENAI_DEFAULT_MODEL`                               |
-| Groq          | AI                          | `GROQ_API_KEY`, `GROQ_DEFAULT_MODEL`                                   |
-| Telegram Bot  | Уведомления и бот заказов   | `TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_SECRET`   |
+| Сервис         | Назначение                  | Переменные окружения                                                                                  |
+| -------------- | --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Cloudinary     | Загрузка изображений/файлов | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`                                |
+| SMSGate        | Отправка SMS                | `SMSGATE_API_KEY`, `SMSGATE_SENDER_ADDRESS`, `SMSGATE_API_URL`                                        |
+| Resend         | Отправка email              | `RESEND_API_KEY`                                                                                      |
+| Google OAuth   | Вход через Google           | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`                                     |
+| Google Gemini  | AI                          | `GEMINI_API_KEY`, `GEMINI_DEFAULT_MODEL`                                                              |
+| OpenAI         | AI                          | `OPENAI_API_KEY`, `OPENAI_DEFAULT_MODEL`                                                              |
+| Groq           | AI                          | `GROQ_API_KEY`, `GROQ_DEFAULT_MODEL`                                                                  |
+| Telegram Bot   | Уведомления и бот заказов   | `TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_SECRET`                                                        |
+| Alif Acquiring | Онлайн-эквайринг (платежи)  | `ALIF_API_URL`, `ALIF_TERMINAL_KEY`, `ALIF_TERMINAL_PASSWORD`, `ALIF_CALLBACK_URL`, `ALIF_RETURN_URL` |
 
 ---
 

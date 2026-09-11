@@ -1,18 +1,48 @@
-import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { PaymentMethodType } from '@prisma/client';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePaymentMethodDto {
+  @ApiPropertyOptional({
+    example: 'ALIF_KORTI_MILLI',
+    description: 'Уникальный символьный код метода оплаты',
+  })
+  @IsOptional()
+  @IsString()
+  code?: string;
+
   @ApiProperty({
-    example: 'Наличными',
+    example: 'Корти милли (Alif)',
     description: 'Название метода',
   })
   @IsString()
   @IsNotEmpty()
   name!: string;
 
+  @ApiPropertyOptional({
+    example: 'ALIF',
+    description: 'Провайдер интеграции: ALIF, CASH, MANUAL',
+  })
+  @IsOptional()
+  @IsString()
+  provider?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://smarttj.tj/icons/korti_milli.png',
+    description: 'URL иконки метода оплаты',
+  })
+  @IsOptional()
+  @IsString()
+  icon?: string;
+
   @ApiProperty({
-    example: 'CASH',
+    example: 'CARD',
     description: 'Тип метода',
     enum: PaymentMethodType,
   })
@@ -20,6 +50,10 @@ export class CreatePaymentMethodDto {
   @IsEnum(PaymentMethodType)
   type!: PaymentMethodType;
 
+  @ApiProperty({
+    example: true,
+    description: 'Активен ли метод оплаты',
+  })
   @IsBoolean()
   isActive!: boolean;
 }

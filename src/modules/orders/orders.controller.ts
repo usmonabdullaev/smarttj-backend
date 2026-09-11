@@ -1,4 +1,9 @@
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
 import {
   Body,
@@ -6,16 +11,19 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Res,
   UseGuards,
 } from '@nestjs/common';
 
 import { CheckoutOrderDto } from '@/modules/orders/dto/checkout-order.dto';
+import { ChangePaymentMethodDto } from '@/modules/orders/dto/change-payment-method.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { OrdersService } from '@/modules/orders/orders.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 
+@ApiTags('Заказы')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Controller('orders')
@@ -23,19 +31,44 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get user orders' })
+  @ApiOperation({ summary: 'Получить список заказов пользователя' })
   async getList(@GetUser('userId') userId: string) {
     return await this.ordersService.getList(userId);
   }
 
   @Get('archive')
-  @ApiOperation({ summary: 'Get archived orders' })
+  @ApiOperation({ summary: 'Получить архив заказов пользователя' })
   async getArchive(@GetUser('userId') userId: string) {
     return await this.ordersService.getArchive(userId);
   }
 
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Получить детальную информацию о заказе',
+    description:
+      'Возвращает детали заказа, товары, способ оплаты, адрес и статус транзакции.',
+  })
+  @ApiParam({ name: 'id', description: 'ID заказа' })
+  async getOne(@Param('id') id: string, @GetUser('userId') userId: string) {
+    return await this.ordersService.getById(id, userId);
+  }
+
+  @Get(':id/receipt')
+  @ApiOperation({
+    summary: 'Получить электронный чек заказа в JSON',
+    description:
+      'Возвращает структурированные данные чека (номера, даты, маску карты, состав позиций и суммы) для UI приложения.',
+  })
+  @ApiParam({ name: 'id', description: 'ID заказа' })
+  async getReceiptJson(
+    @Param('id') id: string,
+    @GetUser('userId') userId: string,
+  ) {
+    return await this.ordersService.getReceiptJson(id, userId);
+  }
+
   @Get(':id/pdf')
-  @ApiOperation({ summary: 'Export order receipt in PDF' })
+  @ApiOperation({ summary: 'Экспорт квитанции заказа в PDF' })
   async exportPdf(@Param('id') id: string, @Res() res: Response) {
     const { buffer, order } = await this.ordersService.exportReceipt(id);
     const createdAt = new Date(order.createdAt);
@@ -52,7 +85,7 @@ export class OrdersController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Checkout' })
+  @ApiOperation({ summary: 'Оформить заказ из корзины (Checkout)' })
   async checkout(
     @Body() dto: CheckoutOrderDto,
     @GetUser('userId') userId: string,
@@ -60,8 +93,27 @@ export class OrdersController {
     return await this.ordersService.checkout(dto, userId);
   }
 
+  @Patch(':id/payment-method')
+  @ApiOperation({
+    summary: 'Сменить способ оплаты для неоплаченного заказа',
+    description:
+      'Позволяет покупателю сменить способ оплаты (например, на наличные при ошибке карты), не создавая заказ заново.',
+  })
+  @ApiParam({ name: 'id', description: 'ID заказа' })
+  async changePaymentMethod(
+    @Param('id') id: string,
+    @Body() dto: ChangePaymentMethodDto,
+    @GetUser('userId') userId: string,
+  ) {
+    return await this.ordersService.updatePaymentMethod(
+      id,
+      dto.paymentMethodId,
+      userId,
+    );
+  }
+
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete order for UI' })
+  @ApiOperation({ summary: 'Удалить / скрыть заказ из UI' })
   async delete(@Param('id') id: string, @GetUser('userId') userId: string) {
     return await this.ordersService.delete(id, userId);
   }

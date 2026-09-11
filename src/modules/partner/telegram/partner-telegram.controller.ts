@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -19,10 +13,7 @@ import { GetUser } from '@/common/decorators/get-user.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { PartnerAuthService } from '@/modules/partner/auth/auth.service';
 import { PartnerTelegramService } from './partner-telegram.service';
-import {
-  TelegramLinkCodeResponseDto,
-  TelegramStatusResponseDto,
-} from './dto';
+import { TelegramLinkCodeResponseDto, TelegramStatusResponseDto } from './dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.PARTNER)
