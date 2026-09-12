@@ -1,17 +1,18 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
+import { QUEUE_KEYS } from '@smarttj/core';
 import { Queue } from 'bullmq';
 
 @Injectable()
 export class ProductModerationService {
   constructor(
-    @InjectQueue('product-moderation')
+    @InjectQueue(QUEUE_KEYS.PRODUCT_MODERATION)
     private readonly queue: Queue,
   ) {}
 
   async addProduct(productId: string) {
     await this.queue.add(
-      'moderate-product',
+      QUEUE_KEYS.PRODUCT_MODERATION,
       { productId },
       {
         attempts: 3,

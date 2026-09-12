@@ -1,4 +1,5 @@
 import { BullModule } from '@nestjs/bullmq';
+import { QUEUE_KEYS } from '@smarttj/core';
 import { Module } from '@nestjs/common';
 
 import { ProductModerationService } from '@/bullmq/product-moderation/product-moderation.service';
@@ -6,7 +7,7 @@ import { ProductModerationService } from '@/bullmq/product-moderation/product-mo
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'product-moderation',
+      name: QUEUE_KEYS.PRODUCT_MODERATION,
     }),
   ],
   providers: [ProductModerationService],
