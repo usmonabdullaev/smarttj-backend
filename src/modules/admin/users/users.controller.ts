@@ -1,37 +1,29 @@
-import {
-  Controller,
-  Get,
-  ParseIntPipe,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
 
 import { AdminUsersService } from '@/modules/admin/users/users.service';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { ApiErrorDto } from '@/common/dto/api-error.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
+import { GetAllRequest } from './dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.SYSADMIN, UserRole.ADMIN)
 @ApiBearerAuth()
 @Controller('users')
 export class AdminUsersController {
-  constructor(private readonly adminUsersService: AdminUsersService) {}
+  constructor(private readonly service: AdminUsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Users list' })
-  @ApiUnauthorizedResponse({ type: ApiErrorDto })
-  async getAll(
-    @Query('page', ParseIntPipe) page: number = 1,
-    @Query('limit', ParseIntPipe) limit: number = 10,
-  ) {
-    return await this.adminUsersService.getAll(page, limit);
+  @ApiOperation({ summary: 'Users list (role=USER)' })
+  async getAll(@Query() query: GetAllRequest) {
+    return await this.service.getAll(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user (role=USER)' })
+  async getById(@Param() id: string) {
+    return await this.service.getById(id);
   }
 }

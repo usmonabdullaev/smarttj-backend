@@ -2,6 +2,7 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import {
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -20,23 +21,29 @@ import { GetAllRequest } from './dto';
 @ApiBearerAuth()
 @Controller('products')
 export class AdminProductsController {
-  constructor(private readonly adminProductsService: AdminProductsService) {}
+  constructor(private readonly service: AdminProductsService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get products' })
   async getAll(@Query() query: GetAllRequest) {
-    return await this.adminProductsService.getAll(query);
+    return await this.service.getAll(query);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get product by ID' })
   async getById(@Param('id') id: string) {
-    return await this.adminProductsService.getById(id);
+    return await this.service.getById(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Publish product' })
   async publish(@Param('id') id: string) {
-    return await this.adminProductsService.publish(id);
+    return await this.service.publish(id);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete product and relations from database' })
+  async delete(@Param('id') id: string) {
+    return await this.service.delete(id);
   }
 }

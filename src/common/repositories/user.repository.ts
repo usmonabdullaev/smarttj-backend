@@ -49,8 +49,9 @@ export class UserRepository {
     });
   }
 
-  findMany(skip: number, take: number) {
+  findMany(skip: number, take: number, where?: Prisma.UserWhereInput) {
     return this.prisma.user.findMany({
+      where,
       select: publicUserSelect,
       skip,
       take,
@@ -65,7 +66,7 @@ export class UserRepository {
     });
   }
 
-  count() {
-    return this.prisma.user.count();
+  count(where?: Prisma.UserWhereInput) {
+    return this.prisma.user.count({ where });
   }
 }

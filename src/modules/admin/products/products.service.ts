@@ -1,12 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, ProductStatus } from '@prisma/client';
 
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
+import { AdminProductsRepository } from './products.repository';
 import { ProductRepository } from '@/common/repositories';
 import { GetAllRequest } from './dto';
 
 @Injectable()
 export class AdminProductsService {
-  constructor(private readonly productRepository: ProductRepository) {}
+  constructor(
+    private readonly productRepository: ProductRepository,
+    private readonly repository: AdminProductsRepository,
+    private readonly cloudinary: CloudinaryService,
+  ) {}
 
   async getAll(query: GetAllRequest) {
     const page = query.page || 1;
@@ -60,5 +70,25 @@ export class AdminProductsService {
       status: ProductStatus.ACTIVE,
       publishedAt: new Date(),
     });
+  }
+
+  async delete(id: string) {
+    const product = await this.productRepository.getByIdWithInclude(id);
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (product.status !== ProductStatus.DELETED) {
+      throw new ConflictException('Product is not deleted from partner');
+    }
+
+    for (let i = 0; i < product.variants.length; i++) {
+      const variant = product.variants[i];
+
+      await this.cloudinary.deleteFiles(variant.images.map((i) => i.urlId));
+    }
+
+    return await this.repository.delete(id);
   }
 }
