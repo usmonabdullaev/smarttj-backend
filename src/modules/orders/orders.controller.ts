@@ -19,6 +19,7 @@ import {
 
 import { CheckoutOrderDto } from '@/modules/orders/dto/checkout-order.dto';
 import { ChangePaymentMethodDto } from '@/modules/orders/dto/change-payment-method.dto';
+import { CancelOrderDto } from '@/modules/orders/dto/cancel-order.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { OrdersService } from '@/modules/orders/orders.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
@@ -69,8 +70,15 @@ export class OrdersController {
 
   @Get(':id/pdf')
   @ApiOperation({ summary: 'Экспорт квитанции заказа в PDF' })
-  async exportPdf(@Param('id') id: string, @Res() res: Response) {
-    const { buffer, order } = await this.ordersService.exportReceipt(id);
+  async exportPdf(
+    @Param('id') id: string,
+    @GetUser('userId') userId: string,
+    @Res() res: Response,
+  ) {
+    const { buffer, order } = await this.ordersService.exportReceipt(
+      id,
+      userId,
+    );
     const createdAt = new Date(order.createdAt);
     const year = new Date(order.createdAt).getFullYear();
     const month = (createdAt.getMonth() + 1).toString().padStart(2, '0');
@@ -82,6 +90,21 @@ export class OrdersController {
     });
 
     res.send(buffer);
+  }
+
+  @Patch(':id/cancel')
+  @ApiOperation({
+    summary: 'Отменить заказ',
+    description:
+      'Отменяет заказ покупателем и возвращает количество зарезервированного товара на склад.',
+  })
+  @ApiParam({ name: 'id', description: 'ID заказа' })
+  async cancel(
+    @Param('id') id: string,
+    @GetUser('userId') userId: string,
+    @Body() dto: CancelOrderDto,
+  ) {
+    return await this.ordersService.cancel(id, userId, dto?.reason);
   }
 
   @Post()

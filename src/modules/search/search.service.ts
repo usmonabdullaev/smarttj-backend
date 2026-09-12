@@ -20,51 +20,49 @@ export class SearchService {
       };
     }
 
-    const LIMIT = 15;
-
-    const products = await this.prisma.product.findMany({
-      where: {
-        title: {
-          contains: query,
-          mode: 'insensitive',
-        },
-        status: {
-          in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
-        },
-      },
-      include: {
-        variants: {
-          include: {
-            images: true,
+    const [products, categories, brands] = await Promise.all([
+      this.prisma.product.findMany({
+        where: {
+          title: {
+            contains: query,
+            mode: 'insensitive',
           },
-          orderBy: {
-            price: 'asc',
+          status: {
+            in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
           },
-          take: 1,
         },
-      },
-      take: LIMIT,
-    });
-
-    const categories = await this.prisma.category.findMany({
-      where: {
-        name: {
-          contains: query,
-          mode: 'insensitive',
+        include: {
+          variants: {
+            include: {
+              images: true,
+            },
+            orderBy: {
+              price: 'asc',
+            },
+            take: 1,
+          },
         },
-      },
-      take: Math.max(0, LIMIT - products.length),
-    });
-
-    const brands = await this.prisma.brand.findMany({
-      where: {
-        name: {
-          contains: query,
-          mode: 'insensitive',
+        take: 10,
+      }),
+      this.prisma.category.findMany({
+        where: {
+          name: {
+            contains: query,
+            mode: 'insensitive',
+          },
         },
-      },
-      take: Math.max(0, LIMIT - products.length - categories.length),
-    });
+        take: 5,
+      }),
+      this.prisma.brand.findMany({
+        where: {
+          name: {
+            contains: query,
+            mode: 'insensitive',
+          },
+        },
+        take: 5,
+      }),
+    ]);
 
     return {
       products,

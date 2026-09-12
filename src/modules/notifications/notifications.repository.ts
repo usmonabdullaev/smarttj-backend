@@ -30,4 +30,10 @@ export class NotificationsRepository {
       data: { isRead: true },
     });
   }
+
+  countUnread(userId: string) {
+    return this.prisma.notification.count({
+      where: { userId, isRead: false },
+    });
+  }
 }

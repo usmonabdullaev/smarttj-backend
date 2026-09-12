@@ -23,7 +23,7 @@ export class TelegramController {
 
   private verifySecret(secret?: string) {
     const expectedSecret = process.env.TELEGRAM_BOT_SECRET;
-    if (expectedSecret && secret !== expectedSecret) {
+    if (!expectedSecret || secret !== expectedSecret) {
       throw new UnauthorizedException('Invalid X-Bot-Secret header');
     }
   }

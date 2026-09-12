@@ -39,14 +39,18 @@ export class CartsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Edit cart item' })
-  async edit(@Param('id') id: string, @Body() dto: EditCartDto) {
-    return await this.cartsService.edit(dto, id);
+  async edit(
+    @Param('id') id: string,
+    @Body() dto: EditCartDto,
+    @GetUser('userId') userId: string,
+  ) {
+    return await this.cartsService.edit(dto, id, userId);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete cart item' })
-  async deleteItem(@Param('id') id: string) {
-    return await this.cartsService.deleteItem(id);
+  async deleteItem(@Param('id') id: string, @GetUser('userId') userId: string) {
+    return await this.cartsService.deleteItem(id, userId);
   }
 
   @Delete()

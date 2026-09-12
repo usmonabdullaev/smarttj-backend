@@ -21,13 +21,6 @@ export class CheckoutOrderDto {
   })
   @IsOptional()
   @IsUUID(7)
-  shopId?: string;
-
-  @ApiPropertyOptional({
-    example: 'ID',
-  })
-  @IsOptional()
-  @IsUUID(7)
   addressId?: string;
 
   @ApiPropertyOptional({

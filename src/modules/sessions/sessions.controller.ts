@@ -37,8 +37,9 @@ export class SessionsController {
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async remove(
     @Param('id') id: string,
+    @GetUser('userId') userId: string,
     @GetUser('sessionId') sessionId: string,
   ) {
-    return await this.sessionsService.remove(id, sessionId);
+    return await this.sessionsService.remove(id, userId, sessionId);
   }
 }

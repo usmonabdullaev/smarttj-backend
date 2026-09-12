@@ -58,6 +58,21 @@ export class CreateProductVariantDto {
   @Max(Number.MAX_SAFE_INTEGER)
   stock!: number;
 
+  @ApiPropertyOptional({ example: 10, description: 'Процент скидки (0-100)' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  discount?: number;
+
+  @ApiPropertyOptional({
+    example: '8/256GB Black',
+    description: 'Метка/название варианта',
+  })
+  @IsOptional()
+  @IsString()
+  label?: string;
+
   @ApiPropertyOptional({
     isArray: true,
     type: CreateProductVariantAttributeDto,

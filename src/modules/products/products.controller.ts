@@ -3,6 +3,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import {
@@ -13,9 +14,19 @@ import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
 import { ProductsService } from '@/modules/products/products.service';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
 
+@ApiTags('Товары')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+  @Get()
+  @ApiOperation({
+    summary: 'Получить список всех товаров (каталог с фильтрами)',
+  })
+  @ApiOkResponse({ type: ProductListResponseDto })
+  async getAll(@Query() query: GetProductsQueryDto) {
+    return await this.productsService.getAll(query);
+  }
 
   @Get('category/:slug')
   @ApiOperation({ summary: 'Category Products' })

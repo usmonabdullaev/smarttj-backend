@@ -45,22 +45,36 @@ export class AllExceptionsFilter implements ExceptionFilter {
         code = r.code ?? code;
         error = r.error ?? null;
       }
+    } else if (exception instanceof Error) {
+      message = exception.message || message;
+      code = (exception as any).code ?? code;
+      error = (exception as any).error ?? null;
+      if (typeof (exception as any).status === 'number') {
+        status = (exception as any).status;
+      }
     } else {
-      const parsed = JSON.parse(JSON.stringify(exception));
+      try {
+        const parsed = JSON.parse(JSON.stringify(exception));
 
-      if (parsed?.status && typeof parsed.status === 'number') {
-        status = parsed.status;
+        if (parsed?.status && typeof parsed.status === 'number') {
+          status = parsed.status;
+        }
+
+        if (
+          parsed?.error?.message &&
+          typeof parsed.error.message === 'string'
+        ) {
+          message = parsed.error.message;
+        }
+
+        if (parsed?.code && typeof parsed.code === 'string') {
+          code = parsed.code;
+        }
+
+        error = parsed?.error || parsed;
+      } catch {
+        // Ignore serialization failure
       }
-
-      if (parsed?.error?.message && typeof parsed.error.message === 'string') {
-        message = parsed.error.message;
-      }
-
-      if (parsed?.code && typeof parsed.code === 'string') {
-        code = parsed.code;
-      }
-
-      error = parsed?.error || parsed;
     }
 
     if (process.env.NODE_ENV !== 'production' || +status >= 500) {

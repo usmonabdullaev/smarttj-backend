@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateCategoryDto {
@@ -30,7 +30,7 @@ export class CreateCategoryDto {
     example: 1,
   })
   @IsOptional()
-  @IsBoolean()
+  @IsInt()
   order?: number;
 
   @ApiPropertyOptional({

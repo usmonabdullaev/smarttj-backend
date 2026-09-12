@@ -178,7 +178,7 @@ export class PaymentsService {
 
     const order = await this.prisma.order.findUnique({
       where: { id: dto.orderId },
-      include: { transaction: true },
+      include: { transaction: true, items: true },
     });
 
     if (!order) {
@@ -186,10 +186,28 @@ export class PaymentsService {
       throw new NotFoundException('Order not found');
     }
 
+    // Идемпотентность: если заказ уже оплачен и пришел повторный success callback
+    if (
+      order.paymentStatus === OrderPaymentStatus.PAID &&
+      dto.status === 'ok'
+    ) {
+      this.logger.log(
+        `Order ${order.id} is already marked as PAID. Skipping duplicate callback.`,
+      );
+      return { success: true, message: 'Order is already marked as PAID' };
+    }
+
     const transactionIdStr = String(dto.transactionId);
     const amountVal = dto.amount
       ? Math.round(Number(dto.amount))
       : order.totalPrice;
+
+    if (dto.status === 'ok' && amountVal < order.totalPrice) {
+      this.logger.error(
+        `Callback amount ${amountVal} is less than order totalPrice ${order.totalPrice}`,
+      );
+      throw new BadRequestException('Сумма оплаты меньше стоимости заказа');
+    }
 
     if (dto.status === 'ok') {
       await this.prisma.$transaction(async (tx) => {
@@ -259,6 +277,16 @@ export class PaymentsService {
             where: { id: order.id },
             data: { paymentStatus: OrderPaymentStatus.FAILED },
           });
+
+          // Возвращаем остатки на склад при неуспешной оплате
+          for (const item of order.items) {
+            if (item.productVariantId) {
+              await tx.productVariant.update({
+                where: { id: item.productVariantId },
+                data: { stock: { increment: item.quantity } },
+              });
+            }
+          }
         }
 
         const lastAttempt = await tx.paymentAttempt.findFirst({
@@ -280,10 +308,25 @@ export class PaymentsService {
       });
     } else if (dto.status === 'canceled') {
       await this.prisma.$transaction(async (tx) => {
+        if (order.paymentStatus !== OrderPaymentStatus.PAID) {
+          // Возвращаем остатки на склад при отмене оплаты
+          for (const item of order.items) {
+            if (item.productVariantId) {
+              await tx.productVariant.update({
+                where: { id: item.productVariantId },
+                data: { stock: { increment: item.quantity } },
+              });
+            }
+          }
+        }
+
         await tx.order.update({
           where: { id: order.id },
           data: {
-            paymentStatus: OrderPaymentStatus.REFUNDED,
+            paymentStatus:
+              order.paymentStatus === OrderPaymentStatus.PAID
+                ? OrderPaymentStatus.REFUNDED
+                : OrderPaymentStatus.FAILED,
             cancelReason: dto.message || 'Payment canceled by Alif',
           },
         });

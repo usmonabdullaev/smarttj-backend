@@ -35,6 +35,7 @@ export class GetProductsQueryDto {
     type: 'number',
   })
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(5)
@@ -47,4 +48,32 @@ export class GetProductsQueryDto {
   @IsOptional()
   @IsString()
   q?: string;
+
+  @ApiPropertyOptional({
+    example: 'ID',
+    description: 'Filter by brand ID',
+  })
+  @IsOptional()
+  @IsString()
+  brandId?: string;
+
+  @ApiPropertyOptional({
+    example: 100,
+    description: 'Minimum price',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  minPrice?: number;
+
+  @ApiPropertyOptional({
+    example: 5000,
+    description: 'Maximum price',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  maxPrice?: number;
 }

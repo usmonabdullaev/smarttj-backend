@@ -23,35 +23,46 @@ export class PartnerStatisticsRepository {
     });
   }
 
-  /** Суммарная выручка партнёра за период */
-  sumRevenue(partnerId: string, from: Date, to: Date) {
-    return this.prisma.orderItem.aggregate({
-      _sum: { price: true },
-      where: {
-        order: { createdAt: { gte: from, lte: to } },
-        productVariant: { product: { partnerId } },
-      },
-    });
+  /** Суммарная выручка партнёра за период (только оплаченные) */
+  async sumRevenue(partnerId: string, from: Date, to: Date): Promise<number> {
+    const result = await this.prisma.$queryRaw<{ total: number }[]>(
+      Prisma.sql`
+        SELECT COALESCE(SUM("oi"."price" * "oi"."quantity"), 0)::float AS total
+        FROM "OrderItem" oi
+        JOIN "Order" o ON o.id = oi."orderId"
+        LEFT JOIN "ProductVariant" pv ON pv.id = oi."productVariantId"
+        LEFT JOIN "Product" p ON p.id = pv."productId"
+        WHERE
+          (oi."partnerId"::text = ${partnerId} OR p."partnerId"::text = ${partnerId})
+          AND o."createdAt" >= ${from}
+          AND o."createdAt" <= ${to}
+          AND o."paymentStatus"::text = 'PAID'
+      `,
+    );
+    return result[0]?.total ?? 0;
   }
 
-  /** Количество проданных единиц за период */
-  sumSoldCount(partnerId: string, from: Date, to: Date) {
-    return this.prisma.orderItem.aggregate({
-      _sum: { quantity: true },
-      where: {
-        order: { createdAt: { gte: from, lte: to } },
-        productVariant: { product: { partnerId } },
-      },
-    });
+  /** Количество проданных единиц за период (только оплаченные) */
+  async sumSoldCount(partnerId: string, from: Date, to: Date): Promise<number> {
+    const result = await this.prisma.$queryRaw<{ total: number }[]>(
+      Prisma.sql`
+        SELECT COALESCE(SUM("oi"."quantity"), 0)::int AS total
+        FROM "OrderItem" oi
+        JOIN "Order" o ON o.id = oi."orderId"
+        LEFT JOIN "ProductVariant" pv ON pv.id = oi."productVariantId"
+        LEFT JOIN "Product" p ON p.id = pv."productId"
+        WHERE
+          (oi."partnerId"::text = ${partnerId} OR p."partnerId"::text = ${partnerId})
+          AND o."createdAt" >= ${from}
+          AND o."createdAt" <= ${to}
+          AND o."paymentStatus"::text = 'PAID'
+      `,
+    );
+    return result[0]?.total ?? 0;
   }
 
   /**
-   * Ежедневная продажа товаров партнёра за период.
-   *
-   * Важно: pg-адаптер Prisma передаёт JS-строки как PostgreSQL тип text.
-   * Сравнение uuid_column = text не поддерживается PostgreSQL без явного каста.
-   * Решение: кастуем колонку uuid → text (p."partnerId"::text = $1),
-   * тогда оба операнда text = text — работает всегда.
+   * Ежедневная продажа товаров партнёра за период (только оплаченные).
    */
   async dailySales(
     partnerId: string,
@@ -68,12 +79,13 @@ export class PartnerStatisticsRepository {
           COALESCE(SUM("oi"."quantity"), 0)::int                  AS sold
         FROM "OrderItem" oi
         JOIN "Order"          o  ON o.id  = oi."orderId"
-        JOIN "ProductVariant" pv ON pv.id = oi."productVariantId"
-        JOIN "Product"        p  ON p.id  = pv."productId"
+        LEFT JOIN "ProductVariant" pv ON pv.id = oi."productVariantId"
+        LEFT JOIN "Product"        p  ON p.id  = pv."productId"
         WHERE
-          p."partnerId"::text = ${partnerId}
+          (oi."partnerId"::text = ${partnerId} OR p."partnerId"::text = ${partnerId})
           AND o."createdAt" >= ${from}
           AND o."createdAt" <= ${to}
+          AND o."paymentStatus"::text = 'PAID'
         GROUP BY DATE("o"."createdAt")
         ORDER BY DATE("o"."createdAt") ASC
       `,

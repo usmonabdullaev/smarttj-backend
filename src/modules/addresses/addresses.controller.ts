@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -12,7 +13,7 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { AddressesService } from './addresses.service';
-import { CreateRequest } from './dto';
+import { CreateRequest, UpdateRequest } from './dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -28,8 +29,8 @@ export class AddressesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user address' })
-  async getById(@Param('id') id: string) {
-    return await this.addressesService.getById(id);
+  async getById(@Param('id') id: string, @GetUser('userId') userId: string) {
+    return await this.addressesService.getById(id, userId);
   }
 
   @Post()
@@ -38,9 +39,19 @@ export class AddressesController {
     return await this.addressesService.create(userId, dto);
   }
 
+  @Put(':id')
+  @ApiOperation({ summary: 'Update address' })
+  async update(
+    @Param('id') id: string,
+    @GetUser('userId') userId: string,
+    @Body() dto: UpdateRequest,
+  ) {
+    return await this.addressesService.update(id, userId, dto);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete address' })
-  async remove(@Param('id') id: string) {
-    return await this.addressesService.remove(id);
+  async remove(@Param('id') id: string, @GetUser('userId') userId: string) {
+    return await this.addressesService.remove(id, userId);
   }
 }

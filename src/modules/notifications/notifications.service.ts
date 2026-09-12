@@ -10,10 +10,15 @@ export class NotificationsService {
     return await this.repository.findAll(userId);
   }
 
-  async getById(id: string) {
+  async getUnreadCount(userId: string) {
+    const unreadCount = await this.repository.countUnread(userId);
+    return { unreadCount };
+  }
+
+  async getById(id: string, userId: string) {
     const notification = await this.repository.findById(id);
 
-    if (!notification) {
+    if (!notification || notification.userId !== userId) {
       throw new NotFoundException('Notification not found');
     }
 

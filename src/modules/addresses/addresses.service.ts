@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { AddressesRepository } from './addresses.repository';
 import { RegionRepository } from '@/common/repositories';
-import { CreateRequest } from './dto';
+import { CreateRequest, UpdateRequest } from './dto';
 
 @Injectable()
 export class AddressesService {
@@ -15,10 +15,10 @@ export class AddressesService {
     return await this.repository.findUserAddresses(userId);
   }
 
-  async getById(id: string) {
+  async getById(id: string, userId: string) {
     const address = await this.repository.findById(id);
 
-    if (!address) {
+    if (!address || address.userId !== userId) {
       throw new NotFoundException('Address not found');
     }
 
@@ -57,15 +57,45 @@ export class AddressesService {
       phone: dto.phone,
       longitude: dto.longitude,
       latitude: dto.latitude,
-      region: { connect: { id: dto.regionId } },
+      ...(dto.regionId ? { region: { connect: { id: dto.regionId } } } : {}),
       user: { connect: { id: userId } },
     });
   }
 
-  async remove(id: string) {
+  async update(id: string, userId: string, dto: UpdateRequest) {
     const address = await this.repository.findById(id);
 
-    if (!address) {
+    if (!address || address.userId !== userId) {
+      throw new NotFoundException('Address not found');
+    }
+
+    if (dto.regionId) {
+      const region = await this.regionRepository.findById(dto.regionId);
+      if (!region) {
+        throw new NotFoundException('Region not found');
+      }
+    }
+
+    if (dto.default) {
+      await this.repository.updateMany(userId, { default: false });
+    }
+
+    return await this.repository.update(id, {
+      fullname: dto.fullname,
+      label: dto.label,
+      address: dto.address,
+      default: dto.default,
+      phone: dto.phone,
+      longitude: dto.longitude,
+      latitude: dto.latitude,
+      ...(dto.regionId ? { region: { connect: { id: dto.regionId } } } : {}),
+    });
+  }
+
+  async remove(id: string, userId: string) {
+    const address = await this.repository.findById(id);
+
+    if (!address || address.userId !== userId) {
       throw new NotFoundException('Address not found');
     }
 

@@ -27,9 +27,9 @@ export class SessionsService {
     return { current: session, list: sessions };
   }
 
-  async remove(id: string, sessionId: string) {
+  async remove(id: string, userId: string, sessionId: string) {
     const session = await this.prisma.session.findFirst({
-      where: { id, NOT: { id: sessionId } },
+      where: { id, userId, NOT: { id: sessionId } },
     });
 
     if (!session) {

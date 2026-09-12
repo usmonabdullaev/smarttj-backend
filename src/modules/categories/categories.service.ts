@@ -75,24 +75,23 @@ export class CategoriesService {
   }
 
   private async getCategoryTree() {
-    const getCategory = async (
+    const allCategories = await this.categoryRepository.findMany({
+      orderBy: { order: 'asc' },
+    });
+
+    const buildTree = (
       parentId: string | null,
       level: number,
-    ): Promise<CategoriesTreeResponseDto[]> => {
-      const categories = await this.categoryRepository.findMany({
-        where: { parentId },
-        orderBy: { order: 'asc' },
-      });
-
-      return Promise.all(
-        categories.map(async (category) => ({
-          ...category,
+    ): CategoriesTreeResponseDto[] => {
+      return allCategories
+        .filter((c) => c.parentId === parentId)
+        .map((c) => ({
+          ...c,
           level,
-          children: await getCategory(category.id, level + 1),
-        })),
-      );
+          children: buildTree(c.id, level + 1),
+        }));
     };
 
-    return await getCategory(null, 1);
+    return buildTree(null, 1);
   }
 }

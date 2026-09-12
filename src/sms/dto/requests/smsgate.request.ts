@@ -1,9 +1,12 @@
+import { SmsPriority, SmsType } from '@/sms/enums';
+
 export interface SmsgateRequest {
   phone: string;
   message: string;
-  priority?: 0 | 1 | 2;
-  smsType?: 1 | 2 | 3;
+  priority?: SmsPriority | number;
+  smsType?: SmsType | number;
   scheduledAt?: string;
   expiresIn?: number;
   label?: string;
+  clientMessageId?: string;
 }

@@ -43,6 +43,10 @@ export class CartsRepository {
   getItem(itemId: string) {
     return this.prisma.cartItem.findUnique({
       where: { id: itemId },
+      include: {
+        cart: true,
+        productVariant: true,
+      },
     });
   }
 

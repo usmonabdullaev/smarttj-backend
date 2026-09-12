@@ -19,11 +19,17 @@ export class NotificationsController {
     return await this.notificationsService.getAll(userId);
   }
 
+  @Get('unread-count')
+  @ApiOperation({ summary: 'Get unread notifications count' })
+  async getUnreadCount(@GetUser('userId') userId: string) {
+    return await this.notificationsService.getUnreadCount(userId);
+  }
+
   @Get(':id')
-  @ApiOperation({ summary: 'Gen notification detail' })
+  @ApiOperation({ summary: 'Get notification detail' })
   @ApiOkResponse({ type: GetOneResponse })
-  async getById(@Param('id') id: string) {
-    return await this.notificationsService.getById(id);
+  async getById(@Param('id') id: string, @GetUser('userId') userId: string) {
+    return await this.notificationsService.getById(id, userId);
   }
 
   @Patch()

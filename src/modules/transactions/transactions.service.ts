@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { CreateRequest } from './dto';
-import { TransactionStatus } from '@prisma/client';
 
 @Injectable()
 export class TransactionsService {
@@ -21,10 +20,57 @@ export class TransactionsService {
     });
   }
 
-  async refund(id: string) {
-    return await this.prisma.transaction.update({
+  async findAll(userId: string, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      this.prisma.transaction.findMany({
+        where: { userId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          order: {
+            select: {
+              id: true,
+              totalPrice: true,
+              paymentStatus: true,
+              deliveryStatus: true,
+              createdAt: true,
+            },
+          },
+        },
+      }),
+      this.prisma.transaction.count({ where: { userId } }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async findOne(id: string, userId: string) {
+    const transaction = await this.prisma.transaction.findUnique({
       where: { id },
-      data: { status: TransactionStatus.REFUNDED },
+      include: {
+        order: {
+          include: {
+            items: true,
+            paymentMethod: true,
+          },
+        },
+      },
     });
+
+    if (!transaction || transaction.userId !== userId) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    return transaction;
   }
 }

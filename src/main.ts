@@ -14,6 +14,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const logger = new LoggerService('Main');
+  app.useLogger(logger);
 
   app.setGlobalPrefix(PREFIX);
 

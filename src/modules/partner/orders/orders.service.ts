@@ -32,9 +32,7 @@ export class PartnerOrdersService {
       // Заказ обязательно должен содержать товары этого партнёра
       items: {
         some: {
-          productVariant: {
-            product: { partnerId },
-          },
+          OR: [{ partnerId }, { productVariant: { product: { partnerId } } }],
           ...(query.itemDeliveryStatus && {
             deliveryStatus: query.itemDeliveryStatus,
           }),

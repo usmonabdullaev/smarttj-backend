@@ -121,11 +121,24 @@ export class UsersService {
     }
 
     if (user.password) {
+      if (!dto.currentPassword) {
+        throw new BadRequestException({
+          message: 'Требуется текущий пароль для изменения пароля',
+        });
+      }
+
+      const isValid = await argon2.verify(user.password, dto.currentPassword);
+      if (!isValid) {
+        throw new BadRequestException({
+          message: 'Неверный текущий пароль',
+        });
+      }
+
       const same = await argon2.verify(user.password, dto.password);
 
       if (same) {
         throw new BadRequestException({
-          message: 'New password must be different',
+          message: 'Новый пароль должен отличаться от текущего',
         });
       }
     }

@@ -117,8 +117,8 @@ export class PartnerStatisticsService {
       from: from.toISOString().split('T')[0],
       to: to.toISOString().split('T')[0],
       total: {
-        revenue: +(totalRevenue._sum.price || 0),
-        sold: +(totalSold._sum.quantity || 0),
+        revenue: totalRevenue,
+        sold: totalSold,
       },
       points,
     };

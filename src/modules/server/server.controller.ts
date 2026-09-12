@@ -5,13 +5,14 @@ import { UserRole } from '@prisma/client';
 import { ServerService } from '@/modules/server/server.service';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
 
 @Controller('server')
 export class ServerController {
   constructor(private readonly serverService: ServerService) {}
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SYSADMIN)
   @Get('info')
   @ApiOperation({ summary: 'Get info' })

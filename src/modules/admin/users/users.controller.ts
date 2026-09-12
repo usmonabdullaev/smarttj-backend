@@ -23,7 +23,7 @@ export class AdminUsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user (role=USER)' })
-  async getById(@Param() id: string) {
+  async getById(@Param('id') id: string) {
     return await this.service.getById(id);
   }
 }

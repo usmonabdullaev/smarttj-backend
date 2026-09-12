@@ -47,21 +47,28 @@ export class CartsService {
     return { success: true, message: 'Product added to cart' };
   }
 
-  async edit(dto: EditCartDto, id: string) {
+  async edit(dto: EditCartDto, id: string, userId: string) {
     const cartItem = await this.repository.getItem(id);
 
-    if (!cartItem) {
-      throw new NotFoundException();
+    if (!cartItem || cartItem.cart.userId !== userId) {
+      throw new NotFoundException('Cart item not found');
+    }
+
+    if (
+      cartItem.productVariant &&
+      dto.quantity > cartItem.productVariant.stock
+    ) {
+      throw new BadRequestException('Not enough stock for product variant');
     }
 
     return await this.repository.updateItemQuantity(id, dto.quantity);
   }
 
-  async deleteItem(id: string) {
+  async deleteItem(id: string, userId: string) {
     const cartItem = await this.repository.getItem(id);
 
-    if (!cartItem) {
-      throw new NotFoundException();
+    if (!cartItem || cartItem.cart.userId !== userId) {
+      throw new NotFoundException('Cart item not found');
     }
 
     return await this.repository.deleteItem(id);

@@ -12,16 +12,25 @@ export class ModelResponseDto {
 
   @ApiProperty({
     nullable: true,
+    example: 'Description of the model',
+  })
+  description?: string | null;
+
+  @ApiProperty({
+    nullable: true,
     example:
       'https://res.cloudinary.com/dqklcu4jy/image/upload/v1762587277/model/mpmezwvtg0drxtllmm7a.png',
   })
-  logo!: string;
+  image?: string | null;
 
   @ApiProperty({
     nullable: true,
     example: 'model/mpmezwvtg0drxtllmm7a',
   })
-  logoId!: string;
+  imageId?: string | null;
+
+  @ApiProperty({ example: '019a6263-6f97-7230-8449-e979b855ada1' })
+  brandId!: string;
 
   @ApiProperty({ example: 1 })
   order!: number;

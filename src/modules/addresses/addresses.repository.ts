@@ -10,6 +10,7 @@ export class AddressesRepository {
   async findUserAddresses(userId: string) {
     return await this.prisma.address.findMany({
       where: { userId },
+      include: { region: true },
       orderBy: [
         {
           default: 'desc',
@@ -24,6 +25,7 @@ export class AddressesRepository {
   async findById(id: string) {
     return await this.prisma.address.findUnique({
       where: { id },
+      include: { region: true },
     });
   }
 
@@ -46,6 +48,14 @@ export class AddressesRepository {
     data: Prisma.AddressUpdateManyMutationInput,
   ) {
     return await this.prisma.address.updateMany({ where: { userId }, data });
+  }
+
+  async update(id: string, data: Prisma.AddressUpdateInput) {
+    return await this.prisma.address.update({
+      where: { id },
+      data,
+      include: { region: true },
+    });
   }
 
   async remove(id: string) {

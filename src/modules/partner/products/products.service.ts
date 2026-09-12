@@ -264,6 +264,8 @@ export class PartnerProductsService {
         productId,
         price: dto.price,
         stock: dto.stock,
+        discount: dto.discount,
+        label: dto.label,
         attributes: dto.attributes?.length
           ? {
               createMany: {
@@ -319,6 +321,8 @@ export class PartnerProductsService {
       data: {
         price: dto.price,
         stock: dto.stock,
+        discount: dto.discount,
+        label: dto.label,
         ...(dto.attributes !== undefined && {
           attributes: {
             createMany: {

@@ -277,7 +277,6 @@ export class OrdersService {
       where: { userId, uiStatus: OrderUIStatus.ARCHIVED },
       include: {
         paymentMethod: true,
-        shop: true,
         address: true,
         items: {
           include: {
@@ -411,7 +410,6 @@ export class OrdersService {
           type: dto.type,
           paymentMethodId: dto.paymentMethodId,
           comment: dto.comment,
-          shopId: dto.shopId,
           addressId: dto.addressId,
           totalPrice: total,
         },
@@ -471,7 +469,7 @@ export class OrdersService {
     });
   }
 
-  async exportReceipt(orderId: string) {
+  async exportReceipt(orderId: string, userId?: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
@@ -500,11 +498,78 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
+    if (userId && order.userId !== userId) {
+      throw new ForbiddenException(
+        'У вас нет доступа к квитанции этого заказа',
+      );
+    }
+
     const buffer = await this.pdfService.generate({
       template: new ReceiptTemplate(),
       data: order,
     });
 
     return { order, buffer };
+  }
+
+  async cancel(orderId: string, userId: string, reason?: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order || order.userId !== userId) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (
+      order.deliveryStatus === OrderDeliveryStatus.DELIVERED ||
+      order.deliveryStatus === OrderDeliveryStatus.RECEIVED ||
+      order.deliveryStatus === OrderDeliveryStatus.RETURNED
+    ) {
+      throw new BadRequestException(
+        'Нельзя отменить заказ, который уже доставлен или получен',
+      );
+    }
+
+    if (order.uiStatus === OrderUIStatus.DELETED || order.cancelReason) {
+      throw new BadRequestException('Заказ уже отменен');
+    }
+
+    return await this.prisma.$transaction(async (tx) => {
+      // Восстанавливаем остатки товаров на складе
+      for (const item of order.items) {
+        if (item.productVariantId) {
+          await tx.productVariant.update({
+            where: { id: item.productVariantId },
+            data: {
+              stock: {
+                increment: item.quantity,
+              },
+            },
+          });
+        }
+      }
+
+      const updated = await tx.order.update({
+        where: { id: orderId },
+        data: {
+          cancelReason: reason || 'Отменен покупателем',
+          uiStatus: OrderUIStatus.ARCHIVED,
+          paymentStatus:
+            order.paymentStatus === OrderPaymentStatus.PAID
+              ? OrderPaymentStatus.REFUNDED
+              : order.paymentStatus,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Заказ успешно отменен, остатки возвращены на склад',
+        order: updated,
+      };
+    });
   }
 }

@@ -45,24 +45,23 @@ export class CloudinaryService {
       });
     }
 
-    try {
-      return new Promise((resolve, reject) => {
-        const upload = cloudinary.uploader.upload_stream(
-          {
-            folder: dto.folder,
-            resource_type: 'image',
-          },
-          (error, result) => {
-            if (error || !result) return reject(error);
-            resolve(result);
-          },
-        );
+    return new Promise((resolve, reject) => {
+      const upload = cloudinary.uploader.upload_stream(
+        {
+          folder: dto.folder,
+          resource_type: 'image',
+        },
+        (error, result) => {
+          if (error || !result) {
+            this.logger.error('Cloudinary upload error', error);
+            return reject(error);
+          }
+          resolve(result);
+        },
+      );
 
-        streamifier.createReadStream(dto.file.buffer).pipe(upload);
-      });
-    } catch (error) {
-      this.logger.error('Cloudinary upload error', error);
-    }
+      streamifier.createReadStream(dto.file.buffer).pipe(upload);
+    });
   }
 
   async uploadFiles(dto: UploadFilesRequest): Promise<UploadApiResponse[]> {
@@ -115,6 +114,7 @@ export class CloudinaryService {
         code: 'FILES_NOT_FOUND',
         error: null,
       });
+      return [];
     }
 
     return Promise.all(

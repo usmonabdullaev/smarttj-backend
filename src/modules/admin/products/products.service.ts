@@ -83,10 +83,14 @@ export class AdminProductsService {
       throw new ConflictException('Product is not deleted from partner');
     }
 
-    for (let i = 0; i < product.variants.length; i++) {
-      const variant = product.variants[i];
+    for (const variant of product.variants) {
+      const imageIds = (variant.images || [])
+        .map((img) => img.urlId)
+        .filter((urlId): urlId is string => Boolean(urlId));
 
-      await this.cloudinary.deleteFiles(variant.images.map((i) => i.urlId));
+      if (imageIds.length > 0) {
+        await this.cloudinary.deleteFiles(imageIds);
+      }
     }
 
     return await this.repository.delete(id);
