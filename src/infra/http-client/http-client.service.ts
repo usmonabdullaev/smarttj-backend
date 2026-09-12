@@ -2,7 +2,7 @@ import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosError, AxiosRequestConfig } from 'axios';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 import { HttpClientModuleOptions } from './interfaces/http-client-options.interface';
 import { LoggerService } from '@/logger/logger.service';

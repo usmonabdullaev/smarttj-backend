@@ -18,7 +18,7 @@ export class AIService {
 
   async ask(data: AskRequest, config?: AxiosRequestConfig) {
     return await this.httpClient.post<AskResponse>(
-      'ai-service',
+      'smarttj-ai',
       `${this.aiServiceUrl}/ask`,
       data,
       config,

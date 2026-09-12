@@ -26,7 +26,7 @@ import { AppService } from '@/app.service';
     LoggerModule,
     HttpClientModule.forRoot({
       serviceName: 'smarttj-backend',
-      secret: process.env.HTTP_SERVICE_SECRET || '',
+      secret: process.env.INTERNAL_SERVICE_SECRET || '',
     }),
     PrismaModule,
     CloudinaryModule,
