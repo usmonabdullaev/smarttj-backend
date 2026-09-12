@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 
 import { BaseRepository, UserRepository } from '@/common/repositories';
 import { GetAllRequest } from './dto';
@@ -17,6 +17,8 @@ export class AdminUsersService {
     const skip = (page - 1) * limit;
 
     const where: Prisma.UserWhereInput = {
+      role: UserRole.USER,
+
       ...(query.q && {
         OR: [
           { name: { contains: query.q, mode: 'insensitive' } },

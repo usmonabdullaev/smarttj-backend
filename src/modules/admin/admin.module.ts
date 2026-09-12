@@ -12,10 +12,20 @@ import { AdminAIModule } from '@/modules/admin/ai/ai.module';
 import { AdminBlogsModule } from './blogs/blogs.module';
 import { AdminBrandsModule } from './brands/brands.module';
 import { AdminModelsModule } from './models/models.module';
+import { AdminPartnersModule } from './partners/partners.module';
+import { AdminAdminsModule } from './admins/admins.module';
+import { AdminStatisticsModule } from './statistics/statistics.module';
+import { AdminOrdersModule } from './orders/orders.module';
+import { AdminPaymentMethodsModule } from './payment-methods/payment-methods.module';
+import { AdminRegionsModule } from './regions/regions.module';
+import { AdminAttributesModule } from './attributes/attributes.module';
+import { AdminTransactionsModule } from './transactions/transactions.module';
 
 const ADMIN_MODULES = [
   AdminAIModule,
   AdminUsersModule,
+  AdminPartnersModule,
+  AdminAdminsModule,
   AdminProductsModule,
   AdminNotificationModule,
   AdminReportsModule,
@@ -25,6 +35,12 @@ const ADMIN_MODULES = [
   AdminBlogsModule,
   AdminBrandsModule,
   AdminModelsModule,
+  AdminStatisticsModule,
+  AdminOrdersModule,
+  AdminPaymentMethodsModule,
+  AdminRegionsModule,
+  AdminAttributesModule,
+  AdminTransactionsModule,
 ];
 
 @Module({

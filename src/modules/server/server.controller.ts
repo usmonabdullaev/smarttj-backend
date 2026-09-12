@@ -13,7 +13,7 @@ export class ServerController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.SYSADMIN)
+  @Roles(UserRole.SYSADMIN, UserRole.ADMIN)
   @Get('info')
   @ApiOperation({ summary: 'Get info' })
   async info() {
