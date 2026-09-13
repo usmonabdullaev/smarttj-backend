@@ -26,6 +26,7 @@ import { BannersModule } from './banners/banners.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { BlogsModule } from './blogs/blogs.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { FavoritesModule } from './favorites/favorites.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     BannersModule,
     BlogsModule,
     ReviewsModule,
+    FavoritesModule,
 
     PartnerModule,
     AdminModule,
