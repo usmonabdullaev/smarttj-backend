@@ -25,6 +25,7 @@ import { CartsModule } from '@/modules/carts/carts.module';
 import { BannersModule } from './banners/banners.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { BlogsModule } from './blogs/blogs.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { BlogsModule } from './blogs/blogs.module';
     ApplicationsModule,
     BannersModule,
     BlogsModule,
+    ReviewsModule,
 
     PartnerModule,
     AdminModule,

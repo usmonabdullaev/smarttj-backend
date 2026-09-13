@@ -91,6 +91,12 @@ export class AdminPartnerResponseDto {
   @ApiProperty({ nullable: true })
   cardAccount!: string | null;
 
+  @ApiProperty({
+    example: 5.0,
+    description: 'Ставка комиссии маркетплейса (%)',
+  })
+  commissionRate!: number;
+
   @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
   createdAt!: Date;
 

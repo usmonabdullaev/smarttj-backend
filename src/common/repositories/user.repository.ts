@@ -26,6 +26,9 @@ export class UserRepository {
     return this.prisma.user.findFirst({
       where: {
         OR: [{ email: identifier }, { phone: identifier }],
+        role: {
+          in: [UserRole.ADMIN, UserRole.MODERATOR, UserRole.SYSADMIN],
+        },
       },
     });
   }

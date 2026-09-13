@@ -5,8 +5,10 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
+  Max,
   Min,
 } from 'class-validator';
 import { PartnerIdentification, PartnerStatus } from '@prisma/client';
@@ -129,4 +131,15 @@ export class AdminUpdatePartnerDto {
   @IsOptional()
   @IsString()
   cardAccount?: string;
+
+  @ApiPropertyOptional({
+    example: 5.0,
+    description: 'Ставка комиссии маркетплейса (%)',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  commissionRate?: number;
 }

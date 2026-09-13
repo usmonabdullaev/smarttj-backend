@@ -20,6 +20,8 @@ import { AdminPaymentMethodsModule } from './payment-methods/payment-methods.mod
 import { AdminRegionsModule } from './regions/regions.module';
 import { AdminAttributesModule } from './attributes/attributes.module';
 import { AdminTransactionsModule } from './transactions/transactions.module';
+import { AdminPayoutsModule } from './payouts/payouts.module';
+import { AdminReviewsModule } from './reviews/admin-reviews.module';
 
 const ADMIN_MODULES = [
   AdminAIModule,
@@ -41,6 +43,8 @@ const ADMIN_MODULES = [
   AdminRegionsModule,
   AdminAttributesModule,
   AdminTransactionsModule,
+  AdminPayoutsModule,
+  AdminReviewsModule,
 ];
 
 @Module({

@@ -331,6 +331,11 @@ export class OrdersService {
                       status: true,
                       warranty: true,
                       partnerId: true,
+                      partner: {
+                        select: {
+                          commissionRate: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -354,6 +359,9 @@ export class OrdersService {
         quantity: number;
         warranty: number | null;
         price: number;
+        commissionRate: number;
+        commissionAmount: number;
+        payoutAmount: number;
       }[] = [];
 
       for (const item of cart.items) {
@@ -372,7 +380,14 @@ export class OrdersService {
             ? variant.discount
             : variant.price;
 
-        total += price * item.quantity;
+        const itemTotal = price * item.quantity;
+        total += itemTotal;
+
+        const commissionRate = variant.product.partnerId
+          ? (variant.product.partner?.commissionRate ?? 5.0)
+          : 0.0;
+        const commissionAmount = Math.round(itemTotal * (commissionRate / 100));
+        const payoutAmount = itemTotal - commissionAmount;
 
         orderItemsData.push({
           productVariantId: variant.id,
@@ -383,6 +398,9 @@ export class OrdersService {
           quantity: item.quantity,
           warranty: variant.product.warranty,
           price,
+          commissionRate,
+          commissionAmount,
+          payoutAmount,
         });
       }
 
@@ -426,6 +444,9 @@ export class OrdersService {
           quantity: item.quantity,
           price: item.price,
           warranty: item.warranty,
+          commissionRate: item.commissionRate,
+          commissionAmount: item.commissionAmount,
+          payoutAmount: item.payoutAmount,
         })),
       });
 

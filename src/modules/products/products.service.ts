@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProductStatus, Prisma } from '@prisma/client';
+import { ProductStatus, Prisma, ReviewStatus } from '@prisma/client';
 
 import { GetProductsQueryDto } from '@/modules/products/dto/get-products.dto';
 import { GetProductBlocksQueryDto } from '@/modules/products/dto/get-product-blocks.dto';
@@ -15,7 +15,9 @@ const PRODUCT_VARIANT_INCLUDE = {
       model: true,
       region: true,
       reviews: {
+        where: { status: ReviewStatus.PUBLISHED },
         take: 10,
+        orderBy: { createdAt: 'desc' },
         include: {
           user: {
             select: publicUserSelect,
@@ -221,6 +223,7 @@ export class ProductsService {
           },
         },
         reviews: {
+          where: { status: ReviewStatus.PUBLISHED },
           take: 10,
           orderBy: {
             createdAt: 'desc',

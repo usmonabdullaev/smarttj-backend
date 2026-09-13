@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  Prisma,
   ProductAttribute,
   ProductStatus,
   ProductVariant,
@@ -16,6 +17,7 @@ import { PrismaService } from '@/database/prisma/prisma.service';
 import {
   CreateProductDto,
   CreateProductVariantDto,
+  GetPartnerProductsDto,
   UpdateProductDto,
   UpdateProductVariantDto,
   UploadImagesRequest,
@@ -57,16 +59,56 @@ export class PartnerProductsService {
     private readonly slugify: SlugifyService,
   ) {}
 
-  async getList(profileId: string) {
-    const products = await this.prisma.product.findMany({
-      where: {
-        partnerId: profileId,
-        status: { in: VISIBLE_STATUSES },
-      },
-      include: PRODUCT_INCLUDE,
-    });
+  async getList(profileId: string, query?: GetPartnerProductsDto) {
+    const page = query?.page || 1;
+    const limit = query?.limit || 20;
+    const skip = (page - 1) * limit;
 
-    return { data: products };
+    const where: Prisma.ProductWhereInput = {
+      partnerId: profileId,
+      status: query?.status ? query.status : { in: VISIBLE_STATUSES },
+      ...(query?.categoryId && { categoryId: query.categoryId }),
+      ...(query?.brandId && { brandId: query.brandId }),
+      ...(query?.q && {
+        OR: [
+          { title: { contains: query.q, mode: 'insensitive' } },
+          { slug: { contains: query.q, mode: 'insensitive' } },
+          {
+            variants: {
+              some: {
+                label: { contains: query.q, mode: 'insensitive' },
+              },
+            },
+          },
+        ],
+      }),
+      ...(query?.inStock !== undefined && {
+        variants: query.inStock
+          ? { some: { stock: { gt: 0 } } }
+          : { every: { stock: { lte: 0 } } },
+      }),
+    };
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: PRODUCT_INCLUDE,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return {
+      data: products,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getById(id: string, profileId: string) {
@@ -309,35 +351,63 @@ export class PartnerProductsService {
       });
     }
 
-    // Удаляем старые атрибуты только если переданы новые
-    if (dto.attributes !== undefined) {
-      await this.prisma.productAttribute.deleteMany({
-        where: { productVariantId: id },
+    return await this.prisma.$transaction(async (tx) => {
+      // Удаляем старые атрибуты только если переданы новые
+      if (dto.attributes !== undefined) {
+        await tx.productAttribute.deleteMany({
+          where: { productVariantId: id },
+        });
+      }
+
+      return await tx.productVariant.update({
+        where: { id },
+        data: {
+          price: dto.price,
+          stock: dto.stock,
+          discount: dto.discount,
+          label: dto.label,
+          ...(dto.attributes !== undefined && {
+            attributes: {
+              createMany: {
+                data: dto.attributes.map((attr) => ({
+                  attributeId: attr.attributeId,
+                  attributeValueId: attr.attributeValueId,
+                  valueString: attr.valueString,
+                  valueNumber: attr.valueNumber,
+                  valueBoolean: attr.valueBoolean,
+                  label: attr.label,
+                })),
+              },
+            },
+          }),
+        },
+        include: VARIANT_INCLUDE,
+      });
+    });
+  }
+
+  async updateVariantStock(id: string, partnerId: string, stock: number) {
+    const variant = await this.prisma.productVariant.findFirst({
+      where: {
+        id,
+        product: {
+          partnerId,
+          status: { in: VISIBLE_STATUSES },
+        },
+      },
+    });
+
+    if (!variant) {
+      throw new NotFoundException({
+        message: 'Вариант товара не найден или не принадлежит вам',
+        code: 'VARIANT_NOT_FOUND',
+        error: id,
       });
     }
 
     return await this.prisma.productVariant.update({
       where: { id },
-      data: {
-        price: dto.price,
-        stock: dto.stock,
-        discount: dto.discount,
-        label: dto.label,
-        ...(dto.attributes !== undefined && {
-          attributes: {
-            createMany: {
-              data: dto.attributes.map((attr) => ({
-                attributeId: attr.attributeId,
-                attributeValueId: attr.attributeValueId,
-                valueString: attr.valueString,
-                valueNumber: attr.valueNumber,
-                valueBoolean: attr.valueBoolean,
-                label: attr.label,
-              })),
-            },
-          },
-        }),
-      },
+      data: { stock },
       include: VARIANT_INCLUDE,
     });
   }

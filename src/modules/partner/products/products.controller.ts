@@ -6,6 +6,7 @@ import {
   ApiConsumes,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   Body,
@@ -16,6 +17,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -32,13 +34,16 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import {
   CreateProductDto,
   CreateProductVariantDto,
+  GetPartnerProductsDto,
   UpdateProductDto,
   UpdateProductVariantDto,
+  UpdateVariantStockDto,
 } from './dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.PARTNER)
 @ApiBearerAuth()
+@ApiTags('Partner / Products')
 @Controller('products')
 export class PartnerProductsController {
   constructor(
@@ -48,11 +53,19 @@ export class PartnerProductsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get list of partner products' })
-  async getList(@GetUser('sessionId') sessionId: string) {
+  @ApiOperation({
+    summary:
+      'Получить список товаров партнёра с пагинацией, поиском и фильтрами',
+    description:
+      'Фильтрация по статусу (DRAFT, ACTIVE, AUTO_MODERATION и др.), категории, бренду, наличию на складе и поиск по названию/слагу.',
+  })
+  async getList(
+    @GetUser('sessionId') sessionId: string,
+    @Query() query: GetPartnerProductsDto,
+  ) {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
-    return await this.partnerProductsService.getList(profile.id);
+    return await this.partnerProductsService.getList(profile.id, query);
   }
 
   @Get(':id')
@@ -115,6 +128,27 @@ export class PartnerProductsController {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
     return await this.partnerProductsService.updateVariant(id, profile.id, dto);
+  }
+
+  @Patch('variant/:id/stock')
+  @ApiOperation({
+    summary: 'Быстро обновить остаток варианта товара на складе',
+    description:
+      'Позволяет оперативно изменить количество товара на складе (stock >= 0)',
+  })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async updateVariantStock(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+    @Body() dto: UpdateVariantStockDto,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.updateVariantStock(
+      id,
+      profile.id,
+      dto.stock,
+    );
   }
 
   @Post(':id/images')

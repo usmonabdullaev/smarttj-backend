@@ -191,6 +191,9 @@ export class AdminPartnersService {
         ...(dto.cardAccount !== undefined
           ? { cardAccount: dto.cardAccount?.trim() || null }
           : {}),
+        ...(dto.commissionRate !== undefined
+          ? { commissionRate: dto.commissionRate }
+          : {}),
       },
       include: {
         user: {

@@ -1,12 +1,17 @@
-import { ApiOperation, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import {
   Body,
   Controller,
-  Ip,
-  Post,
   Headers,
   Get,
+  Ip,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 
@@ -22,6 +27,7 @@ import {
   PartnerRegisterVerifyDto,
 } from '@/modules/partner/auth/dto/partner-auth.dto';
 
+@ApiTags('Partner / Auth')
 @Controller('auth')
 export class PartnerAuthController {
   constructor(private readonly partnerAuthService: PartnerAuthService) {}
