@@ -386,6 +386,19 @@ export class ProductsService {
     };
   }
 
+  private cleanAttributeUnit(val: any, unit?: string | null): any {
+    if (val === null || val === undefined) return val;
+    if (typeof val !== 'string') return val;
+    if (!unit || typeof unit !== 'string' || !unit.trim()) return val;
+
+    const trimmedUnit = unit.trim();
+    const escapedUnit = trimmedUnit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(\\s*${escapedUnit})+$`, 'i');
+
+    const cleaned = val.replace(regex, '').trim();
+    return cleaned.length > 0 ? cleaned : val;
+  }
+
   private formatVariantWithGroups<T extends { attributes?: any[] }>(
     variant: T,
   ): T & { attributeGroups: any[] } {
@@ -427,7 +440,7 @@ export class ProductsService {
         });
       }
 
-      const computedValue =
+      const rawValue =
         prodAttr.label ||
         prodAttr.attributeValue?.label ||
         prodAttr.attributeValue?.valueString ||
@@ -448,8 +461,25 @@ export class ProductsService {
           : null) ||
         null;
 
+      const computedValue = this.cleanAttributeUnit(rawValue, attr?.unit);
+
       groupsMap.get(groupKey)!.attributes.push({
         ...prodAttr,
+        label: this.cleanAttributeUnit(prodAttr.label, attr?.unit),
+        valueString: this.cleanAttributeUnit(prodAttr.valueString, attr?.unit),
+        attributeValue: prodAttr.attributeValue
+          ? {
+              ...prodAttr.attributeValue,
+              label: this.cleanAttributeUnit(
+                prodAttr.attributeValue.label,
+                attr?.unit,
+              ),
+              valueString: this.cleanAttributeUnit(
+                prodAttr.attributeValue.valueString,
+                attr?.unit,
+              ),
+            }
+          : null,
         value: computedValue,
       });
     }
