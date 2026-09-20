@@ -61,7 +61,8 @@ export class FavoritesController {
   @Post()
   @ApiOperation({
     summary: 'Добавить товар в избранное',
-    description: 'Явное добавление товара (или конкретного варианта) в список избранного.',
+    description:
+      'Явное добавление товара (или конкретного варианта) в список избранного.',
   })
   @ApiOkResponse({
     type: ToggleFavoriteResponseDto,
@@ -88,7 +89,9 @@ export class FavoritesController {
     type: FavoriteIdsResponseDto,
     description: 'Массив UUID товаров',
   })
-  async getIds(@GetUser('userId') userId: string): Promise<FavoriteIdsResponseDto> {
+  async getIds(
+    @GetUser('userId') userId: string,
+  ): Promise<FavoriteIdsResponseDto> {
     return await this.favoritesService.getIds(userId);
   }
 
@@ -128,7 +131,8 @@ export class FavoritesController {
   @Delete(':productIdOrId')
   @ApiOperation({
     summary: 'Удалить товар из избранного',
-    description: 'Удаляет товар из избранного по ID товара (productId) или ID записи избранного.',
+    description:
+      'Удаляет товар из избранного по ID товара (productId) или ID записи избранного.',
   })
   @ApiOkResponse({
     description: 'Товар удален из избранного',
@@ -154,4 +158,3 @@ export class FavoritesController {
     return await this.favoritesService.clear(userId);
   }
 }
-

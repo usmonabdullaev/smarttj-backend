@@ -67,6 +67,53 @@ class ProductVariantDto {
     ],
   })
   attributes: any;
+
+  @ApiProperty({
+    description:
+      'Атрибуты варианта, сгруппированные по AttributeGroup (включая группу "Общие характеристики" для groupId=null)',
+    example: [
+      {
+        id: '019a6263-6f97-7230-8449-e979b855ada1',
+        name: 'Память и процессор',
+        order: 1,
+        attributes: [
+          {
+            id: '019a6263-6f97-7230-8449-e979b855ada1',
+            attributeId: '019a6263-6f97-7230-8449-e979b855ada1',
+            value: '8 ГБ',
+            attribute: {
+              id: '019a6263-6f97-7230-8449-e979b855ada1',
+              name: 'Оперативная память',
+              type: 'SELECT',
+              unit: 'ГБ',
+            },
+            attributeValue: {
+              id: '019a6263-6f97-7230-8449-e979b855ada1',
+              label: '8 ГБ',
+            },
+          },
+        ],
+      },
+      {
+        id: null,
+        name: 'Общие характеристики',
+        order: 0,
+        attributes: [
+          {
+            id: '019a6263-6f97-7230-8449-e979b855ada2',
+            attributeId: '019a6263-6f97-7230-8449-e979b855ada2',
+            value: '2024',
+            attribute: {
+              id: '019a6263-6f97-7230-8449-e979b855ada2',
+              name: 'Год выпуска',
+              type: 'NUMBER',
+            },
+          },
+        ],
+      },
+    ],
+  })
+  attributeGroups?: any;
 }
 
 class ResponseListMetaDto {

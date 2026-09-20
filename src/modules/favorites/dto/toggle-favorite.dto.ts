@@ -18,4 +18,3 @@ export class ToggleFavoriteDto {
   @IsUUID('7')
   productVariantId?: string;
 }
-

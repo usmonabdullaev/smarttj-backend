@@ -62,7 +62,10 @@ export class FavoriteProductDto {
   @ApiProperty({ example: 35 })
   reviewsCount!: number;
 
-  @ApiProperty({ example: 12000, description: 'Минимальная цена среди вариантов товара' })
+  @ApiProperty({
+    example: 12000,
+    description: 'Минимальная цена среди вариантов товара',
+  })
   minPrice!: number;
 
   @ApiPropertyOptional({ example: 'https://res.cloudinary.com/demo/image.jpg' })
@@ -121,7 +124,10 @@ export class FavoritesListResponseDto {
 }
 
 export class ToggleFavoriteResponseDto {
-  @ApiProperty({ example: true, description: 'true - добавлен в избранное, false - удален' })
+  @ApiProperty({
+    example: true,
+    description: 'true - добавлен в избранное, false - удален',
+  })
   isFavorite!: boolean;
 
   @ApiProperty({ example: 'Товар добавлен в избранное' })
@@ -144,4 +150,3 @@ export class CheckFavoriteResponseDto {
   @ApiProperty({ example: true })
   isFavorite!: boolean;
 }
-

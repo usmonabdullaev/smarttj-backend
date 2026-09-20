@@ -9,4 +9,3 @@ import { FavoritesService } from './favorites.service';
   exports: [FavoritesService],
 })
 export class FavoritesModule {}
-

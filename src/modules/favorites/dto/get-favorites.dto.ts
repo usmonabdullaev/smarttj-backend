@@ -27,4 +27,3 @@ export class GetFavoritesDto {
   @Max(100)
   limit?: number = 20;
 }
-

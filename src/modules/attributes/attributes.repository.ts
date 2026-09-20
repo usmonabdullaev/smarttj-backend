@@ -30,4 +30,28 @@ export class AttributesRepository {
       },
     });
   }
+
+  getFilterableAttributes(categoryIds?: string[]) {
+    return this.prisma.attribute.findMany({
+      where: {
+        filterable: true,
+        ...(categoryIds && categoryIds.length > 0
+          ? {
+              OR: [{ categoryId: { in: categoryIds } }, { categoryId: null }],
+            }
+          : {}),
+      },
+      include: {
+        values: {
+          orderBy: [
+            { valueNumber: 'asc' },
+            { valueString: 'asc' },
+            { label: 'asc' },
+          ],
+        },
+        group: true,
+      },
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
+    });
+  }
 }

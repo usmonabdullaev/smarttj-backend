@@ -29,7 +29,11 @@ const PRODUCT_VARIANT_INCLUDE = {
   images: true,
   attributes: {
     include: {
-      attribute: true,
+      attribute: {
+        include: {
+          group: true,
+        },
+      },
       attributeValue: true,
     },
   },
@@ -79,7 +83,114 @@ export class ProductsService {
     return [categoryId, ...descendantIds.flat()];
   }
 
+  private async resolveCategoryIds(
+    categoryIdOrSlug: string,
+  ): Promise<string[]> {
+    const category = await this.prisma.category.findFirst({
+      where: {
+        OR: [{ id: categoryIdOrSlug }, { slug: categoryIdOrSlug }],
+      },
+    });
+
+    if (!category) {
+      return [];
+    }
+
+    return await this.getCategoryAndDescendantIds(category.id);
+  }
+
+  private async buildAttributeWhereFilters(
+    attributeValueIds?: string[],
+    attributes?: Record<string, string[] | string>,
+  ): Promise<Prisma.ProductVariantWhereInput[]> {
+    const filters: Prisma.ProductVariantWhereInput[] = [];
+    const attrToValueIds = new Map<string, Set<string>>();
+
+    // 1. Если переданы attributeValueIds, узнаем к какому attributeId они относятся
+    if (attributeValueIds && attributeValueIds.length > 0) {
+      const foundValues = await this.prisma.attributeValue.findMany({
+        where: { id: { in: attributeValueIds } },
+        select: { id: true, attributeId: true },
+      });
+
+      for (const val of foundValues) {
+        if (!attrToValueIds.has(val.attributeId)) {
+          attrToValueIds.set(val.attributeId, new Set());
+        }
+        attrToValueIds.get(val.attributeId)!.add(val.id);
+      }
+
+      // Если переданы значения, не найденные в таблице AttributeValue (например кастомные строки),
+      // фильтруем их напрямую по ProductAttribute
+      const foundIds = new Set(foundValues.map((v) => v.id));
+      const remainingIds = attributeValueIds.filter((id) => !foundIds.has(id));
+      if (remainingIds.length > 0) {
+        filters.push({
+          attributes: {
+            some: {
+              OR: [
+                { attributeValueId: { in: remainingIds } },
+                { valueString: { in: remainingIds } },
+                { label: { in: remainingIds } },
+              ],
+            },
+          },
+        });
+      }
+    }
+
+    // 2. Если передан объект attributes: { [attributeId]: valueId | valueId[] }
+    if (attributes && typeof attributes === 'object') {
+      for (const [attributeId, rawValues] of Object.entries(attributes)) {
+        if (!rawValues) continue;
+        const valArray = (
+          Array.isArray(rawValues) ? rawValues : [rawValues]
+        ).filter(Boolean);
+
+        if (valArray.length === 0) continue;
+
+        if (!attrToValueIds.has(attributeId)) {
+          attrToValueIds.set(attributeId, new Set());
+        }
+        for (const val of valArray) {
+          attrToValueIds.get(attributeId)!.add(String(val));
+        }
+      }
+    }
+
+    // 3. Для каждого атрибута: значения внутри атрибута объединяются через OR,
+    // а разные атрибуты объединяются через AND
+    for (const [attributeId, valuesSet] of attrToValueIds.entries()) {
+      const values = Array.from(valuesSet);
+      if (values.length === 0) continue;
+
+      filters.push({
+        attributes: {
+          some: {
+            attributeId,
+            OR: [
+              { attributeValueId: { in: values } },
+              { valueString: { in: values } },
+              { label: { in: values } },
+            ],
+          },
+        },
+      });
+    }
+
+    return filters;
+  }
+
   async getAll(query: GetProductsQueryDto) {
+    const categoryIds = query.categoryId
+      ? await this.resolveCategoryIds(query.categoryId)
+      : undefined;
+
+    const attributeFilters = await this.buildAttributeWhereFilters(
+      query.attributeValueIds,
+      query.attributes,
+    );
+
     const productVariantWhere: Prisma.ProductVariantWhereInput = {
       product: {
         title: query.q
@@ -91,6 +202,9 @@ export class ProductsService {
         status: {
           in: [ProductStatus.ACTIVE, ProductStatus.NOT_AVAILABLE],
         },
+        ...(categoryIds && categoryIds.length > 0
+          ? { categoryId: { in: categoryIds } }
+          : {}),
         ...(query.brandId ? { brandId: query.brandId } : {}),
         ...(query.rating ? { averageRating: { gte: query.rating } } : {}),
       },
@@ -102,6 +216,7 @@ export class ProductsService {
             },
           }
         : {}),
+      ...(attributeFilters.length > 0 ? { AND: attributeFilters } : {}),
     };
 
     const productVariantOrderBy = this.resolveOrderBy(query.sort);
@@ -123,7 +238,7 @@ export class ProductsService {
     ]);
 
     return {
-      data: products,
+      data: products.map((v) => this.formatVariantWithGroups(v)),
       meta: {
         page,
         limit,
@@ -135,7 +250,9 @@ export class ProductsService {
 
   async getCategoryProducts(categorySlug: string, query: GetProductsQueryDto) {
     const category = await this.prisma.category.findFirst({
-      where: { slug: categorySlug },
+      where: {
+        OR: [{ id: categorySlug }, { slug: categorySlug }],
+      },
     });
 
     if (!category) {
@@ -143,6 +260,11 @@ export class ProductsService {
     }
 
     const categoryIds = await this.getCategoryAndDescendantIds(category.id);
+
+    const attributeFilters = await this.buildAttributeWhereFilters(
+      query.attributeValueIds,
+      query.attributes,
+    );
 
     const productVariantWhere: Prisma.ProductVariantWhereInput = {
       product: {
@@ -167,6 +289,7 @@ export class ProductsService {
             },
           }
         : {}),
+      ...(attributeFilters.length > 0 ? { AND: attributeFilters } : {}),
     };
 
     const productVariantOrderBy = this.resolveOrderBy(query.sort);
@@ -188,7 +311,7 @@ export class ProductsService {
     ]);
 
     return {
-      data: products,
+      data: products.map((v) => this.formatVariantWithGroups(v)),
       meta: {
         page,
         limit,
@@ -216,7 +339,11 @@ export class ProductsService {
             images: true,
             attributes: {
               include: {
-                attribute: true,
+                attribute: {
+                  include: {
+                    group: true,
+                  },
+                },
                 attributeValue: true,
               },
             },
@@ -253,7 +380,102 @@ export class ProductsService {
       })
       .catch(() => {});
 
-    return product;
+    return {
+      ...product,
+      variants: product.variants.map((v) => this.formatVariantWithGroups(v)),
+    };
+  }
+
+  private formatVariantWithGroups<T extends { attributes?: any[] }>(
+    variant: T,
+  ): T & { attributeGroups: any[] } {
+    if (!variant || !variant.attributes || !Array.isArray(variant.attributes)) {
+      return {
+        ...variant,
+        attributeGroups: [],
+      };
+    }
+
+    const groupsMap = new Map<
+      string,
+      {
+        id: string | null;
+        name: string;
+        order: number;
+        attributes: any[];
+      }
+    >();
+
+    const COMMON_GROUP_KEY = '__common__';
+
+    for (const prodAttr of variant.attributes) {
+      const attr = prodAttr.attribute;
+      const group = attr?.group;
+
+      const groupKey = group?.id || COMMON_GROUP_KEY;
+      const groupId = group?.id || null;
+      const groupName = group?.name || 'Общие характеристики';
+      const groupOrder =
+        group?.order !== undefined && group?.order !== null ? group.order : 0;
+
+      if (!groupsMap.has(groupKey)) {
+        groupsMap.set(groupKey, {
+          id: groupId,
+          name: groupName,
+          order: groupOrder,
+          attributes: [],
+        });
+      }
+
+      const computedValue =
+        prodAttr.label ||
+        prodAttr.attributeValue?.label ||
+        prodAttr.attributeValue?.valueString ||
+        (prodAttr.attributeValue?.valueNumber !== null &&
+        prodAttr.attributeValue?.valueNumber !== undefined
+          ? prodAttr.attributeValue.valueNumber
+          : null) ||
+        (prodAttr.attributeValue?.valueBoolean !== null &&
+        prodAttr.attributeValue?.valueBoolean !== undefined
+          ? prodAttr.attributeValue.valueBoolean
+          : null) ||
+        prodAttr.valueString ||
+        (prodAttr.valueNumber !== null && prodAttr.valueNumber !== undefined
+          ? prodAttr.valueNumber
+          : null) ||
+        (prodAttr.valueBoolean !== null && prodAttr.valueBoolean !== undefined
+          ? prodAttr.valueBoolean
+          : null) ||
+        null;
+
+      groupsMap.get(groupKey)!.attributes.push({
+        ...prodAttr,
+        value: computedValue,
+      });
+    }
+
+    // Сортируем атрибуты внутри каждой группы по order, затем по name
+    for (const group of groupsMap.values()) {
+      group.attributes.sort((a, b) => {
+        const orderA = a.attribute?.order ?? 0;
+        const orderB = b.attribute?.order ?? 0;
+        if (orderA !== orderB) return orderA - orderB;
+        const nameA = a.attribute?.name || '';
+        const nameB = b.attribute?.name || '';
+        return nameA.localeCompare(nameB);
+      });
+    }
+
+    // Сортируем группы по order, затем по name (группа с order: 0 / 'Общие характеристики' идет первой)
+    const attributeGroups = Array.from(groupsMap.values()).sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return a.name.localeCompare(b.name);
+    });
+
+    return {
+      ...variant,
+      attributeGroups,
+    };
   }
 
   private async getUniqueProductVariants(
@@ -284,7 +506,7 @@ export class ProductsService {
       }
     }
 
-    return uniqueVariants;
+    return uniqueVariants.map((v) => this.formatVariantWithGroups(v));
   }
 
   async getBlocks(query: GetProductBlocksQueryDto): Promise<ProductBlockDto[]> {
