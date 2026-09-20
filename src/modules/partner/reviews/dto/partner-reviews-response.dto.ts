@@ -72,13 +72,6 @@ export class PartnerReviewItemDto {
   comment!: string;
 
   @ApiProperty({
-    example: ['https://res.cloudinary.com/demo/review1.jpg'],
-    type: [String],
-    description: 'Фотографии от покупателя',
-  })
-  images!: string[];
-
-  @ApiProperty({
     example: true,
     description: 'Подтвержденная покупка на маркетплейсе',
   })
@@ -104,12 +97,6 @@ export class PartnerReviewItemDto {
     nullable: true,
   })
   repliedAt?: Date | null;
-
-  @ApiProperty({
-    example: 5,
-    description: 'Количество отметок "Полезно"',
-  })
-  likesCount!: number;
 
   @ApiPropertyOptional({
     example: '0191e4b3-764a-7182-93cb-5690b2b8da99',

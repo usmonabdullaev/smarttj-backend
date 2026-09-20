@@ -42,7 +42,7 @@ export class AdminReviewsController {
   @ApiOperation({
     summary: 'Список всех отзывов платформы (модерация)',
     description:
-      'Поддерживает фильтрацию по статусу (PENDING, PUBLISHED, REJECTED, HIDDEN), оценке, товару, партнёру, покупателю, поиск по тексту и сортировку.',
+      'Поддерживает фильтрацию по статусу ("AUTO_MODERATION", "MANUAL_MODERATION", "PUBLISHED", "REJECTED", "HIDDEN"), оценке, товару, партнёру, покупателю, поиск по тексту и сортировку.',
   })
   @ApiOkResponse({
     type: AdminReviewsListResponseDto,

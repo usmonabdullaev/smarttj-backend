@@ -1,10 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsArray,
   IsInt,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -49,14 +47,4 @@ export class UpdateReviewDto {
   @IsString()
   @MaxLength(3000)
   comment?: string;
-
-  @ApiPropertyOptional({
-    description: 'Массив ссылок на фотографии товара',
-    type: [String],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @IsUrl({}, { each: true })
-  images?: string[];
 }

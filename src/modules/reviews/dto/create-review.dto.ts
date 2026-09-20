@@ -1,11 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsArray,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
   IsUUID,
   Max,
   MaxLength,
@@ -76,15 +74,4 @@ export class CreateReviewDto {
   @IsString()
   @MaxLength(3000)
   comment?: string;
-
-  @ApiPropertyOptional({
-    description: 'Массив ссылок на фотографии товара (Cloudinary)',
-    example: ['https://res.cloudinary.com/demo/image/upload/sample.jpg'],
-    type: [String],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @IsUrl({}, { each: true })
-  images?: string[];
 }

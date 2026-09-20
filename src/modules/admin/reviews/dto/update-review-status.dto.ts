@@ -7,7 +7,7 @@ export class UpdateReviewStatusDto {
     enum: ReviewStatus,
     example: ReviewStatus.PUBLISHED,
     description:
-      'Новый статус публикации отзыва (PUBLISHED, REJECTED, HIDDEN, PENDING)',
+      'Новый статус публикации отзыва ("AUTO_MODERATION", "MANUAL_MODERATION", "PUBLISHED", "REJECTED", "HIDDEN")',
   })
   @IsNotEmpty()
   @IsEnum(ReviewStatus)

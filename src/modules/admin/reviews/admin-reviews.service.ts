@@ -73,8 +73,6 @@ export class AdminReviewsService {
 
     if (query.sortBy === AdminReviewSortBy.RATING) {
       orderBy = { rating: direction };
-    } else if (query.sortBy === AdminReviewSortBy.LIKES_COUNT) {
-      orderBy = { likesCount: direction };
     } else {
       orderBy = { createdAt: direction };
     }
@@ -181,7 +179,7 @@ export class AdminReviewsService {
   }
 
   /**
-   * Изменить статус отзыва (Модерация: PUBLISHED, REJECTED, HIDDEN, PENDING)
+   * Изменить статус отзыва (Модерация: "AUTO_MODERATION", "MANUAL_MODERATION", "PUBLISHED", "REJECTED", "HIDDEN")
    */
   async updateStatus(
     id: string,
@@ -337,12 +335,10 @@ export class AdminReviewsService {
       advantages: review.advantages || null,
       flaws: review.flaws || null,
       comment: review.comment || null,
-      images: review.images,
       isVerified: review.isVerified,
       status: review.status,
       replyComment: review.replyComment || null,
       repliedAt: review.repliedAt || null,
-      likesCount: review.likesCount,
       orderId: review.orderId || null,
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,

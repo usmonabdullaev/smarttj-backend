@@ -1,13 +1,6 @@
+import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  Max,
-  Min,
-} from 'class-validator';
 
 export enum ClientReviewSortBy {
   NEWEST = 'newest',
@@ -51,14 +44,6 @@ export class GetProductReviewsDto {
   @Min(1)
   @Max(5)
   rating?: number;
-
-  @ApiPropertyOptional({
-    description: 'Только отзывы с фотографиями',
-  })
-  @IsOptional()
-  @Type(() => Boolean)
-  @IsBoolean()
-  withPhotos?: boolean;
 
   @ApiPropertyOptional({
     enum: ClientReviewSortBy,

@@ -14,6 +14,7 @@ import { SupportModule } from '@/modules/support/support.module';
 import { RegionsModule } from '@/modules/regions/regions.module';
 import { PartnerModule } from '@/modules/partner/partner.module';
 import { AddressesModule } from './addresses/addresses.module';
+import { FavoritesModule } from './favorites/favorites.module';
 import { BrandsModule } from '@/modules/brands/brands.module';
 import { ModelsModule } from '@/modules/models/models.module';
 import { OrdersModule } from '@/modules/orders/orders.module';
@@ -23,10 +24,9 @@ import { UsersModule } from '@/modules/users/users.module';
 import { AdminModule } from '@/modules/admin/admin.module';
 import { CartsModule } from '@/modules/carts/carts.module';
 import { BannersModule } from './banners/banners.module';
+import { ReviewsModule } from './reviews/reviews.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { BlogsModule } from './blogs/blogs.module';
-import { ReviewsModule } from './reviews/reviews.module';
-import { FavoritesModule } from './favorites/favorites.module';
 
 @Module({
   imports: [

@@ -1,10 +1,11 @@
+import { OrderDeliveryStatus, Prisma, ReviewStatus } from '@prisma/client';
 import {
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { OrderDeliveryStatus, Prisma, ReviewStatus } from '@prisma/client';
 
+import { ReviewModerationService } from '@/bullmq/review-moderation/review-moderation.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import {
   ClientReviewSortBy,
@@ -18,7 +19,10 @@ import {
 
 @Injectable()
 export class ReviewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reviewModeration: ReviewModerationService,
+  ) {}
 
   /**
    * Оставить отзыв на товар (клиент)
@@ -107,7 +111,7 @@ export class ReviewsService {
       }
     }
 
-    // 4. Создаем отзыв со статусом PUBLISHED
+    // 4. Создаем отзыв
     const review = await this.prisma.review.create({
       data: {
         userId,
@@ -118,9 +122,7 @@ export class ReviewsService {
         advantages: dto.advantages?.trim() || '',
         flaws: dto.flaws?.trim() || '',
         comment: dto.comment?.trim() || '',
-        images: dto.images || [],
         isVerified,
-        status: ReviewStatus.PUBLISHED,
       },
       include: {
         user: {
@@ -140,8 +142,8 @@ export class ReviewsService {
       },
     });
 
-    // 5. Пересчитываем рейтинг товара
-    await this.recalculateProductRating(dto.productId);
+    // Send to moderation queue
+    await this.reviewModeration.add(review.id);
 
     return this.mapToReviewResponse(review);
   }
@@ -190,7 +192,8 @@ export class ReviewsService {
           : {}),
         ...(dto.flaws !== undefined ? { flaws: dto.flaws.trim() } : {}),
         ...(dto.comment !== undefined ? { comment: dto.comment.trim() } : {}),
-        ...(dto.images !== undefined ? { images: dto.images } : {}),
+
+        status: ReviewStatus.AUTO_MODERATION,
       },
       include: {
         user: {
@@ -209,6 +212,8 @@ export class ReviewsService {
         },
       },
     });
+
+    // Send to moderation queue
 
     if (dto.rating !== undefined && dto.rating !== review.rating) {
       await this.recalculateProductRating(review.productId);
@@ -267,7 +272,6 @@ export class ReviewsService {
     const where: Prisma.ReviewWhereInput = {
       ...baseWhere,
       ...(query.rating ? { rating: query.rating } : {}),
-      ...(query.withPhotos ? { NOT: { images: { equals: [] } } } : {}),
     };
 
     let orderBy: Prisma.ReviewOrderByWithRelationInput = { createdAt: 'desc' };
@@ -320,6 +324,7 @@ export class ReviewsService {
       4: 0,
       5: 0,
     };
+
     for (const group of statsGroupBy) {
       distribution[group.rating] = group._count.id;
     }
@@ -396,7 +401,7 @@ export class ReviewsService {
   /**
    * Пересчет среднего рейтинга и количества отзывов у товара
    */
-  async recalculateProductRating(productId: string): Promise<void> {
+  async recalculateProductRating(productId: string) {
     const aggregate = await this.prisma.review.aggregate({
       where: {
         productId,
@@ -460,12 +465,10 @@ export class ReviewsService {
       advantages: review.advantages || null,
       flaws: review.flaws || null,
       comment: review.comment || null,
-      images: review.images,
       isVerified: review.isVerified,
       status: review.status,
       replyComment: review.replyComment || null,
       repliedAt: review.repliedAt || null,
-      likesCount: review.likesCount,
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,
     };

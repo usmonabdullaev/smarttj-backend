@@ -56,12 +56,6 @@ export class ReviewResponseDto {
   comment?: string | null;
 
   @ApiProperty({
-    example: ['https://res.cloudinary.com/demo/review1.jpg'],
-    type: [String],
-  })
-  images!: string[];
-
-  @ApiProperty({
     example: true,
     description: 'Подтвержденная покупка на маркетплейсе',
   })
@@ -77,9 +71,6 @@ export class ReviewResponseDto {
 
   @ApiPropertyOptional({ example: '2026-09-13T10:00:00.000Z' })
   repliedAt?: Date | null;
-
-  @ApiProperty({ example: 12, description: 'Количество отметок полезности' })
-  likesCount!: number;
 
   @ApiProperty({ example: '2026-09-13T09:00:00.000Z' })
   createdAt!: Date;

@@ -15,7 +15,6 @@ import {
 export enum AdminReviewSortBy {
   CREATED_AT = 'createdAt',
   RATING = 'rating',
-  LIKES_COUNT = 'likesCount',
 }
 
 export enum AdminSortOrder {
@@ -51,7 +50,7 @@ export class GetAdminReviewsDto {
   @ApiPropertyOptional({
     enum: ReviewStatus,
     description:
-      'Фильтр по статусу отзыва (PENDING, PUBLISHED, REJECTED, HIDDEN)',
+      'Фильтр по статусу отзыва ("AUTO_MODERATION", "MANUAL_MODERATION", "PUBLISHED", "REJECTED", "HIDDEN")',
   })
   @IsOptional()
   @IsEnum(ReviewStatus)

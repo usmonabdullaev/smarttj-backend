@@ -69,12 +69,6 @@ export class AdminReviewItemDto {
   @ApiPropertyOptional({ example: 'Быстрая доставка, оригинал.' })
   comment?: string | null;
 
-  @ApiProperty({
-    example: ['https://res.cloudinary.com/demo/img.jpg'],
-    type: [String],
-  })
-  images!: string[];
-
   @ApiProperty({ example: true })
   isVerified!: boolean;
 
@@ -86,9 +80,6 @@ export class AdminReviewItemDto {
 
   @ApiPropertyOptional({ example: '2026-09-13T10:00:00.000Z' })
   repliedAt?: Date | null;
-
-  @ApiProperty({ example: 3 })
-  likesCount!: number;
 
   @ApiPropertyOptional({ example: '0192e21b-68d1-7000-8000-000000000006' })
   orderId?: string | null;

@@ -19,9 +19,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
+import { ReviewsService } from './reviews.service';
 import {
   CreateReviewDto,
   GetProductReviewsDto,
@@ -30,7 +31,6 @@ import {
   ReviewResponseDto,
   UpdateReviewDto,
 } from './dto';
-import { ReviewsService } from './reviews.service';
 
 @ApiTags('Отзывы (Клиентская часть)')
 @Controller('reviews')
@@ -43,7 +43,7 @@ export class ReviewsController {
   @ApiOperation({
     summary: 'Оставить отзыв на товар',
     description:
-      'Позволяет авторизованному покупателю оставить отзыв (оценка 1-5, достоинства, недостатки, текст, фото). Автоматически проверяет факт покупки в доставленном заказе для плашки "Реальный покупатель". Ограничение: 1 отзыв на товар от одного пользователя.',
+      'Позволяет авторизованному покупателю оставить отзыв (оценка 1-5, достоинства, недостатки, текст). Автоматически проверяет факт покупки в доставленном заказе для плашки "Реальный покупатель". Ограничение: 1 отзыв на товар от одного пользователя.',
   })
   @ApiOkResponse({
     type: ReviewResponseDto,
@@ -102,8 +102,7 @@ export class ReviewsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Редактировать свой отзыв',
-    description:
-      'Позволяет покупателю изменить оценку, текст или прикрепленные фотографии своего отзыва.',
+    description: 'Позволяет покупателю изменить оценку и текст своего отзыва.',
   })
   @ApiOkResponse({
     type: ReviewResponseDto,
