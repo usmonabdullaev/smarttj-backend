@@ -102,7 +102,7 @@ export class AdminReviewsService {
               partner: {
                 select: {
                   id: true,
-                  storeName: true,
+                  title: true,
                 },
               },
             },
