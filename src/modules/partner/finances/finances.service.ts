@@ -22,6 +22,14 @@ import {
   UpdatePartnerRequisitesDto,
 } from './dto';
 
+/**
+ * Ограничение на частоту вывода средств (в днях).
+ * Партнёр может создать только 1 активную/успешную заявку за этот период.
+ * Если заявка была отменена (CANCELLED) или отклонена (REJECTED), можно подать снова.
+ * Чтобы изменить интервал, просто измените число ниже (1 = раз в день, 7 = раз в неделю и т.д.).
+ */
+export const PAYOUT_REQUEST_LIMIT_DAYS: number = 1;
+
 @Injectable()
 export class PartnerFinancesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -42,6 +50,9 @@ export class PartnerFinancesService {
         bankAccount: true,
         bik: true,
         cardAccount: true,
+        cardHolder: true,
+        cardBank: true,
+        payoutPhone: true,
         commissionRate: true,
       },
     });
@@ -136,19 +147,21 @@ export class PartnerFinancesService {
     // Определение статуса реквизитов
     const hasBank = Boolean(partner.bankAccount && partner.bik);
     const hasCard = Boolean(partner.cardAccount);
-    const isComplete = Boolean((hasBank || hasCard) && partner.inn);
+    const hasPhone = Boolean(partner.payoutPhone);
+    const hasPayoutMethod = Boolean(hasBank || hasCard || hasPhone);
+    const isComplete = Boolean(hasPayoutMethod && partner.inn);
 
     let payoutMethod = PayoutMethodType.NONE;
     if (hasBank) {
       payoutMethod = PayoutMethodType.BANK_ACCOUNT;
-    } else if (hasCard) {
+    } else if (hasCard || hasPhone) {
       payoutMethod = PayoutMethodType.CARD;
     }
 
     const missingFields: string[] = [];
     if (!partner.inn) missingFields.push('inn');
-    if (!hasBank && !hasCard) {
-      missingFields.push('bankAccount или cardAccount');
+    if (!hasPayoutMethod) {
+      missingFields.push('bankAccount, cardAccount или payoutPhone');
     }
 
     return {
@@ -193,26 +206,47 @@ export class PartnerFinancesService {
     }
 
     const hasBank = Boolean(partner.bankAccount && partner.bik);
-    const hasCard = Boolean(partner.cardAccount);
-    const hasInn = Boolean(partner.inn);
+    const payoutMethod = hasBank ? 'BANK_ACCOUNT' : 'CARD';
 
-    if (!hasInn || (!hasBank && !hasCard)) {
-      throw new BadRequestException(
-        'Для подачи заявки на вывод необходимо заполнить ИНН и платежные реквизиты (расчетный счет или карту)',
-      );
-    }
+    // Проверяем лимит: не более 1 успешной или активной заявки за заданный период (PAYOUT_REQUEST_LIMIT_DAYS)
+    // Если заявка была отменена (CANCELLED) или отклонена (REJECTED), можно подавать новую
+    const now = new Date();
+    const cooldownSince = new Date(
+      now.getTime() - PAYOUT_REQUEST_LIMIT_DAYS * 24 * 60 * 60 * 1000,
+    );
 
-    // Проверяем наличие уже активной ожидающей заявки
-    const existingPending = await this.prisma.payoutRequest.findFirst({
+    const recentPayout = await this.prisma.payoutRequest.findFirst({
       where: {
         partnerId,
-        status: PayoutStatus.PENDING,
+        status: {
+          in: [
+            PayoutStatus.PENDING,
+            PayoutStatus.PROCESSING,
+            PayoutStatus.COMPLETED,
+          ],
+        },
+        createdAt: { gte: cooldownSince },
       },
+      orderBy: { createdAt: 'desc' },
     });
 
-    if (existingPending) {
+    if (recentPayout) {
+      if (
+        recentPayout.status === PayoutStatus.PENDING ||
+        recentPayout.status === PayoutStatus.PROCESSING
+      ) {
+        throw new BadRequestException(
+          'У вас уже есть активная заявка на вывод в обработке. Дождитесь её завершения или отмените её.',
+        );
+      }
+
+      const periodText =
+        PAYOUT_REQUEST_LIMIT_DAYS === 1
+          ? 'в день'
+          : `раз в ${PAYOUT_REQUEST_LIMIT_DAYS} дн.`;
+
       throw new BadRequestException(
-        'У вас уже есть активная заявка на вывод в обработке. Дождитесь её завершения или отмените её.',
+        `Вы можете подавать не более 1 заявки на вывод ${periodText}. Пожалуйста, повторите попытку позже.`,
       );
     }
 
@@ -224,13 +258,15 @@ export class PartnerFinancesService {
       );
     }
 
-    const payoutMethod = hasBank ? 'BANK_ACCOUNT' : 'CARD';
     const requisitesSnapshot = {
       inn: partner.inn,
       bankName: partner.bankName,
       bankAccount: partner.bankAccount,
       bik: partner.bik,
       cardAccount: partner.cardAccount,
+      cardHolder: partner.cardHolder,
+      cardBank: partner.cardBank,
+      payoutPhone: partner.payoutPhone,
       alifTerminalId: partner.alifTerminalId,
     };
 
@@ -370,6 +406,9 @@ export class PartnerFinancesService {
         bankAccount: true,
         bik: true,
         cardAccount: true,
+        cardHolder: true,
+        cardBank: true,
+        payoutPhone: true,
         alifTerminalId: true,
       },
     });
@@ -380,7 +419,8 @@ export class PartnerFinancesService {
 
     const hasBank = Boolean(partner.bankAccount && partner.bik);
     const hasCard = Boolean(partner.cardAccount);
-    const isComplete = Boolean((hasBank || hasCard) && partner.inn);
+    const hasPhone = Boolean(partner.payoutPhone);
+    const isComplete = Boolean((hasBank || hasCard || hasPhone) && partner.inn);
 
     return {
       inn: partner.inn,
@@ -388,6 +428,9 @@ export class PartnerFinancesService {
       bankAccount: partner.bankAccount,
       bik: partner.bik,
       cardAccount: partner.cardAccount,
+      cardHolder: partner.cardHolder,
+      cardBank: partner.cardBank,
+      payoutPhone: partner.payoutPhone,
       alifTerminalId: partner.alifTerminalId,
       isComplete,
     };
@@ -426,6 +469,15 @@ export class PartnerFinancesService {
         ...(dto.cardAccount !== undefined && {
           cardAccount: dto.cardAccount ? dto.cardAccount.trim() : null,
         }),
+        ...(dto.cardHolder !== undefined && {
+          cardHolder: dto.cardHolder ? dto.cardHolder.trim() : null,
+        }),
+        ...(dto.cardBank !== undefined && {
+          cardBank: dto.cardBank ? dto.cardBank.trim() : null,
+        }),
+        ...(dto.payoutPhone !== undefined && {
+          payoutPhone: dto.payoutPhone ? dto.payoutPhone.trim() : null,
+        }),
         ...(dto.alifTerminalId !== undefined && {
           alifTerminalId: dto.alifTerminalId ? dto.alifTerminalId.trim() : null,
         }),
@@ -436,13 +488,17 @@ export class PartnerFinancesService {
         bankAccount: true,
         bik: true,
         cardAccount: true,
+        cardHolder: true,
+        cardBank: true,
+        payoutPhone: true,
         alifTerminalId: true,
       },
     });
 
     const hasBank = Boolean(updated.bankAccount && updated.bik);
     const hasCard = Boolean(updated.cardAccount);
-    const isComplete = Boolean((hasBank || hasCard) && updated.inn);
+    const hasPhone = Boolean(updated.payoutPhone);
+    const isComplete = Boolean((hasBank || hasCard || hasPhone) && updated.inn);
 
     return {
       inn: updated.inn,
@@ -450,6 +506,9 @@ export class PartnerFinancesService {
       bankAccount: updated.bankAccount,
       bik: updated.bik,
       cardAccount: updated.cardAccount,
+      cardHolder: updated.cardHolder,
+      cardBank: updated.cardBank,
+      payoutPhone: updated.payoutPhone,
       alifTerminalId: updated.alifTerminalId,
       isComplete,
     };

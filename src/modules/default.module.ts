@@ -27,6 +27,7 @@ import { BannersModule } from './banners/banners.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { BlogsModule } from './blogs/blogs.module';
+import { CardsModule } from './cards/cards.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { BlogsModule } from './blogs/blogs.module';
     ModelsModule,
     StatisticsModule,
     PaymentMethodsModule,
+    CardsModule,
     SessionsModule,
     ProductsModule,
     CategoriesModule,

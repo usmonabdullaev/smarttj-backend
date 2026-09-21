@@ -72,8 +72,23 @@ export class UpdatePartnerProfileDto {
   @IsString()
   bik?: string;
 
-  @ApiPropertyOptional({ example: '992000000000' })
+  @ApiPropertyOptional({ example: '9771000012345678' })
   @IsOptional()
   @IsString()
   cardAccount?: string;
+
+  @ApiPropertyOptional({ example: 'Рахимов Алишер' })
+  @IsOptional()
+  @IsString()
+  cardHolder?: string;
+
+  @ApiPropertyOptional({ example: 'Alif Bank' })
+  @IsOptional()
+  @IsString()
+  cardBank?: string;
+
+  @ApiPropertyOptional({ example: '+992900112233' })
+  @IsOptional()
+  @IsString()
+  payoutPhone?: string;
 }

@@ -542,42 +542,6 @@ export class PaymentsService {
   }
 
   /**
-   * Получить сохраненные карты пользователя (SavedCard)
-   */
-  async getSavedCards(userId: string) {
-    return await this.prisma.savedCard.findMany({
-      where: { userId },
-      select: {
-        id: true,
-        cardMask: true,
-        cardType: true,
-        isDefault: true,
-        createdAt: true,
-      },
-      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
-    });
-  }
-
-  /**
-   * Удалить сохраненную карту
-   */
-  async deleteSavedCard(cardId: string, userId: string) {
-    const card = await this.prisma.savedCard.findUnique({
-      where: { id: cardId },
-    });
-
-    if (!card || card.userId !== userId) {
-      throw new NotFoundException('Карта не найдена');
-    }
-
-    await this.prisma.savedCard.delete({
-      where: { id: cardId },
-    });
-
-    return { success: true, message: 'Карта успешно удалена' };
-  }
-
-  /**
    * Получить статус оплаты для экрана результата фронтенда (Result Screen)
    */
   async getOrderPaymentStatus(orderId: string, userId: string) {

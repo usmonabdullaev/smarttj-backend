@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -107,29 +106,5 @@ export class PaymentsController {
     @GetUser('userId') userId: string,
   ) {
     return await this.paymentsService.cancelPayment(dto, userId);
-  }
-
-  @Get('cards')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Получить список сохраненных карт пользователя',
-  })
-  async getSavedCards(@GetUser('userId') userId: string) {
-    return await this.paymentsService.getSavedCards(userId);
-  }
-
-  @Delete('cards/:cardId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Удалить сохраненную карту',
-  })
-  @ApiParam({ name: 'cardId', description: 'ID сохраненной карты' })
-  async deleteSavedCard(
-    @Param('cardId') cardId: string,
-    @GetUser('userId') userId: string,
-  ) {
-    return await this.paymentsService.deleteSavedCard(cardId, userId);
   }
 }

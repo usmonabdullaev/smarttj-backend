@@ -18,8 +18,8 @@ import {
 import { PartnerAuthService } from '@/modules/partner/auth/auth.service';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
-import { RolesGuard } from '@/auth/guards/roles.guard';
+import { JwtAuthGuard, RolesGuard, PartnerStatusGuard } from '@/auth/guards';
+import { AllowBlockedPartner } from '@/common/decorators/partner-status.decorator';
 import {
   PartnerLoginRequestDto,
   PartnerLoginVerifyDto,
@@ -28,11 +28,12 @@ import {
 } from '@/modules/partner/auth/dto/partner-auth.dto';
 
 @ApiTags('Partner / Auth')
+@AllowBlockedPartner()
 @Controller('auth')
 export class PartnerAuthController {
   constructor(private readonly partnerAuthService: PartnerAuthService) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PartnerStatusGuard)
   @Roles(UserRole.PARTNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get partner user and profile' })

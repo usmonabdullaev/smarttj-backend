@@ -29,8 +29,9 @@ import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { ApiErrorDto } from '@/common/dto/api-error.dto';
-import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
-import { RolesGuard } from '@/auth/guards/roles.guard';
+import { JwtAuthGuard, RolesGuard, PartnerStatusGuard } from '@/auth/guards';
+import { RequirePartnerStatus } from '@/common/decorators/partner-status.decorator';
+import { PartnerStatus } from '@prisma/client';
 import {
   CreateProductDto,
   CreateProductVariantDto,
@@ -41,7 +42,7 @@ import {
   UpdateVariantStockDto,
 } from './dto';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PartnerStatusGuard)
 @Roles(UserRole.PARTNER)
 @ApiBearerAuth()
 @ApiTags('Partner / Products')
@@ -80,6 +81,7 @@ export class PartnerProductsController {
   }
 
   @Post()
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Create product (status=DRAFT)' })
   async create(
     @GetUser('sessionId') sessionId: string,
@@ -91,6 +93,7 @@ export class PartnerProductsController {
   }
 
   @Post('create/:categoryId')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Create product with category in path' })
   async createWithCategory(
     @Param('categoryId') categoryId: string,
@@ -106,6 +109,7 @@ export class PartnerProductsController {
   }
 
   @Put(':id')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Update product' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async update(
@@ -119,6 +123,7 @@ export class PartnerProductsController {
   }
 
   @Post(':id/variant')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Create variant (with optional attributes)' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async createVariant(
@@ -132,6 +137,7 @@ export class PartnerProductsController {
   }
 
   @Put('variant/:id')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Update variant (price, stock, attributes)' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async updateVariant(
@@ -145,6 +151,7 @@ export class PartnerProductsController {
   }
 
   @Patch('variant/:id/stock')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({
     summary: 'Быстро обновить остаток варианта товара на складе',
     description:
@@ -166,6 +173,7 @@ export class PartnerProductsController {
   }
 
   @Post([':id/images', 'variant/:id/images', 'variants/:id/images'])
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -209,6 +217,7 @@ export class PartnerProductsController {
   }
 
   @Post(':id/publish')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Publish product (status=AUTO_MODERATION)' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async publish(
@@ -221,6 +230,7 @@ export class PartnerProductsController {
   }
 
   @Delete('image/:id')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Delete image' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async deleteImage(
@@ -233,6 +243,7 @@ export class PartnerProductsController {
   }
 
   @Delete('variant/:id')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Delete variant' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async deleteVariant(
@@ -245,6 +256,7 @@ export class PartnerProductsController {
   }
 
   @Post(':id/deactivate')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Deactivate product (status=INACTIVE)' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async deactivate(
@@ -257,6 +269,7 @@ export class PartnerProductsController {
   }
 
   @Post(':id/activate')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Activate product (status=ACTIVE)' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async activate(
@@ -269,6 +282,7 @@ export class PartnerProductsController {
   }
 
   @Patch(':id')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({
     summary: 'Update product status / Deactivate product',
     description:
@@ -291,6 +305,7 @@ export class PartnerProductsController {
   }
 
   @Delete(':id')
+  @RequirePartnerStatus(PartnerStatus.ACTIVE)
   @ApiOperation({ summary: 'Delete product (status=DELETED, soft delete)' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async delete(

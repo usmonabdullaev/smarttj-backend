@@ -91,6 +91,15 @@ export class AdminPartnerResponseDto {
   @ApiProperty({ nullable: true })
   cardAccount!: string | null;
 
+  @ApiProperty({ nullable: true })
+  cardHolder!: string | null;
+
+  @ApiProperty({ nullable: true })
+  cardBank!: string | null;
+
+  @ApiProperty({ nullable: true })
+  payoutPhone!: string | null;
+
   @ApiProperty({
     example: 5.0,
     description: 'Ставка комиссии маркетплейса (%)',

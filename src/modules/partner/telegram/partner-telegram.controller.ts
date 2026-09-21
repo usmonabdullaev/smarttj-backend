@@ -7,15 +7,14 @@ import {
 } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 
-import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
-import { RolesGuard } from '@/auth/guards/roles.guard';
+import { JwtAuthGuard, RolesGuard, PartnerStatusGuard } from '@/auth/guards';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { PartnerAuthService } from '@/modules/partner/auth/auth.service';
 import { PartnerTelegramService } from './partner-telegram.service';
 import { TelegramLinkCodeResponseDto, TelegramStatusResponseDto } from './dto';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PartnerStatusGuard)
 @Roles(UserRole.PARTNER)
 @ApiBearerAuth()
 @ApiTags('Partner / Telegram')

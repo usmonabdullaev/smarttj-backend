@@ -191,6 +191,15 @@ export class AdminPartnersService {
         ...(dto.cardAccount !== undefined
           ? { cardAccount: dto.cardAccount?.trim() || null }
           : {}),
+        ...(dto.cardHolder !== undefined
+          ? { cardHolder: dto.cardHolder?.trim() || null }
+          : {}),
+        ...(dto.cardBank !== undefined
+          ? { cardBank: dto.cardBank?.trim() || null }
+          : {}),
+        ...(dto.payoutPhone !== undefined
+          ? { payoutPhone: dto.payoutPhone?.trim() || null }
+          : {}),
         ...(dto.commissionRate !== undefined
           ? { commissionRate: dto.commissionRate }
           : {}),

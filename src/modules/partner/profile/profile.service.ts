@@ -55,6 +55,9 @@ export class PartnerProfileService {
       ...(dto.bankAccount !== undefined && { bankAccount: dto.bankAccount }),
       ...(dto.bik !== undefined && { bik: dto.bik }),
       ...(dto.cardAccount !== undefined && { cardAccount: dto.cardAccount }),
+      ...(dto.cardHolder !== undefined && { cardHolder: dto.cardHolder }),
+      ...(dto.cardBank !== undefined && { cardBank: dto.cardBank }),
+      ...(dto.payoutPhone !== undefined && { payoutPhone: dto.payoutPhone }),
     });
   }
 

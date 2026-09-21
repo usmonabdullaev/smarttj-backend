@@ -33,9 +33,30 @@ export class PartnerRequisitesResponseDto {
   @ApiPropertyOptional({
     example: '9771000012345678',
     nullable: true,
-    description: 'Номер карты Корти Милли для выплат',
+    description: 'Номер карты Корти Милли / Visa / Mastercard для выплат',
   })
   cardAccount?: string | null;
+
+  @ApiPropertyOptional({
+    example: 'Рахимов Алишер',
+    nullable: true,
+    description: 'ФИО владельца карты (для сверки перед переводом)',
+  })
+  cardHolder?: string | null;
+
+  @ApiPropertyOptional({
+    example: 'Alif Bank',
+    nullable: true,
+    description: 'Банк карты для выплат',
+  })
+  cardBank?: string | null;
+
+  @ApiPropertyOptional({
+    example: '+992900112233',
+    nullable: true,
+    description: 'Номер телефона для перевода (Alif mobi / DC Next)',
+  })
+  payoutPhone?: string | null;
 
   @ApiPropertyOptional({
     example: 'TERM-ALIF-9988',
@@ -87,12 +108,39 @@ export class UpdatePartnerRequisitesDto {
 
   @ApiPropertyOptional({
     example: '9771000012345678',
-    description: 'Номер банковской карты Корти Милли для выплат',
+    description: 'Номер банковской карты Корти Милли / Visa для выплат',
   })
   @IsOptional()
   @IsString()
   @MaxLength(32)
   cardAccount?: string;
+
+  @ApiPropertyOptional({
+    example: 'Рахимов Алишер',
+    description: 'ФИО владельца карты (для сверки получателя)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  cardHolder?: string;
+
+  @ApiPropertyOptional({
+    example: 'Alif Bank',
+    description: 'Банк карты для выплат (Alif, Dushanbe City, Eskhata и др.)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  cardBank?: string;
+
+  @ApiPropertyOptional({
+    example: '+992900112233',
+    description: 'Номер телефона для перевода (Alif mobi / DC Next)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  payoutPhone?: string;
 
   @ApiPropertyOptional({
     example: 'TERM-ALIF-9988',
