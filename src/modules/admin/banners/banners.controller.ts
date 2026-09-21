@@ -22,7 +22,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
 @ApiBearerAuth()
 @Controller('banners')
 export class AdminBannersController {

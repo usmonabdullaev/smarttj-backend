@@ -92,6 +92,13 @@ export class PartnerOrdersService {
 
       return {
         ...order,
+        currentDeliveryStatus: order.deliveryStatus,
+        currentPaymentStatus: order.paymentStatus,
+        recipient: {
+          name: order.address?.fullname || order.user?.name || null,
+          phone: order.address?.phone || order.user?.phone || null,
+          email: order.user?.email || null,
+        },
         partnerTotal,
       };
     });
@@ -131,6 +138,13 @@ export class PartnerOrdersService {
 
     return {
       ...order,
+      currentDeliveryStatus: order.deliveryStatus,
+      currentPaymentStatus: order.paymentStatus,
+      recipient: {
+        name: order.address?.fullname || order.user?.name || null,
+        phone: order.address?.phone || order.user?.phone || null,
+        email: order.user?.email || null,
+      },
       partnerTotal,
     };
   }

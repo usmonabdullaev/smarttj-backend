@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 
 import { PartnerAuthModule } from '@/modules/partner/auth/auth.module';
 import { PartnerFinancesModule } from '@/modules/partner/finances/finances.module';
+import { PartnerNotificationsModule } from '@/modules/partner/notifications/notifications.module';
 import { PartnerOrdersModule } from '@/modules/partner/orders/orders.module';
 import { PartnerProductsModule } from '@/modules/partner/products/products.module';
 import { PartnerProfileModule } from '@/modules/partner/profile/profile.module';
@@ -14,6 +15,7 @@ const PARTNER_MODULES = [
   PartnerAuthModule,
   PartnerProductsModule,
   PartnerOrdersModule,
+  PartnerNotificationsModule,
   PartnerReviewsModule,
   PartnerFinancesModule,
   PartnerStatisticsModule,

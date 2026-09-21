@@ -32,6 +32,12 @@ export class NotificationsController {
     return await this.notificationsService.getById(id, userId);
   }
 
+  @Patch(':id/read')
+  @ApiOperation({ summary: 'Mark single notification as read' })
+  async markAsRead(@Param('id') id: string, @GetUser('userId') userId: string) {
+    return await this.notificationsService.markAsRead(id, userId);
+  }
+
   @Patch()
   @ApiOperation({ summary: 'Read all notifications' })
   @ApiOkResponse({ type: GetAllResponse, isArray: true })

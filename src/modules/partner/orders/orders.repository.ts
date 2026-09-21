@@ -36,7 +36,11 @@ export class PartnerOrdersRepository {
           },
         },
         paymentMethod: true,
-        address: true,
+        address: {
+          include: {
+            region: true,
+          },
+        },
         items: {
           where: {
             OR: [{ partnerId }, { productVariant: { product: { partnerId } } }],
@@ -98,7 +102,11 @@ export class PartnerOrdersRepository {
           },
         },
         paymentMethod: true,
-        address: true,
+        address: {
+          include: {
+            region: true,
+          },
+        },
         items: {
           where: {
             OR: [{ partnerId }, { productVariant: { product: { partnerId } } }],

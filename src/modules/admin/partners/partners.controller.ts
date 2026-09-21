@@ -24,12 +24,13 @@ import {
 
 @ApiTags('Admin - Партнёры')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
 @ApiBearerAuth()
 @Controller('partners')
 export class AdminPartnersController {
   constructor(private readonly service: AdminPartnersService) {}
 
+  @Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @Get()
   @ApiOperation({
     summary: 'Список всех партнёров с пагинацией, поиском и фильтрами',
@@ -38,18 +39,21 @@ export class AdminPartnersController {
     return await this.service.getAll(query);
   }
 
+  @Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @Get(':id')
   @ApiOperation({ summary: 'Получить детальную информацию о партнёре по ID' })
   async getById(@Param('id') id: string) {
     return await this.service.getById(id);
   }
 
+  @Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @Put(':id')
   @ApiOperation({ summary: 'Обновить данные партнёра' })
   async update(@Param('id') id: string, @Body() dto: AdminUpdatePartnerDto) {
     return await this.service.update(id, dto);
   }
 
+  @Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @Patch(':id/status')
   @ApiOperation({
     summary: 'Быстро изменить статус партнёра (ACTIVE, BLOCKED, IN_MODERATE)',
@@ -61,6 +65,7 @@ export class AdminPartnersController {
     return await this.service.updateStatus(id, dto.status);
   }
 
+  @Roles(UserRole.SYSADMIN, UserRole.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Удалить партнёра (с проверкой на товары и заказы)',

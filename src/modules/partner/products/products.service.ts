@@ -59,6 +59,10 @@ export class PartnerProductsService {
     private readonly slugify: SlugifyService,
   ) {}
 
+  async getAll(profileId: string, query?: GetPartnerProductsDto) {
+    return this.getList(profileId, query);
+  }
+
   async getList(profileId: string, query?: GetPartnerProductsDto) {
     const page = query?.page || 1;
     const limit = query?.limit || 20;
@@ -584,6 +588,42 @@ export class PartnerProductsService {
       where: { id },
       data: { status: ProductStatus.INACTIVE },
     });
+  }
+
+  async activate(id: string, partnerId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id,
+        partnerId,
+        status: { in: VISIBLE_STATUSES },
+      },
+      select: { id: true },
+    });
+
+    if (!product) {
+      throw new NotFoundException({
+        message: 'Product not found',
+        code: 'PRODUCT_NOT_FOUND',
+        error: id,
+      });
+    }
+
+    return await this.prisma.product.update({
+      where: { id },
+      data: { status: ProductStatus.ACTIVE },
+    });
+  }
+
+  async updateStatus(
+    id: string,
+    partnerId: string,
+    status?: ProductStatus,
+    isActive?: boolean,
+  ) {
+    if (status === ProductStatus.ACTIVE || isActive === true) {
+      return await this.activate(id, partnerId);
+    }
+    return await this.inactive(id, partnerId);
   }
 
   async delete(id: string, partnerId: string) {

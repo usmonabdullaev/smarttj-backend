@@ -1,20 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { App } from 'supertest/types';
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
+import { AppController } from '@/app.controller';
+import { AppService } from '@/app.service';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      controllers: [AppController],
+      providers: [AppService],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   it('/api/bing (GET)', () => {

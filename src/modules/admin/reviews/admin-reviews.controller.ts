@@ -31,7 +31,7 @@ import {
 } from './dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
 @ApiBearerAuth()
 @ApiTags('Admin / Reviews')
 @Controller('reviews')

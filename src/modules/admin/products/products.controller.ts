@@ -17,7 +17,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { GetAllRequest } from './dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
 @ApiBearerAuth()
 @Controller('products')
 export class AdminProductsController {

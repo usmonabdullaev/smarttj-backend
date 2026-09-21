@@ -31,7 +31,7 @@ import {
 import { AdminPayoutsService } from './payouts.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
 @ApiBearerAuth()
 @ApiTags('Admin / Payouts')
 @Controller('payouts')

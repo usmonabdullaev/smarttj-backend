@@ -26,7 +26,7 @@ import { BlogResponse, CreateRequest, UpdateRequest } from './dto';
 import { AdminBlogsService } from './blogs.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
 @ApiBearerAuth()
 @Controller('blogs')
 export class AdminBlogsController {

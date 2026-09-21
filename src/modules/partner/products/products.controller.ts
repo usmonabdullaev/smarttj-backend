@@ -36,6 +36,7 @@ import {
   CreateProductVariantDto,
   GetPartnerProductsDto,
   UpdateProductDto,
+  UpdateProductStatusDto,
   UpdateProductVariantDto,
   UpdateVariantStockDto,
 } from './dto';
@@ -54,22 +55,20 @@ export class PartnerProductsController {
 
   @Get()
   @ApiOperation({
-    summary:
-      'Получить список товаров партнёра с пагинацией, поиском и фильтрами',
-    description:
-      'Фильтрация по статусу (DRAFT, ACTIVE, AUTO_MODERATION и др.), категории, бренду, наличию на складе и поиск по названию/слагу.',
+    summary: 'Get partner products',
+    description: 'Returns products with pagination and category tree',
   })
-  async getList(
+  async getAll(
     @GetUser('sessionId') sessionId: string,
     @Query() query: GetPartnerProductsDto,
   ) {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
-    return await this.partnerProductsService.getList(profile.id, query);
+    return await this.partnerProductsService.getAll(profile.id, query);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get product by id' })
+  @ApiOperation({ summary: 'Get product by id (with variants and images)' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
   async getById(
     @Param('id') id: string,
@@ -86,6 +85,21 @@ export class PartnerProductsController {
     @GetUser('sessionId') sessionId: string,
     @Body() dto: CreateProductDto,
   ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.create(profile.id, dto);
+  }
+
+  @Post('create/:categoryId')
+  @ApiOperation({ summary: 'Create product with category in path' })
+  async createWithCategory(
+    @Param('categoryId') categoryId: string,
+    @GetUser('sessionId') sessionId: string,
+    @Body() dto: CreateProductDto,
+  ) {
+    if (categoryId && !dto.categoryId) {
+      dto.categoryId = categoryId;
+    }
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
     return await this.partnerProductsService.create(profile.id, dto);
@@ -151,7 +165,7 @@ export class PartnerProductsController {
     );
   }
 
-  @Post(':id/images')
+  @Post([':id/images', 'variant/:id/images', 'variants/:id/images'])
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -166,7 +180,11 @@ export class PartnerProductsController {
     },
   })
   @UseInterceptors(FilesInterceptor('images'))
-  @ApiOperation({ summary: 'Upload images for variant' })
+  @ApiOperation({
+    summary: 'Upload images for variant',
+    description:
+      'Поддерживает пути :id/images, variant/:id/images, variants/:id/images. :id — ID варианта (variantId).',
+  })
   async uploadImages(
     @Param('id') id: string,
     @GetUser('sessionId') sessionId: string,
@@ -226,16 +244,50 @@ export class PartnerProductsController {
     return await this.partnerProductsService.deleteVariant(id, profile.id);
   }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Set product inactive (status=INACTIVE)' })
+  @Post(':id/deactivate')
+  @ApiOperation({ summary: 'Deactivate product (status=INACTIVE)' })
   @ApiNotFoundResponse({ type: ApiErrorDto })
-  async inactive(
+  async deactivate(
     @Param('id') id: string,
     @GetUser('sessionId') sessionId: string,
   ) {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
     return await this.partnerProductsService.inactive(id, profile.id);
+  }
+
+  @Post(':id/activate')
+  @ApiOperation({ summary: 'Activate product (status=ACTIVE)' })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async activate(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.activate(id, profile.id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Update product status / Deactivate product',
+    description:
+      'Без тела или с { "status": "INACTIVE" } деактивирует товар. С { "status": "ACTIVE" } активирует товар.',
+  })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  async updateStatus(
+    @Param('id') id: string,
+    @GetUser('sessionId') sessionId: string,
+    @Body() dto?: UpdateProductStatusDto,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.partnerProductsService.updateStatus(
+      id,
+      profile.id,
+      dto?.status,
+      dto?.isActive,
+    );
   }
 
   @Delete(':id')

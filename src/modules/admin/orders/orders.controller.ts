@@ -34,7 +34,7 @@ import { AdminOrdersService } from './orders.service';
 
 @ApiTags('Admin - Заказы')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
 @ApiBearerAuth()
 @Controller('orders')
 export class AdminOrdersController {

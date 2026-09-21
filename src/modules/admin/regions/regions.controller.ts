@@ -31,7 +31,7 @@ import { AdminRegionsService } from './regions.service';
 
 @ApiTags('Admin - Регионы доставки')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SYSADMIN, UserRole.ADMIN)
+@Roles(UserRole.SYSADMIN, UserRole.ADMIN, UserRole.MODERATOR)
 @ApiBearerAuth()
 @Controller('regions')
 export class AdminRegionsController {

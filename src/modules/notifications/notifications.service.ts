@@ -12,7 +12,7 @@ export class NotificationsService {
 
   async getUnreadCount(userId: string) {
     const unreadCount = await this.repository.countUnread(userId);
-    return { unreadCount };
+    return { count: unreadCount, unreadCount };
   }
 
   async getById(id: string, userId: string) {
@@ -25,7 +25,13 @@ export class NotificationsService {
     return await this.repository.read(id);
   }
 
+  async markAsRead(id: string, userId: string) {
+    await this.getById(id, userId);
+    return { success: true };
+  }
+
   async readAll(userId: string) {
-    return await this.repository.readAll(userId);
+    const result = await this.repository.readAll(userId);
+    return { success: true, count: result.count };
   }
 }
