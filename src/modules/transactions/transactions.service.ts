@@ -8,11 +8,24 @@ export class TransactionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateRequest) {
+    const commissionRate = dto.commissionRate ?? 0;
+    const commissionAmount =
+      dto.commissionAmount !== undefined
+        ? dto.commissionAmount
+        : Math.round((dto.amount * commissionRate) / 100);
+    const netAmount =
+      dto.netAmount !== undefined
+        ? dto.netAmount
+        : dto.amount - commissionAmount;
+
     return await this.prisma.transaction.create({
       data: {
         userId: dto.userId,
         orderId: dto.orderId,
         amount: dto.amount,
+        commissionRate,
+        commissionAmount,
+        netAmount,
         status: dto.status,
         provider: dto.provider,
         providerId: dto.providerId,

@@ -23,7 +23,6 @@ import {
   AlifCallbackRequest,
   CancelPaymentRequest,
   InitPaymentRequest,
-  SimulatePaymentRequest,
 } from './dto';
 import { PaymentsService } from './payments.service';
 
@@ -93,21 +92,6 @@ export class PaymentsController {
     @GetUser('userId') userId: string,
   ) {
     return await this.paymentsService.getOrderPaymentStatus(orderId, userId);
-  }
-
-  @Post('alif/simulate')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Тестовая эмуляция callback от Alif (для фронтенд-тестирования)',
-    description:
-      'Позволяет фронтенду мгновенно имитировать статус оплаты (ok, failed, canceled) с валидной подписью без реального проведения платежа.',
-  })
-  async simulatePayment(
-    @Body() dto: SimulatePaymentRequest,
-    @GetUser('userId') userId: string,
-  ) {
-    return await this.paymentsService.simulateCallback(dto, userId);
   }
 
   @Post('alif/cancel')

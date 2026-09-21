@@ -8,17 +8,6 @@ export const seedRegions = async (prisma: PrismaClient) => {
   const regionsCount = await prisma.region.count();
 
   if (regionsCount === 0) {
-    const seedFn = async (regions: any[]) => {
-      for (const region of regions) {
-        await prisma.region.create({
-          data: {
-            title: region.title,
-            slug: region.slug,
-          },
-        });
-      }
-    };
-
-    await seedFn(REGIONS);
+    await prisma.region.createMany({ data: REGIONS });
   }
 };

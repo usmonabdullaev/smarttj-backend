@@ -28,6 +28,27 @@ export class AdminTransactionDto {
   @ApiProperty({ example: 4500, description: 'Сумма транзакции (сомони)' })
   amount!: number;
 
+  @ApiPropertyOptional({
+    example: 1.0,
+    description: 'Ставка комиссии шлюза (%)',
+    nullable: true,
+  })
+  commissionRate?: number | null;
+
+  @ApiPropertyOptional({
+    example: 45,
+    description: 'Удержанная комиссия эквайринга',
+    nullable: true,
+  })
+  commissionAmount?: number | null;
+
+  @ApiPropertyOptional({
+    example: 4455,
+    description: 'Чистая сумма к зачислению на счет площадки',
+    nullable: true,
+  })
+  netAmount?: number | null;
+
   @ApiProperty({ enum: TransactionStatus, example: TransactionStatus.SUCCESS })
   status!: TransactionStatus;
 

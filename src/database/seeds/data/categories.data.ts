@@ -1,9 +1,10 @@
-import { CreateAttributeDto } from '../../../modules/attributes/dto/create-attribute.dto';
-import { CreateCategoryDto } from '../../../modules/categories/dto/create-category.dto';
+import { Prisma } from '@prisma/client';
 
-export class CreateCategoriesDto extends CreateCategoryDto {
+export interface CreateCategoriesDto extends Prisma.CategoryCreateManyInput {
   children?: CreateCategoriesDto[];
-  attributes?: CreateAttributeDto[];
+  attributes?: (Prisma.AttributeCreateManyInput & {
+    values?: Prisma.AttributeValueCreateWithoutAttributeInput[];
+  })[];
 }
 
 export const CATEGORIES: CreateCategoriesDto[] = [

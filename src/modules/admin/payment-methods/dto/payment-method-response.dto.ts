@@ -23,6 +23,12 @@ export class AdminPaymentMethodResponseDto {
   @ApiProperty({ enum: PaymentMethodType, example: PaymentMethodType.CARD })
   type!: PaymentMethodType;
 
+  @ApiProperty({
+    example: 1.0,
+    description: 'Процент комиссии эквайринга/шлюза (%)',
+  })
+  commissionRate!: number;
+
   @ApiProperty({ example: '2026-09-01T10:00:00.000Z' })
   createdAt!: Date;
 

@@ -1,6 +1,12 @@
-import { CreatePaymentMethodDto } from '../../../modules/payment-methods/dto/create-payment-method.dto';
+import { PaymentMethodType, Prisma } from '@prisma/client';
 
-export const PAYMENT_METHODS: CreatePaymentMethodDto[] = [
-  { name: 'Наличными', type: 'CASH', isActive: true },
-  { name: 'Картой', type: 'CARD', isActive: true },
+export const PAYMENT_METHODS: Prisma.PaymentMethodCreateManyInput[] = [
+  {
+    code: 'CASH',
+    provider: 'CASH',
+    commissionRate: 0,
+    name: 'Наличными',
+    isActive: true,
+    type: PaymentMethodType.CASH,
+  },
 ];

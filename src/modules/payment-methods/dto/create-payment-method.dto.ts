@@ -2,9 +2,13 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PaymentMethodType } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -49,6 +53,18 @@ export class CreatePaymentMethodDto {
   @IsString()
   @IsEnum(PaymentMethodType)
   type!: PaymentMethodType;
+
+  @ApiPropertyOptional({
+    example: 1.0,
+    default: 0,
+    description: 'Процент комиссии эквайринга/шлюза (%)',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  commissionRate?: number = 0;
 
   @ApiProperty({
     example: true,

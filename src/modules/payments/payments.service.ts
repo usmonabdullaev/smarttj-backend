@@ -178,7 +178,7 @@ export class PaymentsService {
 
     const order = await this.prisma.order.findUnique({
       where: { id: dto.orderId },
-      include: { transaction: true, items: true },
+      include: { transaction: true, items: true, paymentMethod: true },
     });
 
     if (!order) {
@@ -210,6 +210,10 @@ export class PaymentsService {
     }
 
     if (dto.status === 'ok') {
+      const commissionRate = order.paymentMethod?.commissionRate ?? 0;
+      const commissionAmount = Math.round((amountVal * commissionRate) / 100);
+      const netAmount = amountVal - commissionAmount;
+
       await this.prisma.$transaction(async (tx) => {
         // Обновляем заказ в статус PAID с отметкой paidAt
         await tx.order.update({
@@ -227,6 +231,9 @@ export class PaymentsService {
               userId: order.userId,
               orderId: order.id,
               amount: amountVal,
+              commissionRate,
+              commissionAmount,
+              netAmount,
               status: TransactionStatus.SUCCESS,
               provider: 'ALIF',
               providerId: transactionIdStr,
@@ -240,6 +247,10 @@ export class PaymentsService {
           await tx.transaction.update({
             where: { id: order.transaction.id },
             data: {
+              amount: amountVal,
+              commissionRate,
+              commissionAmount,
+              netAmount,
               status: TransactionStatus.SUCCESS,
               provider: 'ALIF',
               providerId: transactionIdStr,
@@ -369,7 +380,7 @@ export class PaymentsService {
   async checkPaymentStatus(orderId: string, userId?: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      include: { transaction: true },
+      include: { transaction: true, paymentMethod: true },
     });
 
     if (!order) {
@@ -401,11 +412,20 @@ export class PaymentsService {
         });
 
         if (!order.transaction) {
+          const commissionRate = order.paymentMethod?.commissionRate ?? 0;
+          const commissionAmount = Math.round(
+            (order.totalPrice * commissionRate) / 100,
+          );
+          const netAmount = order.totalPrice - commissionAmount;
+
           await tx.transaction.create({
             data: {
               userId: order.userId,
               orderId: order.id,
               amount: order.totalPrice,
+              commissionRate,
+              commissionAmount,
+              netAmount,
               status: TransactionStatus.SUCCESS,
               provider: 'ALIF',
               providerId: transactionIdStr,
@@ -596,6 +616,7 @@ export class PaymentsService {
         type: order.paymentMethod.type,
         provider: order.paymentMethod.provider,
         icon: order.paymentMethod.icon,
+        commissionRate: order.paymentMethod.commissionRate,
       },
       transaction: order.transaction
         ? {
@@ -605,67 +626,15 @@ export class PaymentsService {
             payerAccount: order.transaction.payerAccount,
             payerPhone: order.transaction.payerPhone,
             paymentGate: order.transaction.paymentGate,
+            commissionRate: order.transaction.commissionRate,
+            commissionAmount: order.transaction.commissionAmount,
+            netAmount: order.transaction.netAmount,
             status: order.transaction.status,
           }
         : null,
       payUrl: lastAttempt?.paymentUrl || null,
       lastAttemptStatus: lastAttempt?.status || null,
       errorMessage: lastAttempt?.errorMessage || null,
-    };
-  }
-
-  /**
-   * Эмуляция callback от Alif для 100% тестирования фронтенда (Sandbox Mock)
-   */
-  async simulateCallback(
-    dto: { orderId: string; status: string },
-    userId: string,
-  ) {
-    const order = await this.prisma.order.findUnique({
-      where: { id: dto.orderId },
-    });
-
-    if (!order) {
-      throw new NotFoundException('Заказ не найден');
-    }
-
-    if (order.userId !== userId) {
-      throw new ForbiddenException(
-        'У вас нет прав на тестирование этого заказа',
-      );
-    }
-
-    const mockTransactionId = String(
-      Math.floor(100000 + Math.random() * 900000),
-    );
-    const mockDataToSign = `${dto.orderId}${dto.status}${mockTransactionId}`;
-    const mockToken = this.alifProvider.generateToken(mockDataToSign);
-
-    const mockCallbackPayload: AlifCallbackRequest = {
-      orderId: dto.orderId,
-      transactionId: mockTransactionId,
-      status: dto.status,
-      token: mockToken,
-      amount: order.totalPrice,
-      phone: '992900000000',
-      account: '444455******1111',
-      transaction_type: 'korti_milli',
-      message:
-        dto.status === 'ok'
-          ? 'Тестовый платеж успешно проведен'
-          : dto.status === 'canceled'
-            ? 'Тестовый платеж отменен'
-            : 'Тестовый платеж отклонен банком',
-    };
-
-    const result = await this.handleCallback(mockCallbackPayload);
-
-    const updatedStatus = await this.getOrderPaymentStatus(dto.orderId, userId);
-
-    return {
-      message: `Эмуляция со статусом "${dto.status}" успешно выполнена`,
-      callbackResult: result,
-      orderPaymentStatus: updatedStatus,
     };
   }
 }

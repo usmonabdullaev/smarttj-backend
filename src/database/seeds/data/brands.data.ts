@@ -1,117 +1,142 @@
-export const BRANDS = [
-  {
-    name: 'Другое',
-    slug: 'other',
-    popular: false,
-  },
+import { Prisma } from '@prisma/client';
+
+export const BRANDS: Prisma.BrandCreateManyInput[] = [
   {
     name: 'Samsung',
     slug: 'samsung',
     popular: true,
+    order: 1,
   },
   {
     name: 'Apple',
     slug: 'apple',
     popular: true,
+    order: 2,
   },
   {
     name: 'Xiaomi',
     slug: 'xiaomi',
     popular: true,
+    order: 3,
   },
   {
     name: 'Huawei',
     slug: 'huawei',
     popular: true,
+    order: 4,
   },
   {
     name: 'LG',
     slug: 'lg',
     popular: false,
+    order: 5,
   },
   {
     name: 'Sony',
     slug: 'sony',
     popular: true,
+    order: 6,
   },
   {
     name: 'Microsoft',
     slug: 'microsoft',
     popular: true,
+    order: 7,
   },
   {
     name: 'Realme',
     slug: 'realme',
     popular: false,
+    order: 8,
   },
   {
     name: 'Honor',
     slug: 'honor',
     popular: true,
+    order: 9,
   },
   {
     name: 'Tecno',
     slug: 'tecno',
     popular: true,
+    order: 10,
   },
   {
     name: 'Infinix',
     slug: 'infinix',
     popular: true,
+    order: 11,
   },
   {
     name: 'Lenovo',
     slug: 'lenovo',
     popular: true,
+    order: 12,
   },
   {
     name: 'Asus',
     slug: 'asus',
     popular: true,
+    order: 13,
   },
   {
     name: 'HP',
     slug: 'hp',
     popular: true,
+    order: 14,
   },
   {
     name: 'Acer',
     slug: 'acer',
     popular: true,
+    order: 15,
   },
   {
     name: 'MSI',
     slug: 'msi',
     popular: true,
+    order: 16,
   },
   {
     name: 'Logitech',
     slug: 'logitech',
     popular: true,
+    order: 17,
   },
   {
     name: 'OnePlus',
     slug: 'oneplus',
     popular: false,
+    order: 18,
   },
   {
     name: 'Razer',
     slug: 'razer',
     popular: false,
+    order: 19,
   },
   {
     name: 'Kingston',
     slug: 'kingston',
     popular: false,
+    order: 20,
   },
   {
     name: 'Oppo',
     slug: 'oppo',
     popular: false,
+    order: 21,
   },
   {
     name: 'Intel',
     slug: 'intel',
     popular: true,
+    order: 22,
+  },
+  {
+    name: 'Другое',
+    slug: 'other',
+    popular: false,
+    order: 1000,
   },
 ];

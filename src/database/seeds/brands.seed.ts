@@ -8,12 +8,6 @@ export const seedBrands = async (prisma: PrismaClient) => {
   const brandsCount = await prisma.brand.count();
 
   if (brandsCount === 0) {
-    await prisma.brand.createMany({
-      data: BRANDS.map((brand) => ({
-        name: brand.name,
-        slug: brand.slug,
-        popular: brand.popular,
-      })),
-    });
+    await prisma.brand.createMany({ data: BRANDS });
   }
 };

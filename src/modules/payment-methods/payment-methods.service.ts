@@ -20,6 +20,7 @@ export class PaymentMethodsService {
         provider: dto.provider,
         icon: dto.icon,
         type: dto.type,
+        commissionRate: dto.commissionRate ?? 0,
         isActive: dto.isActive,
       },
     });
@@ -69,6 +70,9 @@ export class PaymentMethodsService {
         ...(dto.provider !== undefined && { provider: dto.provider }),
         ...(dto.icon !== undefined && { icon: dto.icon }),
         ...(dto.type !== undefined && { type: dto.type }),
+        ...(dto.commissionRate !== undefined && {
+          commissionRate: dto.commissionRate,
+        }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });

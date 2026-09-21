@@ -201,6 +201,7 @@ export class OrdersService {
         type: order.paymentMethod.type,
         provider: order.paymentMethod.provider,
         icon: order.paymentMethod.icon,
+        commissionRate: order.paymentMethod.commissionRate,
       },
       transaction: order.transaction
         ? {
@@ -210,6 +211,9 @@ export class OrdersService {
             payerAccount: order.transaction.payerAccount,
             payerPhone: order.transaction.payerPhone,
             paymentGate: order.transaction.paymentGate,
+            commissionRate: order.transaction.commissionRate,
+            commissionAmount: order.transaction.commissionAmount,
+            netAmount: order.transaction.netAmount,
           }
         : null,
       items: order.items.map((item) => ({
