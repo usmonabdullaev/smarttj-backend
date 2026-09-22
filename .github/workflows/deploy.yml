@@ -59,7 +59,7 @@ jobs:
 
             cd ~/projects/smarttj-backend
 
-            git fetch origin 
+            git fetch origin
             git reset --hard origin/main
 
             docker network inspect smarttj-network >/dev/null 2>&1 || docker network create smarttj-network
