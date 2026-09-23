@@ -25,12 +25,44 @@ import {
 } from './dto';
 
 /**
- * Ограничение на частоту вывода средств (в днях).
- * Партнёр может создать только 1 активную/успешную заявку за этот период.
- * Если заявка была отменена (CANCELLED) или отклонена (REJECTED), можно подать снова.
- * Чтобы изменить интервал, просто измените число ниже (1 = раз в день, 7 = раз в неделю и т.д.).
+ * Настройки лимита вывода средств для партнёров:
+ * - maxCompletedRequests: максимальное количество успешных (COMPLETED) выплат за указанный период.
+ * - periodDays: период в днях (1 = 1 день/сутки, 5 = 5 дней, 7 = неделя, 30 = месяц и т.д.).
+ *
+ * Примеры конфигурации:
+ * { maxCompletedRequests: 1, periodDays: 1 }  => 1 успешная выплата в день
+ * { maxCompletedRequests: 5, periodDays: 1 }  => 5 успешных выплат в день
+ * { maxCompletedRequests: 10, periodDays: 5 } => 10 успешных выплат за 5 дней
  */
-export const PAYOUT_REQUEST_LIMIT_DAYS: number = 1;
+export const PAYOUT_REQUEST_LIMIT = {
+  maxCompletedRequests: 100, // Количество успешных выплат
+  periodDays: 1, // Период (в днях)
+};
+
+export const PAYOUT_REQUEST_LIMIT_DAYS: number =
+  PAYOUT_REQUEST_LIMIT.periodDays;
+
+function formatDaysText(days: number): string {
+  if (days === 1) return 'в день';
+  const mod10 = days % 10;
+  const mod100 = days % 100;
+  if (mod10 === 1 && mod100 !== 11) {
+    return `за ${days} день`;
+  }
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+    return `за ${days} дня`;
+  }
+  return `за ${days} дней`;
+}
+
+function formatRequestsCountText(count: number): string {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) {
+    return `${count} успешной выплаты`;
+  }
+  return `${count} успешных выплат`;
+}
 
 @Injectable()
 export class PartnerFinancesService {
@@ -210,46 +242,54 @@ export class PartnerFinancesService {
     const hasBank = Boolean(partner.bankAccount && partner.bik);
     const payoutMethod = hasBank ? 'BANK_ACCOUNT' : 'CARD';
 
-    // Проверяем лимит: не более 1 успешной или активной заявки за заданный период (PAYOUT_REQUEST_LIMIT_DAYS)
-    // Если заявка была отменена (CANCELLED) или отклонена (REJECTED), можно подавать новую
-    const now = new Date();
-    const cooldownSince = new Date(
-      now.getTime() - PAYOUT_REQUEST_LIMIT_DAYS * 24 * 60 * 60 * 1000,
-    );
-
-    const recentPayout = await this.prisma.payoutRequest.findFirst({
+    // 1. Проверяем наличие активной заявки в обработке (PENDING или PROCESSING)
+    const activePayout = await this.prisma.payoutRequest.findFirst({
       where: {
         partnerId,
         status: {
-          in: [
-            PayoutStatus.PENDING,
-            PayoutStatus.PROCESSING,
-            PayoutStatus.COMPLETED,
-          ],
+          in: [PayoutStatus.PENDING, PayoutStatus.PROCESSING],
         },
-        createdAt: { gte: cooldownSince },
       },
-      orderBy: { createdAt: 'desc' },
     });
 
-    if (recentPayout) {
-      if (
-        recentPayout.status === PayoutStatus.PENDING ||
-        recentPayout.status === PayoutStatus.PROCESSING
-      ) {
+    if (activePayout) {
+      throw new BadRequestException(
+        'У вас уже есть активная заявка на вывод в обработке. Дождитесь её завершения или отмените её.',
+      );
+    }
+
+    // 2. Проверяем лимит успешных (COMPLETED) выплат за заданный период
+    // Отмененные (CANCELLED) и отклоненные (REJECTED) заявки не учитываются
+    if (
+      PAYOUT_REQUEST_LIMIT.maxCompletedRequests > 0 &&
+      PAYOUT_REQUEST_LIMIT.periodDays > 0
+    ) {
+      const now = new Date();
+      const cooldownSince = new Date(
+        now.getTime() - PAYOUT_REQUEST_LIMIT.periodDays * 24 * 60 * 60 * 1000,
+      );
+
+      const completedPayoutsCount = await this.prisma.payoutRequest.count({
+        where: {
+          partnerId,
+          status: PayoutStatus.COMPLETED,
+          OR: [
+            { processedAt: { gte: cooldownSince } },
+            { processedAt: null, createdAt: { gte: cooldownSince } },
+          ],
+        },
+      });
+
+      if (completedPayoutsCount >= PAYOUT_REQUEST_LIMIT.maxCompletedRequests) {
+        const periodText = formatDaysText(PAYOUT_REQUEST_LIMIT.periodDays);
+        const countText = formatRequestsCountText(
+          PAYOUT_REQUEST_LIMIT.maxCompletedRequests,
+        );
+
         throw new BadRequestException(
-          'У вас уже есть активная заявка на вывод в обработке. Дождитесь её завершения или отмените её.',
+          `Достигнут лимит на вывод средств: не более ${countText} ${periodText}. Пожалуйста, повторите попытку позже.`,
         );
       }
-
-      const periodText =
-        PAYOUT_REQUEST_LIMIT_DAYS === 1
-          ? 'в день'
-          : `раз в ${PAYOUT_REQUEST_LIMIT_DAYS} дн.`;
-
-      throw new BadRequestException(
-        `Вы можете подавать не более 1 заявки на вывод ${periodText}. Пожалуйста, повторите попытку позже.`,
-      );
     }
 
     // Проверяем доступный баланс
