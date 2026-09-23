@@ -25,14 +25,13 @@ export class UpdatePayoutStatusDto {
   status!: AdminUpdatablePayoutStatus;
 
   @ApiPropertyOptional({
-    example: 'П/П №10492 от 13.09.2026',
+    type: 'string',
+    format: 'binary',
     description:
-      'Номер платёжного поручения или транзакции банка (обязательно при COMPLETED)',
+      'Файл чека оплаты (изображение или PDF, обязательно при COMPLETED)',
   })
   @IsOptional()
-  @IsString()
-  @MaxLength(120)
-  transactionReference?: string;
+  file?: any;
 
   @ApiPropertyOptional({
     example: 'Указан несуществующий расчетный счет',

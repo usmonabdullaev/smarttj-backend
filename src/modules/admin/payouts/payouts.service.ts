@@ -4,7 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PayoutStatus, Prisma } from '@prisma/client';
+import { Response } from 'express';
+import { Readable } from 'stream';
 
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import {
   AdminPayoutItemDto,
@@ -17,7 +20,10 @@ import {
 
 @Injectable()
 export class AdminPayoutsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   /**
    * Список всех заявок на вывод средств для администратора с фильтрами и поиском.
@@ -51,7 +57,7 @@ export class AdminPayoutsService {
       where.OR = [
         { partner: { title: { contains: search, mode: 'insensitive' } } },
         { partner: { inn: { contains: search, mode: 'insensitive' } } },
-        { transactionReference: { contains: search, mode: 'insensitive' } },
+        { comment: { contains: search, mode: 'insensitive' } },
         { id: { contains: search, mode: 'insensitive' } },
       ];
     }
@@ -140,6 +146,7 @@ export class AdminPayoutsService {
     id: string,
     adminUserId: string,
     dto: UpdatePayoutStatusDto,
+    file?: Express.Multer.File,
   ): Promise<AdminPayoutItemDto> {
     const payout = await this.prisma.payoutRequest.findUnique({
       where: { id },
@@ -159,13 +166,12 @@ export class AdminPayoutsService {
       );
     }
 
-    if (
-      dto.status === AdminUpdatablePayoutStatus.COMPLETED &&
-      !dto.transactionReference?.trim()
-    ) {
-      throw new BadRequestException(
-        'Для подтверждения выплаты (COMPLETED) необходимо указать номер платёжного поручения или транзакции банка',
-      );
+    if (dto.status === AdminUpdatablePayoutStatus.COMPLETED) {
+      if (!file && !payout.checkUrl) {
+        throw new BadRequestException(
+          'Для подтверждения выплаты (COMPLETED) необходимо прикрепить файл чека (картинка или PDF)',
+        );
+      }
     }
 
     if (
@@ -177,13 +183,37 @@ export class AdminPayoutsService {
       );
     }
 
+    let checkUrl = payout.checkUrl;
+    let checkUrlId = payout.checkUrlId;
+
+    if (file) {
+      if (payout.checkUrlId) {
+        await this.cloudinaryService
+          .deleteFile(payout.checkUrlId)
+          .catch(() => null);
+      }
+
+      const uploadResult = await this.cloudinaryService.uploadFile({
+        file,
+        folder: 'smarttj/payouts/checks',
+      });
+
+      if (!uploadResult?.secure_url) {
+        throw new BadRequestException(
+          'Не удалось загрузить файл чека в Cloudinary',
+        );
+      }
+
+      checkUrl = uploadResult.secure_url;
+      checkUrlId = uploadResult.public_id;
+    }
+
     const updated = await this.prisma.payoutRequest.update({
       where: { id },
       data: {
         status: dto.status,
-        transactionReference: dto.transactionReference
-          ? dto.transactionReference.trim()
-          : payout.transactionReference,
+        checkUrl,
+        checkUrlId,
         rejectReason: dto.rejectReason
           ? dto.rejectReason.trim()
           : payout.rejectReason,
@@ -212,6 +242,59 @@ export class AdminPayoutsService {
     return this.mapPayout(updated);
   }
 
+  /**
+   * Скачать файл чека выплаты администратором.
+   */
+  async downloadCheck(id: string, res: Response) {
+    const payout = await this.prisma.payoutRequest.findUnique({
+      where: { id },
+      select: { id: true, checkUrl: true },
+    });
+
+    if (!payout || !payout.checkUrl) {
+      throw new NotFoundException(
+        'Чек к данной заявке на выплату не прикреплён',
+      );
+    }
+
+    try {
+      const response = await fetch(payout.checkUrl);
+      if (!response.ok) {
+        throw new BadRequestException(
+          'Не удалось скачать файл чека из хранилища',
+        );
+      }
+
+      const contentType =
+        response.headers.get('content-type') || 'application/octet-stream';
+      let ext = 'bin';
+      if (contentType.includes('pdf')) ext = 'pdf';
+      else if (contentType.includes('png')) ext = 'png';
+      else if (contentType.includes('webp')) ext = 'webp';
+      else if (contentType.includes('jpeg') || contentType.includes('jpg'))
+        ext = 'jpg';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="check_${payout.id}.${ext}"`,
+      );
+
+      const nodeStream = Readable.fromWeb(response.body as any);
+      nodeStream.pipe(res);
+    } catch (err: any) {
+      if (
+        err instanceof NotFoundException ||
+        err instanceof BadRequestException
+      ) {
+        throw err;
+      }
+      throw new BadRequestException(
+        `Ошибка при скачивании файла: ${err.message}`,
+      );
+    }
+  }
+
   private mapPayout(p: any): AdminPayoutItemDto {
     return {
       id: p.id,
@@ -222,7 +305,8 @@ export class AdminPayoutsService {
       requisitesSnapshot: p.requisitesSnapshot as Record<string, any>,
       comment: p.comment,
       rejectReason: p.rejectReason,
-      transactionReference: p.transactionReference,
+      checkUrl: p.checkUrl,
+      checkUrlId: p.checkUrlId,
       processedAt: p.processedAt,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,

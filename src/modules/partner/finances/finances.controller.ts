@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -14,8 +15,10 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { UserRole } from '@prisma/client';
 
 import { JwtAuthGuard, RolesGuard, PartnerStatusGuard } from '@/auth/guards';
@@ -122,6 +125,23 @@ export class PartnerFinancesController {
     const { profile } = await this.partnerAuthService.getProfile(sessionId);
 
     return await this.financesService.cancelPayout(profile.id, id);
+  }
+
+  @Get('payouts/:id/check/download')
+  @ApiOperation({
+    summary: 'Скачать файл чека выплаты',
+    description:
+      'Позволяет партнёру скачать прикрепленный чек об оплате (PDF или изображение).',
+  })
+  @ApiParam({ name: 'id', description: 'ID заявки на выплату' })
+  async downloadCheck(
+    @GetUser('sessionId') sessionId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() res: Response,
+  ) {
+    const { profile } = await this.partnerAuthService.getProfile(sessionId);
+
+    return await this.financesService.downloadCheck(profile.id, id, res);
   }
 
   @Get('requisites')

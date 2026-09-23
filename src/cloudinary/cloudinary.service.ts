@@ -11,6 +11,7 @@ const ALLOWED_MIME_TYPES = [
   'image/png',
   'image/webp',
   'image/avif',
+  'application/pdf',
 ];
 
 @Injectable()
@@ -49,7 +50,7 @@ export class CloudinaryService {
       const upload = cloudinary.uploader.upload_stream(
         {
           folder: dto.folder,
-          resource_type: 'image',
+          resource_type: 'auto',
         },
         (error, result) => {
           if (error || !result) {

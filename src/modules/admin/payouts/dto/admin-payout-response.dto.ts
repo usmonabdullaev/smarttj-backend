@@ -68,11 +68,18 @@ export class AdminPayoutItemDto {
   rejectReason?: string | null;
 
   @ApiPropertyOptional({
-    example: 'П/П №10492 от 13.09.2026',
+    example: 'https://res.cloudinary.com/.../check.pdf',
     nullable: true,
-    description: 'Номер платёжного поручения банка',
+    description: 'Ссылка на файл чека выплаты',
   })
-  transactionReference?: string | null;
+  checkUrl?: string | null;
+
+  @ApiPropertyOptional({
+    example: 'smarttj/payouts/checks/check_123',
+    nullable: true,
+    description: 'ID файла чека в Cloudinary',
+  })
+  checkUrlId?: string | null;
 
   @ApiPropertyOptional({ example: '2026-09-13T12:00:00.000Z', nullable: true })
   processedAt?: Date | null;

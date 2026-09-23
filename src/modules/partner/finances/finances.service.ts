@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OrderItemDeliveryStatus, PayoutStatus, Prisma } from '@prisma/client';
+import { Response } from 'express';
+import { Readable } from 'stream';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
 import {
@@ -289,7 +291,8 @@ export class PartnerFinancesService {
       requisitesSnapshot: payout.requisitesSnapshot as Record<string, any>,
       comment: payout.comment,
       rejectReason: payout.rejectReason,
-      transactionReference: payout.transactionReference,
+      checkUrl: payout.checkUrl,
+      checkUrlId: payout.checkUrlId,
       processedAt: payout.processedAt,
       createdAt: payout.createdAt,
       updatedAt: payout.updatedAt,
@@ -333,7 +336,8 @@ export class PartnerFinancesService {
         requisitesSnapshot: p.requisitesSnapshot as Record<string, any>,
         comment: p.comment,
         rejectReason: p.rejectReason,
-        transactionReference: p.transactionReference,
+        checkUrl: p.checkUrl,
+        checkUrlId: p.checkUrlId,
         processedAt: p.processedAt,
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
@@ -385,11 +389,69 @@ export class PartnerFinancesService {
       requisitesSnapshot: updated.requisitesSnapshot as Record<string, any>,
       comment: updated.comment,
       rejectReason: updated.rejectReason,
-      transactionReference: updated.transactionReference,
+      checkUrl: updated.checkUrl,
+      checkUrlId: updated.checkUrlId,
       processedAt: updated.processedAt,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
     };
+  }
+
+  /**
+   * Скачать файл чека выплаты партнёром.
+   */
+  async downloadCheck(partnerId: string, id: string, res: Response) {
+    const payout = await this.prisma.payoutRequest.findUnique({
+      where: { id },
+      select: { id: true, partnerId: true, checkUrl: true },
+    });
+
+    if (!payout || payout.partnerId !== partnerId) {
+      throw new NotFoundException('Заявка на выплату не найдена');
+    }
+
+    if (!payout.checkUrl) {
+      throw new NotFoundException(
+        'Чек к данной заявке на выплату не прикреплён',
+      );
+    }
+
+    try {
+      const response = await fetch(payout.checkUrl);
+      if (!response.ok) {
+        throw new BadRequestException(
+          'Не удалось скачать файл чека из хранилища',
+        );
+      }
+
+      const contentType =
+        response.headers.get('content-type') || 'application/octet-stream';
+      let ext = 'bin';
+      if (contentType.includes('pdf')) ext = 'pdf';
+      else if (contentType.includes('png')) ext = 'png';
+      else if (contentType.includes('webp')) ext = 'webp';
+      else if (contentType.includes('jpeg') || contentType.includes('jpg'))
+        ext = 'jpg';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="check_${payout.id}.${ext}"`,
+      );
+
+      const nodeStream = Readable.fromWeb(response.body as any);
+      nodeStream.pipe(res);
+    } catch (err: any) {
+      if (
+        err instanceof NotFoundException ||
+        err instanceof BadRequestException
+      ) {
+        throw err;
+      }
+      throw new BadRequestException(
+        `Ошибка при скачивании файла: ${err.message}`,
+      );
+    }
   }
 
   /**

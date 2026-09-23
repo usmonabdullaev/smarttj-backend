@@ -6,15 +6,22 @@ import {
   ParseUUIDPipe,
   Patch,
   Query,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { UserRole } from '@prisma/client';
 
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard';
@@ -71,10 +78,12 @@ export class AdminPayoutsController {
   }
 
   @Patch(':id/status')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data', 'application/json')
   @ApiOperation({
     summary: 'Изменить статус заявки (PROCESSING, COMPLETED, REJECTED)',
     description:
-      'При COMPLETED обязательно передать номер платёжного поручения (transactionReference). При REJECTED обязательно передать причину отказа (rejectReason).',
+      'При COMPLETED обязательно прикрепить файл чека (картинка или PDF). При REJECTED обязательно передать причину отказа (rejectReason).',
   })
   @ApiOkResponse({
     type: AdminPayoutItemDto,
@@ -88,7 +97,22 @@ export class AdminPayoutsController {
     @Param('id', ParseUUIDPipe) id: string,
     @GetUser('userId') adminUserId: string,
     @Body() dto: UpdatePayoutStatusDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return await this.payoutsService.updateStatus(id, adminUserId, dto);
+    return await this.payoutsService.updateStatus(id, adminUserId, dto, file);
+  }
+
+  @Get(':id/check/download')
+  @ApiOperation({
+    summary: 'Скачать файл чека выплаты',
+    description:
+      'Позволяет администратору скачать прикрепленный к выплате чек (PDF или изображение).',
+  })
+  @ApiParam({ name: 'id', description: 'ID заявки на выплату' })
+  async downloadCheck(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() res: Response,
+  ) {
+    return await this.payoutsService.downloadCheck(id, res);
   }
 }
