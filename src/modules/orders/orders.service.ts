@@ -57,6 +57,9 @@ export class OrdersService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
