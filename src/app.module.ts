@@ -1,3 +1,4 @@
+import { createObserveModule } from '@nestjs/observe';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
@@ -13,9 +14,19 @@ import { LoggerModule } from '@/logger/logger.module';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 
+export const { ObserveModule, ObserveInstrument } = createObserveModule();
+
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] }),
+    ObserveModule.forRoot({
+      appKey: process.env.OBSERVE_APP_KEY!,
+      appSecret: process.env.OBSERVE_APP_SECRET!,
+      serviceId: 'smarttj-backend',
+      http: {
+        ignore: ['/server'],
+      },
+    }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     ScheduleModule.forRoot(),
     BullModule.forRoot({
       connection: {
