@@ -1,3 +1,4 @@
+import { OpenLoggerService } from 'open-logger';
 import {
   BadRequestException,
   Injectable,
@@ -13,16 +14,14 @@ import { NotificationTelegramService } from '@/bullmq/notification-telegram/noti
 import { ConnectTelegramDto, UpdateTelegramOrderStatusDto } from './dto';
 import { PrismaService } from '@/database/prisma/prisma.service';
 import { TelegramCodeStore } from './telegram-code.store';
-import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class TelegramService {
-  private readonly logger = new LoggerService(TelegramService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly codeStore: TelegramCodeStore,
     private readonly notificationTelegram: NotificationTelegramService,
+    private readonly logger: OpenLoggerService,
   ) {}
 
   /**

@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { OpenLoggerService } from 'open-logger';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class CardsService {
-  private readonly logger = new LoggerService(CardsService.name);
-
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logger: OpenLoggerService,
+  ) {}
 
   /**
    * Получить список сохраненных активных карт пользователя

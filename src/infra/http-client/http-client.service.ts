@@ -1,20 +1,19 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
-import { AxiosError, AxiosRequestConfig } from 'axios';
+import type { AxiosError, AxiosRequestConfig } from 'axios';
+import { OpenLoggerService } from 'open-logger';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import jwt from 'jsonwebtoken';
 
 import { HttpClientModuleOptions } from './interfaces/http-client-options.interface';
-import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class HttpClientService {
-  private readonly logger = new LoggerService(HttpClientService.name);
-
   constructor(
     private readonly http: HttpService,
     @Inject('HTTP_CLIENT_OPTIONS')
     private readonly options: HttpClientModuleOptions,
+    private readonly logger: OpenLoggerService,
   ) {}
 
   /**

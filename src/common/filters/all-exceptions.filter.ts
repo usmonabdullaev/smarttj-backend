@@ -1,4 +1,5 @@
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
+import { OpenLoggerService } from 'open-logger';
 import {
   ArgumentsHost,
   Catch,
@@ -7,11 +8,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
-
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private readonly logger = new LoggerService(AllExceptionsFilter.name);
+  constructor(private readonly logger: OpenLoggerService) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();

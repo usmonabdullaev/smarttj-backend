@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { OpenLoggerService } from 'open-logger';
 import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
+import { SmsgateResponse } from '../dto/responses/smsgate.response';
+import { SmsgateRequest } from '../dto/requests/smsgate.request';
+import { PhoneFormatter } from '../utils/phone-formatter.util';
 import { SMS_CONSTANTS } from '../constants/sms.constants';
 import { SmsPriority, SmsType } from '../enums';
 import {
@@ -14,21 +17,19 @@ import {
   SmsGateSinglePayload,
   SmsGateStatusResponse,
 } from '../interfaces/smsgate.interface';
-import { PhoneFormatter } from '../utils/phone-formatter.util';
-import { SmsgateRequest } from '../dto/requests/smsgate.request';
-import { SmsgateResponse } from '../dto/responses/smsgate.response';
 
 @Injectable()
 export class SmsgateProvider implements ISmsProvider {
-  private readonly logger = new LoggerService(SmsgateProvider.name);
-
   private readonly apiKey: string;
   private readonly senderAddress: string;
   private readonly primaryBaseUrl: string;
   private readonly fallbackBaseUrl: string;
   private readonly timeoutMs: number;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: OpenLoggerService,
+  ) {
     this.apiKey = this.configService.get<string>('SMSGATE_API_KEY') || '';
     this.senderAddress =
       this.configService.get<string>('SMSGATE_SENDER_ADDRESS') ||

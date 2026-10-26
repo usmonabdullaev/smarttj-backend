@@ -1,8 +1,7 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import Redis from 'ioredis';
+import { OpenLoggerService } from 'open-logger';
 import * as crypto from 'crypto';
-
-import { LoggerService } from '@/logger/logger.service';
+import Redis from 'ioredis';
 
 interface MemoryCodeItem {
   userId: string;
@@ -12,9 +11,10 @@ interface MemoryCodeItem {
 
 @Injectable()
 export class TelegramCodeStore implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new LoggerService(TelegramCodeStore.name);
   private redisClient: Redis | null = null;
   private readonly memoryStore = new Map<string, MemoryCodeItem>();
+
+  constructor(private readonly logger: OpenLoggerService) {}
 
   onModuleInit() {
     const host = process.env.REDIS_HOST;

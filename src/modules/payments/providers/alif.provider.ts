@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { OpenLoggerService } from 'open-logger';
 import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 
-import { LoggerService } from '@/logger/logger.service';
 import {
   AlifCancelPaymentPayload,
   AlifCancelPaymentResponse,
@@ -15,15 +15,16 @@ import {
 
 @Injectable()
 export class AlifProvider {
-  private readonly logger = new LoggerService(AlifProvider.name);
-
   private readonly apiUrl: string;
   private readonly terminalKey: string;
   private readonly terminalPassword: string;
   private readonly callbackUrl: string;
   private readonly returnUrl: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: OpenLoggerService,
+  ) {
     this.apiUrl = (
       this.configService.get<string>('ALIF_API_URL') ||
       'https://test-web.alif.tj'

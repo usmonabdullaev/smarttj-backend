@@ -1,9 +1,12 @@
 import { SmsLogPurpose, SmsLogStatus } from '@prisma/client';
+import { OpenLoggerService } from 'open-logger';
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { LoggerService } from '@/logger/logger.service';
+import { SmsgateProvider } from './providers/smsgate.provider';
+import { PhoneFormatter } from './utils/phone-formatter.util';
 import { SMS_CONSTANTS } from './constants/sms.constants';
+import { SmsStatusResponse } from './dto/responses';
 import { SmsPriority, SmsType } from './enums';
 import {
   BulkSmsItemRequest,
@@ -11,17 +14,13 @@ import {
   SendOtpRequest,
   SendRequest,
 } from './dto/requests';
-import { SmsStatusResponse } from './dto/responses';
-import { SmsgateProvider } from './providers/smsgate.provider';
-import { PhoneFormatter } from './utils/phone-formatter.util';
 
 @Injectable()
 export class SmsService {
-  private readonly logger = new LoggerService(SmsService.name);
-
   constructor(
     private readonly provider: SmsgateProvider,
     private readonly prisma: PrismaService,
+    private readonly logger: OpenLoggerService,
   ) {}
 
   /**

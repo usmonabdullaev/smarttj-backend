@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import { OpenLoggerService } from 'open-logger';
 import * as streamifier from 'streamifier';
 
 import { UploadFilesRequest } from '@/cloudinary/dto/requests/upload-files.request';
 import { UploadFileRequest } from '@/cloudinary/dto/requests/upload-file.request';
-import { LoggerService } from '@/logger/logger.service';
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -16,9 +16,7 @@ const ALLOWED_MIME_TYPES = [
 
 @Injectable()
 export class CloudinaryService {
-  private readonly logger = new LoggerService(CloudinaryService.name);
-
-  constructor() {
+  constructor(private readonly logger: OpenLoggerService) {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,

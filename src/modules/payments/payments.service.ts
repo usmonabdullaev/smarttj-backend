@@ -1,3 +1,4 @@
+import { OpenLoggerService } from 'open-logger';
 import {
   BadRequestException,
   ConflictException,
@@ -14,7 +15,6 @@ import {
 } from '@prisma/client';
 
 import { PrismaService } from '@/database/prisma/prisma.service';
-import { LoggerService } from '@/logger/logger.service';
 import { AlifProvider } from './providers/alif.provider';
 import {
   AlifCallbackRequest,
@@ -24,11 +24,10 @@ import {
 
 @Injectable()
 export class PaymentsService {
-  private readonly logger = new LoggerService(PaymentsService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly alifProvider: AlifProvider,
+    private readonly logger: OpenLoggerService,
   ) {}
 
   /**

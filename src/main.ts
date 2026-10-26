@@ -1,22 +1,31 @@
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { OpenLoggerService } from 'open-logger';
+import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule, ObserveInstrument } from '@/app.module';
-import { LoggerService } from './logger/logger.service';
-
-const PORT = process.env.PORT || 3000;
-const HOST = '0.0.0.0';
-const PREFIX = 'api';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     instrument: ObserveInstrument,
   });
 
-  const logger = new LoggerService('Main');
-  app.useLogger(logger);
+  const configService = app.get(ConfigService);
+  const logger = app.get(OpenLoggerService);
+  app.use(OpenLoggerService);
+
+  console.log('DEBUG REDIS CONFIG:', {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD ? '****** (defined)' : 'MISSING!',
+  });
+
+  const PORT = configService.get('PORT', 3000);
+  const HOST = '0.0.0.0';
+  const PREFIX = 'api';
 
   app.setGlobalPrefix(PREFIX);
 
@@ -46,19 +55,15 @@ async function bootstrap() {
     });
 
   const config = new DocumentBuilder()
-    .setTitle('Smart Shop')
+    .setTitle('SmartTJ')
     .setContact(
       'Abdulloev Usmon',
       'https://abdulloev-usmon.vercel.app',
       'abdullaevusmon2006@gmail.com',
     )
-    .setDescription('The Smart Shop API documentation')
+    .setDescription('The SmartTJ API documentation')
     .setVersion('1.0')
     .addServer(`http://localhost:${PORT}/${PREFIX}`, 'Localhost')
-    .addServer(
-      `http://smarttj.duckdns.org/${PREFIX}`,
-      'Server (DuckDNS) - HTTP',
-    )
     .addServer(
       `https://smarttj.duckdns.org/${PREFIX}`,
       'Server (DuckDNS) - HTTPS',

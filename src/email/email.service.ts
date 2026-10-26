@@ -1,12 +1,11 @@
+import { OpenLoggerService } from 'open-logger';
 import { Injectable } from '@nestjs/common';
 
 import { SendRequest } from '@/email/dto/requests/send.request';
 
-import { LoggerService } from '@/logger/logger.service';
-
 @Injectable()
 export class EmailService {
-  private readonly logger = new LoggerService(EmailService.name);
+  constructor(private readonly logger: OpenLoggerService) {}
 
   async send(dto: SendRequest) {
     const from =
