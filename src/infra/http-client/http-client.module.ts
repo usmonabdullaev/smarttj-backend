@@ -1,5 +1,5 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
+import { HttpClientModule as NestHttpClientModule } from '@nestjs/http-client';
 
 import { HttpClientModuleOptions } from './interfaces/http-client-options.interface';
 import { HttpClientService } from './http-client.service';
@@ -10,7 +10,7 @@ export class HttpClientModule {
   static forRoot(options: HttpClientModuleOptions): DynamicModule {
     return {
       module: HttpClientModule,
-      imports: [HttpModule],
+      imports: [NestHttpClientModule.register()],
       providers: [
         {
           provide: 'HTTP_CLIENT_OPTIONS',

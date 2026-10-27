@@ -57,11 +57,11 @@
     }
   },
   "dependencies": {
-    "@nestjs/axios": "^12.0.1",
     "@nestjs/bullmq": "^12.0.0",
     "@nestjs/common": "^12.2.0",
     "@nestjs/config": "^12.0.1",
     "@nestjs/core": "^12.2.0",
+    "@nestjs/http-client": "^0.0.2",
     "@nestjs/jwt": "^12.0.2",
     "@nestjs/mapped-types": "^12.0.0",
     "@nestjs/observe": "^0.3.9",
@@ -73,7 +73,6 @@
     "@prisma/client": "^7.10.0",
     "@smarttj/core": "^1.2.10",
     "argon2": "^0.45.1",
-    "axios": "^1.20.0",
     "bullmq": "^6.3.12",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",

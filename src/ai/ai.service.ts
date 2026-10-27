@@ -1,7 +1,7 @@
 import { AskRequest, AskResponse } from '@smarttj/core';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
-import { AxiosRequestConfig } from 'axios';
+import type { HttpRequestOptions } from '@nestjs/http-client';
 
 import { HttpClientService } from '@/infra/http-client/http-client.service';
 
@@ -16,7 +16,7 @@ export class AIService {
     this.aiServiceUrl = this.config.getOrThrow('AI_SERVICE_URL');
   }
 
-  async ask(data: AskRequest, config?: AxiosRequestConfig) {
+  async ask(data: AskRequest, config?: HttpRequestOptions) {
     return await this.httpClient.post<AskResponse>(
       'smarttj-ai',
       `${this.aiServiceUrl}/ask`,

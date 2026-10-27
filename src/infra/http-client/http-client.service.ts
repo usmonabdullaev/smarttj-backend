@@ -1,16 +1,27 @@
-import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
-import type { AxiosError, AxiosRequestConfig } from 'axios';
+import {
+  Injectable,
+  Inject,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  HttpClient,
+  HttpClientError,
+  HttpResponseError,
+  HttpTimeoutError,
+} from '@nestjs/http-client';
 import { OpenLoggerService } from 'open-logger';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import jwt from 'jsonwebtoken';
 
-import { HttpClientModuleOptions } from './interfaces/http-client-options.interface';
+import {
+  HttpClientModuleOptions,
+  InternalHttpRequestOptions,
+} from './interfaces/http-client-options.interface';
 
 @Injectable()
 export class HttpClientService {
   constructor(
-    private readonly http: HttpService,
+    private readonly http: HttpClient,
     @Inject('HTTP_CLIENT_OPTIONS')
     private readonly options: HttpClientModuleOptions,
     private readonly logger: OpenLoggerService,
@@ -35,26 +46,47 @@ export class HttpClientService {
    */
   async request<T = any>(
     targetService: string,
-    config: AxiosRequestConfig,
+    config: InternalHttpRequestOptions,
   ): Promise<T> {
     const token = this.generateToken(targetService);
+    const url = config.url || '';
 
-    const mergedConfig: AxiosRequestConfig = {
-      ...config,
+    const headers: Record<string, any> = {};
+
+    if (config.headers) {
+      if (config.headers instanceof Headers) {
+        config.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+      } else {
+        Object.assign(headers, config.headers);
+      }
+    }
+
+    headers['x-internal-token'] = token;
+
+    const { url: _url, data, ...restConfig } = config;
+
+    const requestOptions: InternalHttpRequestOptions = {
+      ...restConfig,
+      method: config.method || 'GET',
+      headers,
       timeout: config.timeout ?? 5000,
-      headers: {
-        ...(config.headers || {}),
-        'x-internal-token': token,
-        'Content-Type': 'application/json',
-      },
     };
 
-    try {
-      const response = await firstValueFrom(this.http.request<T>(mergedConfig));
+    if (
+      data !== undefined &&
+      requestOptions.json === undefined &&
+      requestOptions.body === undefined
+    ) {
+      requestOptions.json = data;
+    }
 
+    try {
+      const response = await this.http.request<T>(url, requestOptions);
       return response.data;
     } catch (error) {
-      this.handleAxiosError(error as AxiosError, targetService, config.url);
+      this.handleHttpError(error, targetService, url);
     }
   }
 
@@ -62,7 +94,7 @@ export class HttpClientService {
   get<T = any>(
     targetService: string,
     url: string,
-    config?: AxiosRequestConfig,
+    config?: InternalHttpRequestOptions,
   ) {
     return this.request<T>(targetService, { ...config, method: 'GET', url });
   }
@@ -71,7 +103,7 @@ export class HttpClientService {
     targetService: string,
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
+    config?: InternalHttpRequestOptions,
   ) {
     return this.request<T>(targetService, {
       ...config,
@@ -81,11 +113,25 @@ export class HttpClientService {
     });
   }
 
+  put<T = any>(
+    targetService: string,
+    url: string,
+    data?: any,
+    config?: InternalHttpRequestOptions,
+  ) {
+    return this.request<T>(targetService, {
+      ...config,
+      method: 'PUT',
+      url,
+      data,
+    });
+  }
+
   patch<T = any>(
     targetService: string,
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
+    config?: InternalHttpRequestOptions,
   ) {
     return this.request<T>(targetService, {
       ...config,
@@ -98,22 +144,39 @@ export class HttpClientService {
   delete<T = any>(
     targetService: string,
     url: string,
-    config?: AxiosRequestConfig,
+    config?: InternalHttpRequestOptions,
   ) {
     return this.request<T>(targetService, { ...config, method: 'DELETE', url });
   }
 
-  private handleAxiosError(
-    error: AxiosError,
+  private handleHttpError(
+    error: unknown,
     targetService: string,
     url?: string,
   ): never {
-    const status = error.response?.status || HttpStatus.SERVICE_UNAVAILABLE;
-    const errorData = error.response?.data;
+    if (error instanceof HttpException) {
+      throw error;
+    }
+
+    let status = HttpStatus.SERVICE_UNAVAILABLE;
+    let errorData: any = null;
+
+    if (error instanceof HttpResponseError) {
+      status = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      errorData = error.body;
+    } else if (error instanceof HttpTimeoutError) {
+      status = HttpStatus.GATEWAY_TIMEOUT;
+      errorData = error.message;
+    } else if (error instanceof HttpClientError) {
+      status = HttpStatus.BAD_GATEWAY;
+      errorData = error.message;
+    } else if (error instanceof Error) {
+      errorData = error.message;
+    }
 
     this.logger.error(
       `[Internal HTTP Error] target: ${targetService} | url: ${url} | status: ${status}`,
-      errorData || error.message,
+      errorData || (error instanceof Error ? error.message : String(error)),
     );
 
     // Пробрасываем ошибку дальше в NestJS пайплайн
