@@ -14,14 +14,6 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const logger = app.get(OpenLoggerService);
-  app.use(OpenLoggerService);
-
-  console.log('DEBUG REDIS CONFIG:', {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    username: process.env.REDIS_USERNAME,
-    password: process.env.REDIS_PASSWORD ? '****** (defined)' : 'MISSING!',
-  });
 
   const PORT = configService.get('PORT', 3000);
   const HOST = '0.0.0.0';
