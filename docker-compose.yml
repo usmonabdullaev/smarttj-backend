@@ -12,10 +12,6 @@ services:
     networks:
       - smarttj-network
 
-volumes:
-  postgres_data:
-  redis-data:
-
 networks:
   smarttj-network:
     external: true

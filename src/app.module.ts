@@ -1,10 +1,10 @@
 import { createObserveModule } from '@nestjs/observe';
 import { ScheduleModule } from '@nestjs/schedule';
+import { OpenLoggerModule } from 'open-logger';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { APP_FILTER } from '@nestjs/core';
 import { Module } from '@nestjs/common';
-import { OpenLoggerModule } from 'open-logger';
 
 import { AllExceptionsFilter } from '@/common/filters/all-exceptions.filter';
 import { HttpClientModule } from './infra/http-client/http-client.module';
@@ -35,10 +35,8 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     ScheduleModule.forRoot(),
     BullModule.forRoot({
       connection: {
-        // username: process.env.REDIS_USERNAME,
         host: process.env.REDIS_HOST,
         port: Number(process.env.REDIS_PORT),
-        // password: process.env.REDIS_PASSWORD,
       },
     }),
     OpenLoggerModule.forRoot(),
