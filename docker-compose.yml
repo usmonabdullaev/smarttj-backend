@@ -9,6 +9,13 @@ services:
     env_file:
       - .env
 
+    volumes:
+      - ./logs:/app/logs
+
+    labels:
+      logging: "promtail"
+      service: "smarttj-backend"
+
     networks:
       - smarttj-network
 
